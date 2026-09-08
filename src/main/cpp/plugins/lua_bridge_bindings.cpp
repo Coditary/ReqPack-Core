@@ -3,20 +3,13 @@
 #include "core/config/configuration.h"
 #include "core/host/host_info.h"
 #include "output/progress_metrics_lua.h"
+#include "plugins/lua_bridge_binding_helpers.h"
 #include "plugins/lua_bridge_value_mapper.h"
 #include <array>
 
 #include <type_traits>
 
 namespace {
-
-// clang-format off
-template <typename Class, typename Member>
-auto lua_member(Member Class::* member) {
-    return sol::property([member](const Class& object) { return object.*member; },
-                         [member](Class& object, Member value) { object.*member = std::move(value); });
-}
-// clang-format on
 
 sol::table make_string_array_table(sol::state& lua, const std::vector<std::string>& values) {
     sol::table table = lua.create_table(static_cast<int>(values.size()), 0);

@@ -238,8 +238,8 @@ function(reqpack_core_ensure_output_target)
     add_library(reqpack_output STATIC ${REQPACK_OUTPUT_SOURCES})
     target_include_directories(reqpack_output
         PUBLIC
-            "${_cli_dir}/src/main/include"
             "${CMAKE_CURRENT_SOURCE_DIR}/src/main/include"
+            "${_cli_dir}/src/main/include"
     )
     target_link_libraries(reqpack_output
         PUBLIC
@@ -347,6 +347,8 @@ if(REQPACK_CORE_BUILD_TESTS)
     )
 
     target_include_directories(reqpack_core_unit_tests PRIVATE
+        BEFORE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
         tests/cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/plugins
     )
@@ -378,7 +380,11 @@ if(REQPACK_CORE_BUILD_TESTS)
         tests/integration/plugins/exec_rules/smoke_tests.cpp
     )
 
-    target_include_directories(reqpack_core_integration_tests PRIVATE tests/cpp)
+    target_include_directories(reqpack_core_integration_tests PRIVATE
+        BEFORE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+        tests/cpp
+    )
 
     target_link_libraries(reqpack_core_integration_tests PRIVATE
         Catch2::Catch2

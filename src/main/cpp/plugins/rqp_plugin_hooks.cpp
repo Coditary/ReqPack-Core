@@ -7,6 +7,7 @@
 
 #include "output/logger.h"
 #include "plugins/exec_rules.h"
+#include "plugins/lua_bridge_binding_helpers.h"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -356,9 +357,10 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
     sol::table exec = lua.create_table();
     exec.set_function("run", [context](const std::string& command) { return context.execute(command); });
     contextTable["exec"] = exec;
-    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
-                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
-                                 &ExecResult::stderrText);
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success",
+                                 lua_member(&ExecResult::success), "exitCode", lua_member(&ExecResult::exitCode),
+                                 "stdout", lua_member(&ExecResult::stdoutText), "stderr",
+                                 lua_member(&ExecResult::stderrText));
 
     sol::table fs = lua.create_table();
     fs.set_function("copy", [context](const std::string& source, const std::string& destination) {
@@ -494,9 +496,10 @@ bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInst
     sol::table exec = lua.create_table();
     exec.set_function("run", [context](const std::string& command) { return context.execute(command); });
     contextTable["exec"] = exec;
-    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
-                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
-                                 &ExecResult::stderrText);
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success",
+                                 lua_member(&ExecResult::success), "exitCode", lua_member(&ExecResult::exitCode),
+                                 "stdout", lua_member(&ExecResult::stdoutText), "stderr",
+                                 lua_member(&ExecResult::stderrText));
 
     sol::table fs = lua.create_table();
     fs.set_function("exists", [](const std::string& path) { return std::filesystem::exists(path); });
