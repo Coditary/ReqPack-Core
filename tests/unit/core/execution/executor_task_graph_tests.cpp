@@ -149,7 +149,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("executor groups packages by action and system", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-group"};
+    TempDir tempDir {"reqpack-executor-graph-group"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
@@ -161,9 +161,9 @@ TEST_CASE("executor groups packages by action and system", "[unit][executor_task
     executer.setRequestedItemCount(1, true);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one"},
-        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "two"},
-        Package{.action = ActionType::REMOVE, .system = "beta", .name = "three"},
+        Package {.action = ActionType::INSTALL, .system = "alpha", .name = "one"},
+        Package {.action = ActionType::INSTALL, .system = "alpha", .name = "two"},
+        Package {.action = ActionType::REMOVE, .system = "beta", .name = "three"},
     });
 
     CHECK(executer.execute(&graph));
@@ -171,7 +171,7 @@ TEST_CASE("executor groups packages by action and system", "[unit][executor_task
 }
 
 TEST_CASE("executor filters already satisfied install packages", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-filter"};
+    TempDir tempDir {"reqpack-executor-graph-filter"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "filter", FILTER_PLUGIN);
@@ -182,15 +182,15 @@ TEST_CASE("executor filters already satisfied install packages", "[unit][executo
     executer.setRequestedItemCount(1, true);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "filter", .name = "already"},
-        Package{.action = ActionType::INSTALL, .system = "filter", .name = "needed"},
+        Package {.action = ActionType::INSTALL, .system = "filter", .name = "already"},
+        Package {.action = ActionType::INSTALL, .system = "filter", .name = "needed"},
     });
 
     CHECK(executer.execute(&graph));
 }
 
 TEST_CASE("executor dispatches local install targets through installLocal", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-local"};
+    TempDir tempDir {"reqpack-executor-graph-local"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     const char* LOCAL_PLUGIN = R"(
@@ -223,7 +223,7 @@ function plugin.shutdown() return true end
     write_file(localArtifact, "rpm");
 
     Graph graph = make_linear_graph({
-        Package{
+        Package {
             .action = ActionType::INSTALL,
             .system = "localer",
             .name = "artifact.rpm",
@@ -236,7 +236,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("executor schedules dependency edges between task groups", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-deps"};
+    TempDir tempDir {"reqpack-executor-graph-deps"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -250,9 +250,9 @@ TEST_CASE("executor schedules dependency edges between task groups", "[unit][exe
 
     Graph graph;
     const Graph::vertex_descriptor first =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "first", .name = "alpha"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "first", .name = "alpha"}, graph);
     const Graph::vertex_descriptor second =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "second", .name = "beta"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "second", .name = "beta"}, graph);
     boost::add_edge(first, second, graph);
 
     CHECK(executer.execute(&graph));
@@ -261,7 +261,7 @@ TEST_CASE("executor schedules dependency edges between task groups", "[unit][exe
 }
 
 TEST_CASE("executor handles empty graph without failure", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-empty"};
+    TempDir tempDir {"reqpack-executor-graph-empty"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     Registry registry(config);
@@ -272,7 +272,7 @@ TEST_CASE("executor handles empty graph without failure", "[unit][executor_task_
 }
 
 TEST_CASE("executor groups ensure actions separately from install", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-ensure"};
+    TempDir tempDir {"reqpack-executor-graph-ensure"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
@@ -284,8 +284,8 @@ TEST_CASE("executor groups ensure actions separately from install", "[unit][exec
     executer.setRequestedItemCount(1, true);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::ENSURE, .system = "alpha", .name = "ensure-me"},
-        Package{.action = ActionType::INSTALL, .system = "beta", .name = "install-me"},
+        Package {.action = ActionType::ENSURE, .system = "alpha", .name = "ensure-me"},
+        Package {.action = ActionType::INSTALL, .system = "beta", .name = "install-me"},
     });
 
     CHECK(executer.execute(&graph));
@@ -294,7 +294,7 @@ TEST_CASE("executor groups ensure actions separately from install", "[unit][exec
 }
 
 TEST_CASE("executor skips missing package filter for remove actions", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-remove"};
+    TempDir tempDir {"reqpack-executor-graph-remove"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "filter", FILTER_PLUGIN);
@@ -305,14 +305,14 @@ TEST_CASE("executor skips missing package filter for remove actions", "[unit][ex
     executer.setRequestedItemCount(1, true);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::REMOVE, .system = "filter", .name = "present"},
+        Package {.action = ActionType::REMOVE, .system = "filter", .name = "present"},
     });
 
     CHECK(executer.execute(&graph));
 }
 
 TEST_CASE("executor initializes history manager when tracking is enabled", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-history"};
+    TempDir tempDir {"reqpack-executor-graph-history"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
     config.history.enabled = true;
     config.history.trackInstalled = true;
@@ -325,14 +325,14 @@ TEST_CASE("executor initializes history manager when tracking is enabled", "[uni
     executer.setRequestedItemCount(1, true);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "filter", .name = "needed"},
+        Package {.action = ActionType::INSTALL, .system = "filter", .name = "needed"},
     });
 
     CHECK(executer.execute(&graph));
 }
 
 TEST_CASE("executor schedules parallel dependency branches before shared target", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-parallel"};
+    TempDir tempDir {"reqpack-executor-graph-parallel"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "first", GROUP_PLUGIN);
@@ -345,11 +345,11 @@ TEST_CASE("executor schedules parallel dependency branches before shared target"
 
     Graph graph;
     const Graph::vertex_descriptor first =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "first", .name = "alpha"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "first", .name = "alpha"}, graph);
     const Graph::vertex_descriptor second =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "second", .name = "beta"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "second", .name = "beta"}, graph);
     const Graph::vertex_descriptor third =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "third", .name = "gamma"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "third", .name = "gamma"}, graph);
     boost::add_edge(first, third, graph);
     boost::add_edge(second, third, graph);
 
@@ -358,7 +358,7 @@ TEST_CASE("executor schedules parallel dependency branches before shared target"
 }
 
 TEST_CASE("executor honors internal ensure order when grouping tasks", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-ensure-order"};
+    TempDir tempDir {"reqpack-executor-graph-ensure-order"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
@@ -387,9 +387,9 @@ TEST_CASE("executor honors internal ensure order when grouping tasks", "[unit][e
 }
 
 TEST_CASE("executor keeps gateway systems during missing-package filtering", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-gateway-filter"};
+    TempDir tempDir {"reqpack-executor-graph-gateway-filter"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
-    config.security.gateways["snyk"] = SecurityGatewayConfig{.enabled = true, .backends = {"osv"}};
+    config.security.gateways["snyk"] = SecurityGatewayConfig {.enabled = true, .backends = {"osv"}};
 
     const char* gatewayPlugin = R"(
 plugin = {}
@@ -422,28 +422,28 @@ function plugin.shutdown() return true end
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "snyk", .name = "pkg"},
+        Package {.action = ActionType::INSTALL, .system = "snyk", .name = "pkg"},
     });
 
     CHECK(executer.execute(&graph));
 }
 
 TEST_CASE("executor propagates plugin load failures for unknown systems", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-missing-plugin"};
+    TempDir tempDir {"reqpack-executor-graph-missing-plugin"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     Registry registry(config);
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "missing-system", .name = "pkg"},
+        Package {.action = ActionType::INSTALL, .system = "missing-system", .name = "pkg"},
     });
 
     CHECK_FALSE(executer.execute(&graph));
 }
 
 TEST_CASE("executor groups install and update actions into separate task groups", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-update-group"};
+    TempDir tempDir {"reqpack-executor-graph-update-group"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
@@ -454,8 +454,8 @@ TEST_CASE("executor groups install and update actions into separate task groups"
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "install-me"},
-        Package{.action = ActionType::UPDATE, .system = "beta", .name = "update-me"},
+        Package {.action = ActionType::INSTALL, .system = "alpha", .name = "install-me"},
+        Package {.action = ActionType::UPDATE, .system = "beta", .name = "update-me"},
     });
 
     CHECK(executer.execute(&graph));
@@ -463,7 +463,7 @@ TEST_CASE("executor groups install and update actions into separate task groups"
 }
 
 TEST_CASE("executor skips install groups when all packages are already present", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-all-installed"};
+    TempDir tempDir {"reqpack-executor-graph-all-installed"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     static constexpr const char* FILTER_ALL_PLUGIN = R"(
@@ -493,7 +493,7 @@ function plugin.shutdown() return true end
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "filtered", .name = "already-there"},
+        Package {.action = ActionType::INSTALL, .system = "filtered", .name = "already-there"},
     });
 
     CHECK(executer.execute(&graph));
@@ -501,7 +501,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("executor succeeds on empty task graph", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-empty"};
+    TempDir tempDir {"reqpack-executor-graph-empty"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     Registry registry(config);
@@ -512,7 +512,7 @@ TEST_CASE("executor succeeds on empty task graph", "[unit][executor_task_graph]"
 }
 
 TEST_CASE("executor executes remove actions without missing-package filtering", "[unit][executor_task_graph]") {
-    TempDir tempDir{"reqpack-executor-graph-remove"};
+    TempDir tempDir {"reqpack-executor-graph-remove"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
@@ -522,7 +522,7 @@ TEST_CASE("executor executes remove actions without missing-package filtering", 
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::REMOVE, .system = "alpha", .name = "gone"},
+        Package {.action = ActionType::REMOVE, .system = "alpha", .name = "gone"},
     });
 
     CHECK(executer.execute(&graph));

@@ -26,8 +26,8 @@ bool write_snapshot_output(const ReqPackConfig& config, const Request& request,
                            const std::string& outputPath) {
     if (entries.empty()) {
         Logger::instance().emit(OutputAction::DISPLAY_MESSAGE,
-                                OutputContext{.message = "snapshot: no installed packages tracked in history. Ensure "
-                                                         "history.trackInstalled is enabled in your config."});
+                                OutputContext {.message = "snapshot: no installed packages tracked in history. Ensure "
+                                                          "history.trackInstalled is enabled in your config."});
     }
 
     if (outputPath.empty()) {

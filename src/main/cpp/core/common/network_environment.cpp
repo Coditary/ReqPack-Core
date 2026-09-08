@@ -74,21 +74,21 @@ std::vector<std::string> reqpack_sanitized_process_environment() {
             continue;
         }
         if (starts_with(entry, "SSL_CERT_FILE=")) {
-            const std::string value = entry.substr(std::string_view{"SSL_CERT_FILE="}.size());
+            const std::string value = entry.substr(std::string_view {"SSL_CERT_FILE="}.size());
             if (file_exists(value)) {
                 hasSslCertFile = true;
                 environment.push_back(entry);
             }
             continue;
         } else if (starts_with(entry, "CURL_CA_BUNDLE=")) {
-            const std::string value = entry.substr(std::string_view{"CURL_CA_BUNDLE="}.size());
+            const std::string value = entry.substr(std::string_view {"CURL_CA_BUNDLE="}.size());
             if (file_exists(value)) {
                 hasCurlCaBundle = true;
                 environment.push_back(entry);
             }
             continue;
         } else if (starts_with(entry, "GIT_SSL_CAINFO=")) {
-            const std::string value = entry.substr(std::string_view{"GIT_SSL_CAINFO="}.size());
+            const std::string value = entry.substr(std::string_view {"GIT_SSL_CAINFO="}.size());
             if (file_exists(value)) {
                 hasGitSslCaInfo = true;
                 environment.push_back(entry);

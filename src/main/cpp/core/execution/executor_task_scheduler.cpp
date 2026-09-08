@@ -23,8 +23,8 @@ struct ParallelExecutionState {
     std::vector<bool> started;
     std::vector<bool> completed;
     std::vector<bool> failed;
-    bool stopLaunching{false};
-    std::size_t runningWorkers{0};
+    bool stopLaunching {false};
+    std::size_t runningWorkers {0};
 };
 
 } // namespace

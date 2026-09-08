@@ -48,7 +48,7 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
                 }
                 value = arguments[++i];
             } else {
-                value = argument.substr(std::string{"--plugin="}.size());
+                value = argument.substr(std::string {"--plugin="}.size());
             }
             result.invocation.plugin = value;
             continue;
@@ -62,7 +62,7 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
                 }
                 value = arguments[++i];
             } else {
-                value = argument.substr(std::string{"--preset="}.size());
+                value = argument.substr(std::string {"--preset="}.size());
             }
             result.invocation.presets.push_back(value);
             continue;
@@ -76,7 +76,7 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
                 }
                 value = arguments[++i];
             } else {
-                value = argument.substr(std::string{"--case="}.size());
+                value = argument.substr(std::string {"--case="}.size());
             }
             result.invocation.caseFiles.push_back(value);
             continue;
@@ -90,7 +90,7 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
                 }
                 value = arguments[++i];
             } else {
-                value = argument.substr(std::string{"--cases="}.size());
+                value = argument.substr(std::string {"--cases="}.size());
             }
             result.invocation.caseDirectories.push_back(value);
             continue;
@@ -104,7 +104,7 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
                 }
                 value = arguments[++i];
             } else {
-                value = argument.substr(std::string{"--report="}.size());
+                value = argument.substr(std::string {"--report="}.size());
             }
             result.invocation.reportPath = value;
             continue;

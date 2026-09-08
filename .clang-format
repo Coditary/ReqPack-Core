@@ -15,3 +15,4 @@ IncludeBlocks: Preserve
 ReflowComments: true
 SpaceAfterCStyleCast: false
 SpacesInAngles: Never
+SpaceBeforeCpp11BracedList: true

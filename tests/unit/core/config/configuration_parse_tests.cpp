@@ -44,15 +44,15 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 
 std::filesystem::path reqpack_user_home() {
     const char* home = std::getenv("HOME");
-    return home != nullptr ? std::filesystem::path(home) : std::filesystem::path{};
+    return home != nullptr ? std::filesystem::path(home) : std::filesystem::path {};
 }
 
 TEST_CASE("configuration resolves XDG directories with standard fallbacks", "[unit][configuration][xdg]") {
-    TempDir tempDir{"reqpack-xdg-roots"};
-    ScopedEnvVar home{"HOME", (tempDir.path() / "home").string()};
-    ScopedEnvVar configHome{"XDG_CONFIG_HOME", ""};
-    ScopedEnvVar dataHome{"XDG_DATA_HOME", ""};
-    ScopedEnvVar cacheHome{"XDG_CACHE_HOME", ""};
+    TempDir tempDir {"reqpack-xdg-roots"};
+    ScopedEnvVar home {"HOME", (tempDir.path() / "home").string()};
+    ScopedEnvVar configHome {"XDG_CONFIG_HOME", ""};
+    ScopedEnvVar dataHome {"XDG_DATA_HOME", ""};
+    ScopedEnvVar cacheHome {"XDG_CACHE_HOME", ""};
 
     CHECK(reqpack_config_directory() == tempDir.path() / "home" / ".config" / "reqpack");
     CHECK(reqpack_data_directory() == tempDir.path() / "home" / ".local" / "share" / "reqpack");
@@ -78,10 +78,10 @@ TEST_CASE("configuration resolves XDG directories with standard fallbacks", "[un
 }
 
 TEST_CASE("configuration honors explicit XDG directories", "[unit][configuration][xdg]") {
-    TempDir tempDir{"reqpack-xdg-explicit"};
-    ScopedEnvVar configHome{"XDG_CONFIG_HOME", (tempDir.path() / "cfg").string()};
-    ScopedEnvVar dataHome{"XDG_DATA_HOME", (tempDir.path() / "data").string()};
-    ScopedEnvVar cacheHome{"XDG_CACHE_HOME", (tempDir.path() / "cache").string()};
+    TempDir tempDir {"reqpack-xdg-explicit"};
+    ScopedEnvVar configHome {"XDG_CONFIG_HOME", (tempDir.path() / "cfg").string()};
+    ScopedEnvVar dataHome {"XDG_DATA_HOME", (tempDir.path() / "data").string()};
+    ScopedEnvVar cacheHome {"XDG_CACHE_HOME", (tempDir.path() / "cache").string()};
 
     const ReqPackConfig config;
     CHECK(reqpack_config_directory() == tempDir.path() / "cfg" / "reqpack");
@@ -166,7 +166,7 @@ TEST_CASE("configuration resolves registry paths for directories and files", "[u
 }
 
 TEST_CASE("configuration loads and normalizes registry source entries from lua", "[unit][configuration][parse]") {
-    TempDir tempDir{"reqpack-config-registry-sources"};
+    TempDir tempDir {"reqpack-config-registry-sources"};
     const std::filesystem::path sourcePath = tempDir.path() / "sources.lua";
     const std::filesystem::path home = reqpack_user_home();
 
@@ -210,7 +210,7 @@ TEST_CASE("configuration loads and normalizes registry source entries from lua",
     CHECK(std::filesystem::path(sources.at("dnf").source) == home / "plugins/dnf.lua");
     CHECK_FALSE(sources.at("dnf").alias);
     CHECK(sources.at("dnf").description == "DNF source");
-    CHECK(sources.at("dnf").ecosystemScopes == std::vector<std::string>{"demo-osv", "rubygems"});
+    CHECK(sources.at("dnf").ecosystemScopes == std::vector<std::string> {"demo-osv", "rubygems"});
     REQUIRE(sources.at("dnf").writeScopes.size() == 2);
     CHECK(sources.at("dnf").writeScopes[0].kind == "temp");
     CHECK(sources.at("dnf").writeScopes[0].value.empty());
@@ -231,7 +231,7 @@ TEST_CASE("configuration loads and normalizes registry source entries from lua",
 }
 
 TEST_CASE("configuration loads structured logging settings from lua", "[unit][configuration][parse]") {
-    TempDir tempDir{"reqpack-config-logging"};
+    TempDir tempDir {"reqpack-config-logging"};
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
 
     write_file(configPath, R"(
@@ -264,7 +264,7 @@ TEST_CASE("configuration loads structured logging settings from lua", "[unit][co
 
 TEST_CASE("configuration merges downloader, registry, database, and overlay sources in order",
           "[unit][configuration][merge]") {
-    TempDir tempDir{"reqpack-config-registry-merge"};
+    TempDir tempDir {"reqpack-config-registry-merge"};
     const std::filesystem::path registryDir = tempDir.path() / "registry-db";
     const std::filesystem::path overlayPath = tempDir.path() / "overlay.lua";
 
@@ -290,8 +290,8 @@ TEST_CASE("configuration merges downloader, registry, database, and overlay sour
 
     ReqPackConfig config;
     config.downloader.pluginSources["dnf"] = "https://downloader.test/dnf.lua";
-    config.registry.sources["dnf"] = RegistrySourceEntry{.source = "https://config.test/dnf.lua"};
-    config.registry.sources["apt"] = RegistrySourceEntry{.source = "https://config.test/apt.lua"};
+    config.registry.sources["dnf"] = RegistrySourceEntry {.source = "https://config.test/dnf.lua"};
+    config.registry.sources["apt"] = RegistrySourceEntry {.source = "https://config.test/apt.lua"};
     config.registry.databasePath = registryDir.string();
     config.registry.overlayPath = overlayPath.string();
 
@@ -310,10 +310,10 @@ TEST_CASE("configuration merges downloader, registry, database, and overlay sour
 
 TEST_CASE("configuration loads lua config, expands paths, and preserves fallback on invalid fields",
           "[unit][configuration][load]") {
-    TempDir tempDir{"reqpack-config-load"};
+    TempDir tempDir {"reqpack-config-load"};
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path home = reqpack_user_home();
-    ScopedEnvVar archivePassword{"REQPACK_TEST_ARCHIVE_PASSWORD", "archive-secret"};
+    ScopedEnvVar archivePassword {"REQPACK_TEST_ARCHIVE_PASSWORD", "archive-secret"};
 
     write_file(configPath, R"(
         return {
@@ -471,14 +471,14 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK(config.security.osvRefreshIntervalSeconds == 900);
     CHECK(config.security.strictEcosystemMapping);
     CHECK(config.security.includeWithdrawnInReport);
-    CHECK(config.security.ignoreVulnerabilityIds == std::vector<std::string>{"CVE-1", "GHSA-2"});
-    CHECK(config.security.allowVulnerabilityIds == std::vector<std::string>{"CVE-3"});
+    CHECK(config.security.ignoreVulnerabilityIds == std::vector<std::string> {"CVE-1", "GHSA-2"});
+    CHECK(config.security.allowVulnerabilityIds == std::vector<std::string> {"CVE-3"});
     REQUIRE(config.security.osvEcosystemMap.contains("dnf"));
     CHECK(config.security.osvEcosystemMap.at("dnf") == "Debian");
     REQUIRE(config.security.ecosystemMap.contains("maven"));
     CHECK(config.security.ecosystemMap.at("maven") == "Maven");
     REQUIRE(config.security.gateways.contains("security"));
-    CHECK(config.security.gateways.at("security").backends == std::vector<std::string>{"osv", "snyk"});
+    CHECK(config.security.gateways.at("security").backends == std::vector<std::string> {"osv", "snyk"});
     REQUIRE(config.security.backends.contains("osv"));
     CHECK(config.security.backends.at("osv").feedUrl == "https://mirror.example.test/osv");
     CHECK(config.security.backends.at("osv").refreshMode == OsvRefreshMode::ALWAYS);
@@ -492,7 +492,7 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK(config.security.backends.at("snyk").groupId.empty());
     CHECK(config.security.backends.at("snyk").dataset == "issues");
     REQUIRE(config.security.backends.contains("trivy"));
-    CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string>{
+    CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string> {
                                                                      "mirror.gcr.io/aquasec/trivy-db:2",
                                                                      "ghcr.io/aquasecurity/trivy-db:2",
                                                                  });
@@ -513,7 +513,7 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK(config.planner.systemAliases.at("brew") == "apt");
     REQUIRE(config.planner.proxies.contains("java"));
     CHECK(config.planner.proxies.at("java").defaultTarget == "maven");
-    CHECK(config.planner.proxies.at("java").targets == std::vector<std::string>{"maven", "gradle"});
+    CHECK(config.planner.proxies.at("java").targets == std::vector<std::string> {"maven", "gradle"});
     REQUIRE(config.planner.proxies.at("java").options.contains("strategy"));
     CHECK(config.planner.proxies.at("java").options.at("strategy") == "default-first");
     REQUIRE(config.downloader.pluginSources.contains("maven"));
@@ -534,7 +534,7 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK_FALSE(config.sbom.prettyPrint);
     CHECK_FALSE(config.sbom.includeDependencyEdges);
     CHECK(config.sbom.skipMissingPackages);
-    CHECK(config.rqp.repositories == std::vector<std::string>{
+    CHECK(config.rqp.repositories == std::vector<std::string> {
                                          "https://packages.example.test/rqp/index.json",
                                          "file:///srv/rqp/index.json",
                                      });
@@ -551,7 +551,7 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
 }
 
 TEST_CASE("configuration falls back for missing or invalid lua config files", "[unit][configuration][load]") {
-    TempDir tempDir{"reqpack-config-fallback"};
+    TempDir tempDir {"reqpack-config-fallback"};
     ReqPackConfig fallback;
     fallback.applicationName = "FallbackApp";
     fallback.interaction.interactive = true;
@@ -580,7 +580,7 @@ TEST_CASE("configuration falls back for missing or invalid lua config files", "[
 
 TEST_CASE("archive password resolution prefers config then environment fallback", "[unit][configuration][load]") {
     ReqPackConfig config;
-    ScopedEnvVar password{"REQPACK_ARCHIVE_PASSWORD", "from-env"};
+    ScopedEnvVar password {"REQPACK_ARCHIVE_PASSWORD", "from-env"};
 
     config.archives.password = "from-config";
     CHECK(resolve_archive_password(config) == "from-config");
@@ -595,7 +595,7 @@ TEST_CASE("configuration defaults build version and user agent from release id",
     CHECK(config.version == reqpack_build_release_id());
     CHECK(config.downloader.userAgent == reqpack_user_agent());
     REQUIRE(config.security.backends.contains("trivy"));
-    CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string>{
+    CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string> {
                                                                      "mirror.gcr.io/aquasec/trivy-db:2",
                                                                      "ghcr.io/aquasecurity/trivy-db:2",
                                                                  });
@@ -614,10 +614,10 @@ TEST_CASE("configuration resolves execution jobs from fixed and max modes", "[un
 }
 
 TEST_CASE("configuration parses structured repositories and preserves flat extras", "[unit][configuration][load]") {
-    TempDir tempDir{"reqpack-config-repositories"};
+    TempDir tempDir {"reqpack-config-repositories"};
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path home = reqpack_user_home();
-    ScopedEnvVar token{"REQPACK_TEST_REPO_TOKEN", "secret-token"};
+    ScopedEnvVar token {"REQPACK_TEST_REPO_TOKEN", "secret-token"};
 
     write_file(configPath, R"(
         return {
@@ -703,8 +703,8 @@ TEST_CASE("configuration parses structured repositories and preserves flat extra
     CHECK(corp.auth.headerName == "X-Repo-Token");
     CHECK(corp.validation.checksum == RepositoryChecksumPolicy::FAIL);
     CHECK_FALSE(corp.validation.tlsVerify);
-    CHECK(corp.scope.include == std::vector<std::string>{"com.mycompany.*"});
-    CHECK(corp.scope.exclude == std::vector<std::string>{"com.mycompany.legacy.*"});
+    CHECK(corp.scope.include == std::vector<std::string> {"com.mycompany.*"});
+    CHECK(corp.scope.exclude == std::vector<std::string> {"com.mycompany.legacy.*"});
     REQUIRE(corp.extras.contains("snapshots"));
     CHECK(std::get<bool>(corp.extras.at("snapshots")));
     REQUIRE(corp.extras.contains("layout"));
@@ -712,7 +712,7 @@ TEST_CASE("configuration parses structured repositories and preserves flat extra
     REQUIRE(corp.extras.contains("score"));
     CHECK(std::get<double>(corp.extras.at("score")) == Approx(2.5));
     REQUIRE(corp.extras.contains("tags"));
-    CHECK(std::get<std::vector<std::string>>(corp.extras.at("tags")) == std::vector<std::string>{"internal", "fast"});
+    CHECK(std::get<std::vector<std::string>>(corp.extras.at("tags")) == std::vector<std::string> {"internal", "fast"});
     CHECK_FALSE(corp.extras.contains("metadata"));
 
     const RepositoryEntry& sshRepo = repositories[1];
@@ -738,7 +738,7 @@ TEST_CASE("configuration parses structured repositories and preserves flat extra
 }
 
 TEST_CASE("remote user loader parses users and defaults admin flag", "[unit][configuration][remote]") {
-    TempDir tempDir{"reqpack-remote-users"};
+    TempDir tempDir {"reqpack-remote-users"};
     const std::filesystem::path remotePath = tempDir.path() / "remote.lua";
 
     write_file(remotePath, R"(

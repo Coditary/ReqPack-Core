@@ -5,7 +5,7 @@
 std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, MDB_dbi database,
                                                           const std::string& name) {
     const std::string normalized = registry_database_to_lower_copy(name);
-    MDB_val key{normalized.size(), const_cast<char*>(normalized.data())};
+    MDB_val key {normalized.size(), const_cast<char*>(normalized.data())};
     MDB_val value;
     if (mdb_get(transaction, database, &key, &value) != MDB_SUCCESS) {
         return std::nullopt;
@@ -18,20 +18,20 @@ std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, 
 bool put_record_into_transaction(MDB_txn* transaction, MDB_dbi database, const RegistryRecord& record) {
     const std::string payload = registry_database_serialize_record(record);
     const std::string normalizedName = registry_database_to_lower_copy(record.name);
-    MDB_val key{normalizedName.size(), const_cast<char*>(normalizedName.data())};
-    MDB_val value{payload.size(), const_cast<char*>(payload.data())};
+    MDB_val key {normalizedName.size(), const_cast<char*>(normalizedName.data())};
+    MDB_val value {payload.size(), const_cast<char*>(payload.data())};
     return mdb_put(transaction, database, &key, &value, 0) == MDB_SUCCESS;
 }
 
 bool delete_record_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& name) {
     const std::string normalizedName = registry_database_to_lower_copy(name);
-    MDB_val key{normalizedName.size(), const_cast<char*>(normalizedName.data())};
+    MDB_val key {normalizedName.size(), const_cast<char*>(normalizedName.data())};
     const int result = mdb_del(transaction, database, &key, nullptr);
     return result == MDB_SUCCESS || result == MDB_NOTFOUND;
 }
 
 std::optional<std::string> get_string_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key) {
-    MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
+    MDB_val keyValue {key.size(), const_cast<char*>(key.data())};
     MDB_val value;
     if (mdb_get(transaction, database, &keyValue, &value) != MDB_SUCCESS) {
         return std::nullopt;
@@ -42,8 +42,8 @@ std::optional<std::string> get_string_from_transaction(MDB_txn* transaction, MDB
 
 bool put_string_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key,
                                  const std::string& value) {
-    MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
-    MDB_val storedValue{value.size(), const_cast<char*>(value.data())};
+    MDB_val keyValue {key.size(), const_cast<char*>(key.data())};
+    MDB_val storedValue {value.size(), const_cast<char*>(value.data())};
     return mdb_put(transaction, database, &keyValue, &storedValue, 0) == MDB_SUCCESS;
 }
 

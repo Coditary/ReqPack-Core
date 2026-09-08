@@ -118,7 +118,7 @@ bool RegistryDatabase::sync_records(const std::vector<RegistryRecord>& records, 
     std::set<std::string> namesToDelete;
     const bool needExistingRecords = replaceMissing || !originPathsToDelete.empty();
     const std::vector<RegistryRecord> existingRecords =
-        needExistingRecords ? this->load_all_records() : std::vector<RegistryRecord>{};
+        needExistingRecords ? this->load_all_records() : std::vector<RegistryRecord> {};
     if (replaceMissing) {
         for (const RegistryRecord& existing : existingRecords) {
             if (!desiredRecords.contains(existing.name)) {

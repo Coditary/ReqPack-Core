@@ -93,7 +93,7 @@ std::optional<JsonCommand> parse_json_command(const std::string& line) {
     }
 
     JsonCommand command;
-    command.command = extract_json_string_field(trimmed, "command").value_or(std::string{});
+    command.command = extract_json_string_field(trimmed, "command").value_or(std::string {});
     command.token = extract_json_string_field(trimmed, "token");
     command.username = extract_json_string_field(trimmed, "username");
     command.password = extract_json_string_field(trimmed, "password");
@@ -103,9 +103,9 @@ std::optional<JsonCommand> parse_json_command(const std::string& line) {
 std::string json_response(bool ok, const CommandOutput& output) {
     const std::string body = render_command_output_text(output);
     if (ok) {
-        return std::string{"{"} + "\"ok\":true," + json_string_field("output", body) + "}\n";
+        return std::string {"{"} + "\"ok\":true," + json_string_field("output", body) + "}\n";
     }
-    return std::string{"{"} + "\"ok\":false," + json_string_field("error", body) + "}\n";
+    return std::string {"{"} + "\"ok\":false," + json_string_field("error", body) + "}\n";
 }
 
 std::string text_response(bool ok, const CommandOutput& output) {
@@ -117,7 +117,7 @@ void handle_text_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& sta
                         int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine) {
     SessionIdentity identity;
     if (!auth_required(snapshot_remote_state(state))) {
-        identity = SessionIdentity{.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
+        identity = SessionIdentity {.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
         update_session_identity(state, sessionId, identity);
     }
 
@@ -171,7 +171,7 @@ void handle_json_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& sta
                         int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine) {
     SessionIdentity identity;
     if (!auth_required(snapshot_remote_state(state))) {
-        identity = SessionIdentity{.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
+        identity = SessionIdentity {.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
         update_session_identity(state, sessionId, identity);
     }
 

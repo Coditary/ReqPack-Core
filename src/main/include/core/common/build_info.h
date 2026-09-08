@@ -11,5 +11,5 @@ inline std::string reqpack_build_release_id() {
 }
 
 inline std::string reqpack_user_agent() {
-    return std::string{"ReqPack/"} + reqpack_build_release_id();
+    return std::string {"ReqPack/"} + reqpack_build_release_id();
 }

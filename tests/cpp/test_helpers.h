@@ -20,7 +20,7 @@
 #endif
 
 inline std::string escape_shell_arg(const std::string& value) {
-    std::string escaped{"'"};
+    std::string escaped {"'"};
     for (char c : value) {
         if (c == '\'') {
             escaped += "'\\''";

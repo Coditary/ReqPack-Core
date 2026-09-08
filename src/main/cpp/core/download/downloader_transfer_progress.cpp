@@ -21,7 +21,7 @@ int forward_download_progress(void* userp, curl_off_t downloadTotal, curl_off_t 
     }
 
     const auto now = std::chrono::steady_clock::now();
-    if (state->lastTime != std::chrono::steady_clock::time_point{} && downloadNow >= 0) {
+    if (state->lastTime != std::chrono::steady_clock::time_point {} && downloadNow >= 0) {
         const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - state->lastTime);
         const std::uint64_t currentBytes = static_cast<std::uint64_t>(downloadNow);
         if (elapsed.count() > 0 && currentBytes >= state->lastBytes) {
@@ -39,7 +39,7 @@ int forward_download_progress(void* userp, curl_off_t downloadTotal, curl_off_t 
         shouldEmit = snapshot.percent.value() >= 100 || state->lastPercent < 0 ||
                      snapshot.percent.value() >= state->lastPercent + 1;
     } else if (snapshot.currentBytes.has_value()) {
-        shouldEmit = state->lastTime == std::chrono::steady_clock::time_point{} ||
+        shouldEmit = state->lastTime == std::chrono::steady_clock::time_point {} ||
                      now - state->lastTime >= std::chrono::milliseconds(250);
     }
 

@@ -14,7 +14,7 @@
 struct RqBinaryEntry {
     std::string name;
     std::string installPath;
-    bool primary{false};
+    bool primary {false};
 };
 
 struct RqPayloadMetadata {
@@ -23,16 +23,16 @@ struct RqPayloadMetadata {
     std::string compression;
     std::string hashAlgorithm;
     std::string hashFile;
-    std::uint64_t sizeCompressed{0};
-    std::uint64_t sizeInstalledExpected{0};
+    std::uint64_t sizeCompressed {0};
+    std::uint64_t sizeInstalledExpected {0};
 };
 
 struct RqMetadata {
-    int formatVersion{0};
+    int formatVersion {0};
     std::string name;
     std::string version;
-    int release{0};
-    int revision{0};
+    int release {0};
+    int revision {0};
     std::string summary;
     std::string description;
     std::string license;
@@ -64,7 +64,7 @@ struct RqPackageLayout {
     std::filesystem::path workDir;
     std::filesystem::path stateDir;
     std::filesystem::path payloadArchivePath;
-    bool hasPayload{false};
+    bool hasPayload {false};
 };
 
 struct RqStateSource {
@@ -79,15 +79,15 @@ struct RqPackageBuildRequest {
     std::filesystem::path projectRoot;
     std::filesystem::path outputPath;
     std::optional<std::filesystem::path> payloadRoot;
-    bool force{false};
-    bool interactive{true};
+    bool force {false};
+    bool interactive {true};
 };
 
 struct RqPackageBuildResult {
     RqMetadata metadata;
     std::string identity;
     std::filesystem::path outputPath;
-    bool hasPayload{false};
+    bool hasPayload {false};
 };
 
 std::string rq_host_architecture();

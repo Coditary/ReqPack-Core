@@ -85,7 +85,7 @@ TEST_CASE("security bridge archive extract callback is configured", "[unit][secu
     const SecuritySettings settings = security_settings_from(config);
     REQUIRE(static_cast<bool>(settings.archive.extractToTemp));
 
-    TempDir tempDir{"reqpack-security-bridge-archive"};
+    TempDir tempDir {"reqpack-security-bridge-archive"};
     const std::filesystem::path archivePath = tempDir.path() / "demo.tar";
     write_file(tempDir.path() / "payload.txt", "hello");
     REQUIRE(std::system(("tar -C " + escape_shell_arg(tempDir.path().string()) + " -cf " +

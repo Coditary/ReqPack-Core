@@ -10,7 +10,7 @@
 inline constexpr const char* INTERNAL_RQP_REPOSITORY_FLAG_PREFIX = "__reqpack-internal-rqp-repository=";
 
 struct Request {
-    ActionType action{ActionType::UNKNOWN};
+    ActionType action {ActionType::UNKNOWN};
     std::string system;
     std::vector<std::string> packages;
     std::vector<std::string> flags;
@@ -18,7 +18,7 @@ struct Request {
     std::string outputPath;
     std::string payloadPath;
     std::string localPath;
-    bool usesLocalTarget{false};
+    bool usesLocalTarget {false};
 };
 
 struct ProxyResolution {

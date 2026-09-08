@@ -556,9 +556,9 @@ std::string normalize_exec_rule_pty_chunk(const std::string& chunk) {
 }
 
 ExecRuleRuntimeState make_exec_rule_runtime_state(const ExecRuleset& ruleset) {
-    return ExecRuleRuntimeState{.currentState = ruleset.initialState,
-                                .disabled = std::vector<bool>(ruleset.rules.size(), false),
-                                .screenCursor = std::vector<std::size_t>(ruleset.rules.size(), 0)};
+    return ExecRuleRuntimeState {.currentState = ruleset.initialState,
+                                 .disabled = std::vector<bool>(ruleset.rules.size(), false),
+                                 .screenCursor = std::vector<std::size_t>(ruleset.rules.size(), 0)};
 }
 
 ExecRuleEvaluationResult evaluate_exec_rule_line_input(const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,

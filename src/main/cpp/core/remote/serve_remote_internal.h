@@ -19,13 +19,13 @@ inline constexpr const char* REMOTE_UPLOAD_INSTALL_COMMAND = "__reqpack_upload_i
 inline constexpr const char* REMOTE_UPLOAD_PATH_PLACEHOLDER = "__REQPACK_REMOTE_UPLOAD_PATH__";
 
 struct RemoteResponse {
-    bool ok{false};
-    CommandOutput output{};
-    bool closeConnection{false};
+    bool ok {false};
+    CommandOutput output {};
+    bool closeConnection {false};
 };
 
 struct UploadInstallEnvelope {
-    std::uintmax_t size{0};
+    std::uintmax_t size {0};
     std::string filename;
     std::string commandTemplate;
 };
@@ -40,20 +40,20 @@ struct JsonCommand {
 enum class ConnectionProtocol { TEXT, JSON };
 
 struct SessionIdentity {
-    bool authenticated{false};
+    bool authenticated {false};
     std::string userId;
-    bool isAdmin{false};
-    std::string authType{"none"};
+    bool isAdmin {false};
+    std::string authType {"none"};
 };
 
 struct RemoteSessionInfo {
-    int id{0};
+    int id {0};
     std::string remoteAddress;
-    ConnectionProtocol protocol{ConnectionProtocol::TEXT};
+    ConnectionProtocol protocol {ConnectionProtocol::TEXT};
     std::string userId;
-    bool isAdmin{false};
-    std::string authType{"none"};
-    std::chrono::system_clock::time_point connectedAt{std::chrono::system_clock::now()};
+    bool isAdmin {false};
+    std::string authType {"none"};
+    std::chrono::system_clock::time_point connectedAt {std::chrono::system_clock::now()};
 };
 
 struct RemoteStateSnapshot {
@@ -71,9 +71,9 @@ struct RemoteServerState {
     std::filesystem::path configPath;
     ReqPackConfigOverrides configOverrides;
     std::filesystem::path remoteUsersPath;
-    ReqpackSocket serverFd{REQPACK_INVALID_SOCKET};
-    int nextSessionId{1};
-    std::atomic<bool> shutdownRequested{false};
+    ReqpackSocket serverFd {REQPACK_INVALID_SOCKET};
+    int nextSessionId {1};
+    std::atomic<bool> shutdownRequested {false};
 };
 
 inline std::string trim_copy(const std::string& value) {
@@ -154,13 +154,13 @@ class ScopedRemoteSignalHandlers {
 
   private:
 #if defined(_WIN32)
-    void (*oldTerm_)(int){SIG_DFL};
-    void (*oldInt_)(int){SIG_DFL};
+    void (*oldTerm_)(int) {SIG_DFL};
+    void (*oldInt_)(int) {SIG_DFL};
 #else
-    struct sigaction oldTerm_{};
-    struct sigaction oldInt_{};
+    struct sigaction oldTerm_ {};
+    struct sigaction oldInt_ {};
 #endif
-    bool installed_{false};
+    bool installed_ {false};
 };
 
 bool send_all(ReqpackSocket fd, const std::string& data);

@@ -104,13 +104,13 @@ class TerminalEchoGuard {
     }
 
   private:
-    int fd_{-1};
+    int fd_ {-1};
 #if defined(_WIN32)
-    DWORD originalMode_{0};
+    DWORD originalMode_ {0};
 #else
-    termios original_{};
+    termios original_ {};
 #endif
-    bool active_{false};
+    bool active_ {false};
 };
 
 bool output_contains(const archive_resolver_internal::CommandResult& result, const std::string& token) {
@@ -191,7 +191,7 @@ std::filesystem::path make_unique_file_path(const std::filesystem::path& root, c
 }
 
 std::string escape_shell_arg(const std::string& value) {
-    std::string escaped{"'"};
+    std::string escaped {"'"};
     for (char ch : value) {
         if (ch == '\'') {
             escaped += "'\\''";
@@ -310,7 +310,7 @@ CommandResult run_command_capture_status(const std::string& command) {
         }
     }
 
-    return CommandResult{.exitCode = normalize_exit_code(status), .output = std::move(output)};
+    return CommandResult {.exitCode = normalize_exit_code(status), .output = std::move(output)};
 #endif
 }
 

@@ -229,14 +229,14 @@ std::optional<sol::table> load_named_table(sol::state& lua, const std::filesyste
         return object.as<sol::table>();
     }
 
-    if (std::string{key} == "profiles") {
+    if (std::string {key} == "profiles") {
         const sol::object usersObject = root.value()["users"];
         if (usersObject.get_type() != sol::type::table) {
             return root;
         }
     }
 
-    if (std::string{key} == "users") {
+    if (std::string {key} == "users") {
         const sol::object profilesObject = root.value()["profiles"];
         if (profilesObject.get_type() != sol::type::table) {
             return root;

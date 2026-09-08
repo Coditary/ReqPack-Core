@@ -23,10 +23,10 @@ void remove_cleanup_paths_quietly(const std::vector<std::filesystem::path>& clea
 } // namespace
 
 std::string generic_archive_suffix(const std::filesystem::path& path) {
-    static const std::array<std::string, 14> suffixes{
+    static const std::array<std::string, 14> suffixes {
         ".pkg.tar.zst", ".pkg.tar.xz", ".pkg.tar.gz", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.zst",
         ".tgz",         ".tbz2",       ".txz",        ".tzst",   ".zip",     ".7z",     ".tar"};
-    static const std::array<std::string, 4> compressedSuffixes{".gz", ".bz2", ".xz", ".zst"};
+    static const std::array<std::string, 4> compressedSuffixes {".gz", ".bz2", ".xz", ".zst"};
 
     const std::string filename = archive_resolver_internal::to_lower_copy(path.filename().string());
     for (const std::string& suffix : suffixes) {
@@ -45,7 +45,7 @@ std::string generic_archive_suffix(const std::filesystem::path& path) {
 }
 
 std::string archive_wrapper_suffix(const std::filesystem::path& path) {
-    static const std::array<std::string, 2> suffixes{".gpg", ".pgp"};
+    static const std::array<std::string, 2> suffixes {".gpg", ".pgp"};
     const std::string filename = archive_resolver_internal::to_lower_copy(path.filename().string());
     for (const std::string& suffix : suffixes) {
         if (filename.size() >= suffix.size() &&

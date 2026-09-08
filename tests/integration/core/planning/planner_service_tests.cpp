@@ -284,7 +284,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("planner ensure builds dependency DAG from plugin requirements", "[integration][planner][service]") {
-    TempDir tempDir{"reqpack-planner-ensure-dag"};
+    TempDir tempDir {"reqpack-planner-ensure-dag"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
@@ -295,7 +295,7 @@ TEST_CASE("planner ensure builds dependency DAG from plugin requirements", "[int
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::ENSURE, .system = "app"}}));
+    std::unique_ptr<Graph> graph(planner.plan({Request {.action = ActionType::ENSURE, .system = "app"}}));
     REQUIRE(graph != nullptr);
 
     const std::vector<Package> packages = collect_packages(*graph);
@@ -307,7 +307,7 @@ TEST_CASE("planner ensure builds dependency DAG from plugin requirements", "[int
 
 TEST_CASE("planner ensure returns empty graph when plugin requirements are already satisfied",
           "[integration][planner][service]") {
-    TempDir tempDir{"reqpack-planner-ensure-empty"};
+    TempDir tempDir {"reqpack-planner-ensure-empty"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
@@ -317,14 +317,14 @@ TEST_CASE("planner ensure returns empty graph when plugin requirements are alrea
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::ENSURE, .system = "app"}}));
+    std::unique_ptr<Graph> graph(planner.plan({Request {.action = ActionType::ENSURE, .system = "app"}}));
     REQUIRE(graph != nullptr);
     CHECK(collect_packages(*graph).empty());
 }
 
 TEST_CASE("planner install marks requirements ready when plugin dependencies are already satisfied",
           "[integration][planner][service]") {
-    TempDir tempDir{"reqpack-planner-marker"};
+    TempDir tempDir {"reqpack-planner-marker"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
@@ -334,7 +334,7 @@ TEST_CASE("planner install marks requirements ready when plugin dependencies are
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{
+    std::unique_ptr<Graph> graph(planner.plan({Request {
         .action = ActionType::INSTALL,
         .system = "app",
         .packages = {"sample"},
@@ -349,7 +349,7 @@ TEST_CASE("planner install marks requirements ready when plugin dependencies are
 }
 
 TEST_CASE("planner resolves proxy plugins to configured concrete target systems", "[integration][planner][service]") {
-    TempDir tempDir{"reqpack-planner-proxy-resolution"};
+    TempDir tempDir {"reqpack-planner-proxy-resolution"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
     config.planner.proxies["java"].defaultTarget = "maven";
     config.planner.proxies["java"].targets = {"maven", "gradle"};
@@ -361,7 +361,7 @@ TEST_CASE("planner resolves proxy plugins to configured concrete target systems"
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{
+    std::unique_ptr<Graph> graph(planner.plan({Request {
         .action = ActionType::INSTALL,
         .system = "java",
         .packages = {"org.junit:junit:4.13"},

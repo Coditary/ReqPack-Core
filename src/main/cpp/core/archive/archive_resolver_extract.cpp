@@ -48,7 +48,7 @@ std::string gpg_output_suffix(const std::filesystem::path& path) {
 
 std::vector<std::string> zip_archive_entries(const std::filesystem::path& archivePath) {
     const std::string archive = archive_resolver_internal::escape_shell_arg(archivePath.string());
-    const std::array<std::string, 2> commands{
+    const std::array<std::string, 2> commands {
         "zipinfo -1 " + archive,
         "unzip -Z1 " + archive,
     };
@@ -209,7 +209,7 @@ ProcessedArchivePath process_archive_layers(const std::filesystem::path& inputPa
                                             const ArchiveExtractionOptions& options,
                                             std::vector<std::filesystem::path>& cleanupPaths,
                                             const std::filesystem::path& workingRoot) {
-    ProcessedArchivePath result{.path = inputPath};
+    ProcessedArchivePath result {.path = inputPath};
     std::filesystem::path currentPath = inputPath;
     const std::filesystem::path promptPath = inputPath;
 

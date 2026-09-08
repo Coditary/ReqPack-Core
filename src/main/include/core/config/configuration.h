@@ -46,228 +46,228 @@ enum class RepositoryAuthType { NONE, BASIC, TOKEN, SSH };
 enum class RepositoryChecksumPolicy { FAIL, WARN, SKIP };
 
 struct LoggingConfig {
-    LogLevel level{LogLevel::INFO};
-    bool consoleOutput{false};
-    bool fileOutput{false};
-    std::string filePath{"reqpack.log"};
-    bool structuredFileOutput{false};
-    std::string structuredFilePath{"reqpack.jsonl"};
-    bool captureDisplayEvents{true};
-    std::vector<std::string> enabledCategories{};
-    bool enableBacktrace{false};
-    std::size_t backtraceSize{32};
-    std::string pattern{"[%^%l%$] %v"};
+    LogLevel level {LogLevel::INFO};
+    bool consoleOutput {false};
+    bool fileOutput {false};
+    std::string filePath {"reqpack.log"};
+    bool structuredFileOutput {false};
+    std::string structuredFilePath {"reqpack.jsonl"};
+    bool captureDisplayEvents {true};
+    std::vector<std::string> enabledCategories {};
+    bool enableBacktrace {false};
+    std::size_t backtraceSize {32};
+    std::string pattern {"[%^%l%$] %v"};
 };
 
 struct ReportConfig {
-    bool enabled{false};
-    ReportFormat format{ReportFormat::NONE};
-    std::string outputPath{"reqpack-report.json"};
-    bool includeValidationFindings{true};
-    bool includeDependencyGraph{true};
+    bool enabled {false};
+    ReportFormat format {ReportFormat::NONE};
+    std::string outputPath {"reqpack-report.json"};
+    bool includeValidationFindings {true};
+    bool includeDependencyGraph {true};
 };
 
 struct ExecutionConfig {
-    bool useTransactionDb{true};
-    bool deleteCommittedTransactions{true};
-    bool checkVirtualFileSystemWrite{true};
-    bool stopOnFirstFailure{false};
-    bool dryRun{false};
-    unsigned int jobs{1};
-    ExecutionJobsMode jobsMode{ExecutionJobsMode::FIXED};
-    std::string transactionDatabasePath{};
+    bool useTransactionDb {true};
+    bool deleteCommittedTransactions {true};
+    bool checkVirtualFileSystemWrite {true};
+    bool stopOnFirstFailure {false};
+    bool dryRun {false};
+    unsigned int jobs {1};
+    ExecutionJobsMode jobsMode {ExecutionJobsMode::FIXED};
+    std::string transactionDatabasePath {};
 };
 
 struct ProxyConfig {
-    std::string defaultTarget{};
-    std::vector<std::string> targets{};
-    std::map<std::string, std::string> options{};
+    std::string defaultTarget {};
+    std::vector<std::string> targets {};
+    std::map<std::string, std::string> options {};
 };
 
 struct PlannerConfig {
-    bool enableProxyExpansion{true};
-    bool autoDownloadMissingPlugins{true};
-    bool autoDownloadMissingDependencies{true};
-    bool buildDependencyDag{true};
-    bool topologicallySortGraph{true};
-    std::map<std::string, std::string> systemAliases{};
-    std::map<std::string, ProxyConfig> proxies{};
+    bool enableProxyExpansion {true};
+    bool autoDownloadMissingPlugins {true};
+    bool autoDownloadMissingDependencies {true};
+    bool buildDependencyDag {true};
+    bool topologicallySortGraph {true};
+    std::map<std::string, std::string> systemAliases {};
+    std::map<std::string, ProxyConfig> proxies {};
 };
 
 struct DownloaderConfig {
-    bool enabled{true};
-    bool followRedirects{true};
-    long connectTimeoutSeconds{10};
-    long requestTimeoutSeconds{60};
-    std::string userAgent{reqpack_user_agent()};
-    std::map<std::string, std::string> pluginSources{};
+    bool enabled {true};
+    bool followRedirects {true};
+    long connectTimeoutSeconds {10};
+    long requestTimeoutSeconds {60};
+    std::string userAgent {reqpack_user_agent()};
+    std::map<std::string, std::string> pluginSources {};
 };
 
 struct RegistrySourceEntry {
-    std::string source{};
-    bool alias{false};
-    std::string description{};
-    std::string role{};
-    std::string targetSystem{};
-    std::vector<std::string> capabilities{};
-    std::vector<std::string> ecosystemScopes{};
-    std::vector<RegistryWriteScope> writeScopes{};
-    std::vector<RegistryNetworkScope> networkScopes{};
-    std::string privilegeLevel{};
-    std::string scriptSha256{};
-    std::string bootstrapSha256{};
+    std::string source {};
+    bool alias {false};
+    std::string description {};
+    std::string role {};
+    std::string targetSystem {};
+    std::vector<std::string> capabilities {};
+    std::vector<std::string> ecosystemScopes {};
+    std::vector<RegistryWriteScope> writeScopes {};
+    std::vector<RegistryNetworkScope> networkScopes {};
+    std::string privilegeLevel {};
+    std::string scriptSha256 {};
+    std::string bootstrapSha256 {};
 };
 
 using RegistrySourceMap = std::map<std::string, RegistrySourceEntry>;
 
 struct RegistryConfig {
-    std::string databasePath{};
-    std::string remoteUrl{};
-    std::string remoteBranch{"main"};
-    std::string remotePluginsPath{"registry"};
-    std::string overlayPath{};
-    RegistrySourceMap sources{};
-    std::string pluginDirectory{};
-    bool autoLoadPlugins{true};
-    bool shutDownPluginsOnExit{true};
-    OsvRefreshMode refreshMode{OsvRefreshMode::PERIODIC};
-    long refreshIntervalSeconds{3600L};
+    std::string databasePath {};
+    std::string remoteUrl {};
+    std::string remoteBranch {"main"};
+    std::string remotePluginsPath {"registry"};
+    std::string overlayPath {};
+    RegistrySourceMap sources {};
+    std::string pluginDirectory {};
+    bool autoLoadPlugins {true};
+    bool shutDownPluginsOnExit {true};
+    OsvRefreshMode refreshMode {OsvRefreshMode::PERIODIC};
+    long refreshIntervalSeconds {3600L};
 };
 
 struct InteractionConfig {
-    bool interactive{true};
-    bool promptBeforeUnsafeActions{false};
-    bool promptBeforeMissingPluginDownload{false};
-    bool promptBeforeMissingDependencyDownload{false};
+    bool interactive {true};
+    bool promptBeforeUnsafeActions {false};
+    bool promptBeforeMissingPluginDownload {false};
+    bool promptBeforeMissingDependencyDownload {false};
 };
 
 struct RemoteConfig {
-    bool readonly{false};
-    int maxConnections{16};
+    bool readonly {false};
+    int maxConnections {16};
 };
 
 struct SbomConfig {
-    SbomOutputFormat defaultFormat{SbomOutputFormat::TABLE};
-    std::string defaultOutputPath{};
-    bool prettyPrint{true};
-    bool includeDependencyEdges{true};
-    bool skipMissingPackages{false};
+    SbomOutputFormat defaultFormat {SbomOutputFormat::TABLE};
+    std::string defaultOutputPath {};
+    bool prettyPrint {true};
+    bool includeDependencyEdges {true};
+    bool skipMissingPackages {false};
 };
 
 struct RqpConfig {
-    std::vector<std::string> repositories{};
-    std::string statePath{};
-    std::map<std::string, std::vector<std::string>> systemAliases{};
+    std::vector<std::string> repositories {};
+    std::string statePath {};
+    std::map<std::string, std::vector<std::string>> systemAliases {};
 };
 
 struct SelfUpdateConfig {
-    std::string repoUrl{"https://github.com/Coditary/ReqPack.git"};
-    std::string releaseApiBaseUrl{"https://api.github.com"};
-    std::string releaseTag{"latest"};
-    std::string binaryDirectory{};
-    std::string linkPath{};
+    std::string repoUrl {"https://github.com/Coditary/ReqPack.git"};
+    std::string releaseApiBaseUrl {"https://api.github.com"};
+    std::string releaseTag {"latest"};
+    std::string binaryDirectory {};
+    std::string linkPath {};
 };
 
 struct ArchiveConfig {
-    std::string password{};
+    std::string password {};
 };
 
 struct RepositoryAuthConfig {
-    RepositoryAuthType type{RepositoryAuthType::NONE};
-    std::string username{};
-    std::string password{};
-    std::string token{};
-    std::string sshKey{};
-    std::string headerName{};
+    RepositoryAuthType type {RepositoryAuthType::NONE};
+    std::string username {};
+    std::string password {};
+    std::string token {};
+    std::string sshKey {};
+    std::string headerName {};
 };
 
 struct RepositoryValidationConfig {
-    RepositoryChecksumPolicy checksum{RepositoryChecksumPolicy::WARN};
-    bool tlsVerify{true};
+    RepositoryChecksumPolicy checksum {RepositoryChecksumPolicy::WARN};
+    bool tlsVerify {true};
 };
 
 struct RepositoryScopeConfig {
-    std::vector<std::string> include{};
-    std::vector<std::string> exclude{};
+    std::vector<std::string> include {};
+    std::vector<std::string> exclude {};
 };
 
 using RepositoryExtraValue = std::variant<std::string, bool, double, std::vector<std::string>>;
 
 struct RepositoryEntry {
-    std::string id{};
-    std::string url{};
-    int priority{100};
-    bool enabled{true};
-    std::string type{};
-    RepositoryAuthConfig auth{};
-    RepositoryValidationConfig validation{};
-    RepositoryScopeConfig scope{};
-    std::map<std::string, RepositoryExtraValue> extras{};
+    std::string id {};
+    std::string url {};
+    int priority {100};
+    bool enabled {true};
+    std::string type {};
+    RepositoryAuthConfig auth {};
+    RepositoryValidationConfig validation {};
+    RepositoryScopeConfig scope {};
+    std::map<std::string, RepositoryExtraValue> extras {};
 };
 
 struct HistoryConfig {
     // Controls history.jsonl – the append-only event log.
-    bool enabled{true};
+    bool enabled {true};
 
     // Controls installed-state tracking – current-state snapshot storage.
     // Independent of `enabled`: can be true even when `enabled` is false.
-    bool trackInstalled{true};
+    bool trackInstalled {true};
 
     // Directory that holds history.jsonl and installed-state data.
-    std::string historyPath{};
+    std::string historyPath {};
 
     // Maximum number of lines kept in history.jsonl.
     // When exceeded, oldest entries are trimmed.  0 = unlimited.
-    std::size_t maxLines{0};
+    std::size_t maxLines {0};
 
     // Maximum file size of history.jsonl in megabytes.
     // When exceeded, oldest entries are trimmed.  0.0 = unlimited.
-    double maxSizeMb{0.0};
+    double maxSizeMb {0.0};
 };
 
 struct DisplayColorScheme {
-    std::string rule{};
-    std::string header{"bold"};
-    std::string summaryOk{"bold green"};
-    std::string summaryFail{"bold red"};
-    std::string barFill{"green"};
-    std::string barEmpty{};
-    std::string barOuter{};
-    std::string step{"cyan"};
-    std::string successMarker{"bold green"};
-    std::string failureMarker{"bold red"};
-    std::string message{};
+    std::string rule {};
+    std::string header {"bold"};
+    std::string summaryOk {"bold green"};
+    std::string summaryFail {"bold red"};
+    std::string barFill {"green"};
+    std::string barEmpty {};
+    std::string barOuter {};
+    std::string step {"cyan"};
+    std::string successMarker {"bold green"};
+    std::string failureMarker {"bold red"};
+    std::string message {};
 };
 
 struct DisplayConfig {
-    DisplayRenderer renderer{DisplayRenderer::PLAIN};
-    DisplayColorScheme colors{};
-    bool jsonOutput{false};
+    DisplayRenderer renderer {DisplayRenderer::PLAIN};
+    DisplayColorScheme colors {};
+    bool jsonOutput {false};
 };
 
 struct ReqPackConfig {
-    std::string applicationName{"ReqPack"};
-    std::string version{reqpack_build_release_id()};
+    std::string applicationName {"ReqPack"};
+    std::string version {reqpack_build_release_id()};
 
-    LoggingConfig logging{};
-    SecurityConfig security{};
-    ReportConfig reports{};
-    ExecutionConfig execution{};
-    PlannerConfig planner{};
-    DownloaderConfig downloader{};
-    RegistryConfig registry{};
-    InteractionConfig interaction{};
-    RemoteConfig remote{};
-    SbomConfig sbom{};
-    RqpConfig rqp{};
-    SelfUpdateConfig selfUpdate{};
-    ArchiveConfig archives{};
-    std::map<std::string, std::vector<RepositoryEntry>> repositories{};
-    HistoryConfig history{};
-    DisplayConfig display{};
+    LoggingConfig logging {};
+    SecurityConfig security {};
+    ReportConfig reports {};
+    ExecutionConfig execution {};
+    PlannerConfig planner {};
+    DownloaderConfig downloader {};
+    RegistryConfig registry {};
+    InteractionConfig interaction {};
+    RemoteConfig remote {};
+    SbomConfig sbom {};
+    RqpConfig rqp {};
+    SelfUpdateConfig selfUpdate {};
+    ArchiveConfig archives {};
+    std::map<std::string, std::vector<RepositoryEntry>> repositories {};
+    HistoryConfig history {};
+    DisplayConfig display {};
 
-    std::vector<std::string> enabledScanners{};
-    std::vector<std::string> enabledReportFormats{};
+    std::vector<std::string> enabledScanners {};
+    std::vector<std::string> enabledReportFormats {};
 
     ReqPackConfig();
 };
@@ -283,7 +283,7 @@ struct ReqPackConfigOverrides {
     std::optional<bool> structuredFileOutput;
     std::optional<std::string> structuredLogFilePath;
     std::optional<bool> captureDisplayEvents;
-    std::vector<std::string> enabledLogCategories{};
+    std::vector<std::string> enabledLogCategories {};
     std::optional<bool> enableBacktrace;
     std::optional<std::size_t> backtraceSize;
 
@@ -297,8 +297,8 @@ struct ReqPackConfigOverrides {
     std::optional<OsvRefreshMode> osvRefreshMode;
     std::optional<long> osvRefreshIntervalSeconds;
     std::optional<std::string> osvOverlayPath;
-    std::vector<std::string> ignoreVulnerabilityIds{};
-    std::vector<std::string> allowVulnerabilityIds{};
+    std::vector<std::string> ignoreVulnerabilityIds {};
+    std::vector<std::string> allowVulnerabilityIds {};
     std::optional<UnsafeAction> onUnresolvedVersion;
     std::optional<bool> strictEcosystemMapping;
     std::optional<bool> includeWithdrawnInReport;
@@ -315,7 +315,7 @@ struct ReqPackConfigOverrides {
     std::optional<ExecutionJobsMode> jobsMode;
 
     std::optional<bool> enableProxyExpansion;
-    std::map<std::string, std::string> proxyDefaultTargets{};
+    std::map<std::string, std::string> proxyDefaultTargets {};
 
     std::optional<std::string> registryPath;
     std::optional<std::string> pluginDirectory;

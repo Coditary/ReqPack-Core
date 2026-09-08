@@ -73,7 +73,7 @@ std::filesystem::path write_plugin_bundle(const std::filesystem::path& root, con
 } // namespace
 
 TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit][lua_bridge_bindings]") {
-    TempDir tempDir{"reqpack-lua-bridge-bindings"};
+    TempDir tempDir {"reqpack-lua-bridge-bindings"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -85,20 +85,20 @@ TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit]
     bindings.registerContextTypes();
     bindings.registerReqpackNamespace();
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = "demo",
         .pluginDirectory = tempDir.path().string(),
         .scriptPath = (tempDir.path() / "run.lua").string(),
         .host = nullptr,
         .proxy =
-            ProxyConfig{
+            ProxyConfig {
                 .defaultTarget = "dnf",
                 .targets = {"dnf", "apt"},
                 .options = {{"arch", "x86_64"}},
             },
         .repositories =
             {
-                RepositoryEntry{
+                RepositoryEntry {
                     .id = "main",
                     .url = "https://example.test/repo",
                     .priority = 10,
@@ -117,8 +117,8 @@ TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit]
                     .scope = {.include = {"*"}, .exclude = {"debug"}},
                     .extras =
                         {
-                            {"tags", std::vector<std::string>{"stable"}},
-                            {"mirror", std::string{"primary"}},
+                            {"tags", std::vector<std::string> {"stable"}},
+                            {"mirror", std::string {"primary"}},
                             {"retries", 3.0},
                         },
                 },
@@ -193,7 +193,7 @@ TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit]
 }
 
 TEST_CASE("lua bridge bindings wire context callbacks through plugin install", "[unit][lua_bridge_bindings]") {
-    TempDir tempDir{"reqpack-lua-bridge-bindings-callbacks"};
+    TempDir tempDir {"reqpack-lua-bridge-bindings-callbacks"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "demo", "demo",
                                                                  R"(
@@ -227,7 +227,7 @@ function plugin.shutdown() return true end
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
@@ -244,7 +244,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge bindings cover exec rules proxy and event surfaces", "[unit][lua_bridge_bindings]") {
-    TempDir tempDir{"reqpack-lua-bridge-bindings-surfaces"};
+    TempDir tempDir {"reqpack-lua-bridge-bindings-surfaces"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "surfaces", "surfaces",
                                                                  R"(
@@ -289,7 +289,7 @@ function plugin.shutdown() return true end
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
@@ -306,7 +306,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge bindings expose nil proxy and populated host snapshot", "[unit][lua_bridge_bindings]") {
-    TempDir tempDir{"reqpack-lua-bridge-bindings-proxy-nil"};
+    TempDir tempDir {"reqpack-lua-bridge-bindings-proxy-nil"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -324,15 +324,15 @@ TEST_CASE("lua bridge bindings expose nil proxy and populated host snapshot", "[
     snapshot.cpu.arch = "x86_64";
     snapshot.cpu.logicalCores = 8;
     snapshot.memory.totalBytes = 16ULL * 1024 * 1024 * 1024;
-    snapshot.gpus.push_back(HostGpuInfo{.vendor = "Demo", .model = "GPU"});
-    snapshot.storage.mounts.push_back(HostMountInfo{.mountPoint = "/", .totalBytes = 1024});
+    snapshot.gpus.push_back(HostGpuInfo {.vendor = "Demo", .model = "GPU"});
+    snapshot.storage.mounts.push_back(HostMountInfo {.mountPoint = "/", .totalBytes = 1024});
     snapshot.cache.schemaVersion = 1;
     snapshot.cache.collectedAtEpoch = 1;
     snapshot.cache.expiresAtEpoch = 2;
     snapshot.cache.refreshReason = "test";
     snapshot.cache.source = "unit";
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = "demo",
         .pluginDirectory = tempDir.path().string(),
         .scriptPath = (tempDir.path() / "run.lua").string(),
@@ -356,7 +356,7 @@ TEST_CASE("lua bridge bindings expose nil proxy and populated host snapshot", "[
 }
 
 TEST_CASE("lua bridge bindings expose detailed host kernel and storage fields", "[unit][lua_bridge_bindings]") {
-    TempDir tempDir{"reqpack-lua-bridge-bindings-host-detail"};
+    TempDir tempDir {"reqpack-lua-bridge-bindings-host-detail"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -390,11 +390,11 @@ TEST_CASE("lua bridge bindings expose detailed host kernel and storage fields", 
     snapshot.memory.totalBytes = 16ULL * 1024 * 1024 * 1024;
     snapshot.memory.availableBytes = 8ULL * 1024 * 1024 * 1024;
     snapshot.gpus.push_back(
-        HostGpuInfo{.vendor = "Demo", .model = "GPU", .driverVersion = "1.2.3", .backend = "vulkan"});
+        HostGpuInfo {.vendor = "Demo", .model = "GPU", .driverVersion = "1.2.3", .backend = "vulkan"});
     snapshot.storage.mounts.push_back(
-        HostMountInfo{.device = "/dev/sda1", .mountPoint = "/", .totalBytes = 1024, .availableBytes = 512});
+        HostMountInfo {.device = "/dev/sda1", .mountPoint = "/", .totalBytes = 1024, .availableBytes = 512});
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = "demo",
         .pluginDirectory = tempDir.path().string(),
         .scriptPath = (tempDir.path() / "run.lua").string(),

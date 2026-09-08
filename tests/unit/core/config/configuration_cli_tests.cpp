@@ -37,7 +37,7 @@ class TempDir {
 
 std::filesystem::path reqpack_user_home() {
     const char* home = std::getenv("HOME");
-    return home != nullptr ? std::filesystem::path(home) : std::filesystem::path{};
+    return home != nullptr ? std::filesystem::path(home) : std::filesystem::path {};
 }
 
 void write_file(const std::filesystem::path& path, const std::string& content) {
@@ -156,8 +156,8 @@ TEST_CASE("configuration applies CLI overrides and expands path fields", "[unit]
     CHECK(config.security.osvRefreshMode == OsvRefreshMode::ALWAYS);
     CHECK(config.security.osvRefreshIntervalSeconds == 60);
     CHECK(std::filesystem::path(config.security.osvOverlayPath) == home / "overlay.json");
-    CHECK(config.security.ignoreVulnerabilityIds == std::vector<std::string>{"CVE-1"});
-    CHECK(config.security.allowVulnerabilityIds == std::vector<std::string>{"CVE-2"});
+    CHECK(config.security.ignoreVulnerabilityIds == std::vector<std::string> {"CVE-1"});
+    CHECK(config.security.allowVulnerabilityIds == std::vector<std::string> {"CVE-2"});
     CHECK(config.security.onUnresolvedVersion == UnsafeAction::PROMPT);
     CHECK(config.security.strictEcosystemMapping);
     CHECK(config.security.includeWithdrawnInReport);
@@ -184,7 +184,7 @@ TEST_CASE("configuration applies CLI overrides and expands path fields", "[unit]
 }
 
 TEST_CASE("cli update --all discovers only installed plugins", "[unit][configuration][cli]") {
-    TempDir tempDir{"reqpack-cli-update-all-installed"};
+    TempDir tempDir {"reqpack-cli-update-all-installed"};
     const std::filesystem::path databasePath = tempDir.path() / "registry-db";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
 
@@ -209,7 +209,7 @@ TEST_CASE("cli update --all discovers only installed plugins", "[unit][configura
     write_file(pluginDirectory / "dnf" / "scripts" / "remove.lua", "return true\n");
 
     Cli cli;
-    const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "--all"}, config);
+    const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--all"}, config);
 
     REQUIRE(requests.size() == 1);
     CHECK(requests[0].system == "dnf");
@@ -220,7 +220,7 @@ TEST_CASE("cli update --all discovers only installed plugins", "[unit][configura
 }
 
 TEST_CASE("cli update --all orders installed plugins by plugin dependencies", "[unit][configuration][cli]") {
-    TempDir tempDir{"reqpack-cli-update-all-order"};
+    TempDir tempDir {"reqpack-cli-update-all-order"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
 
     const auto write_plugin = [&](const std::string& name, const std::vector<std::string>& dependencySpecs) {
@@ -262,7 +262,7 @@ TEST_CASE("cli update --all orders installed plugins by plugin dependencies", "[
     config.registry.pluginDirectory = pluginDirectory.string();
 
     Cli cli;
-    const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "--all"}, config);
+    const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--all"}, config);
 
     REQUIRE(requests.size() == 2);
     CHECK(requests[0].system == "base");
@@ -271,7 +271,7 @@ TEST_CASE("cli update --all orders installed plugins by plugin dependencies", "[
 
 TEST_CASE("configuration consumes CLI flags with positional and inline values", "[unit][configuration][cli]") {
     SECTION("config flag with inline value") {
-        const std::vector<std::string> arguments{"--config=custom.lua"};
+        const std::vector<std::string> arguments {"--config=custom.lua"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
 
@@ -282,7 +282,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
     }
 
     SECTION("log file consumes next argument and enables file output") {
-        const std::vector<std::string> arguments{"--log-file", "~/reqpack.log"};
+        const std::vector<std::string> arguments {"--log-file", "~/reqpack.log"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
 
@@ -296,7 +296,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
 
     SECTION("structured logging flags map to expected overrides") {
         {
-            const std::vector<std::string> arguments{"--structured-log-file", "~/reqpack.jsonl"};
+            const std::vector<std::string> arguments {"--structured-log-file", "~/reqpack.jsonl"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -309,17 +309,17 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--log-category", "Network"};
+            const std::vector<std::string> arguments {"--log-category", "Network"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
             REQUIRE(consume_cli_config_flag(arguments, index, overrides));
-            CHECK(overrides.enabledLogCategories == std::vector<std::string>{"network"});
+            CHECK(overrides.enabledLogCategories == std::vector<std::string> {"network"});
             CHECK(index == 1);
         }
 
         {
-            const std::vector<std::string> arguments{"--log-capture-display"};
+            const std::vector<std::string> arguments {"--log-capture-display"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -329,7 +329,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--no-log-console"};
+            const std::vector<std::string> arguments {"--no-log-console"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -341,7 +341,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
 
     SECTION("prompt and registry flags map to expected overrides") {
         {
-            const std::vector<std::string> arguments{"--audit"};
+            const std::vector<std::string> arguments {"--audit"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -354,7 +354,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--no-security"};
+            const std::vector<std::string> arguments {"--no-security"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -367,7 +367,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--prompt-on-unsafe"};
+            const std::vector<std::string> arguments {"--prompt-on-unsafe"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -379,7 +379,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--registry=/tmp/reqpack-registry"};
+            const std::vector<std::string> arguments {"--registry=/tmp/reqpack-registry"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -389,7 +389,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--archive-password=secret"};
+            const std::vector<std::string> arguments {"--archive-password=secret"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -401,7 +401,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
 
     SECTION("jobs flags map to expected overrides") {
         {
-            const std::vector<std::string> arguments{"--jobs", "3"};
+            const std::vector<std::string> arguments {"--jobs", "3"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -414,7 +414,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--jobs-max"};
+            const std::vector<std::string> arguments {"--jobs-max"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -425,7 +425,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--jobs", "0"};
+            const std::vector<std::string> arguments {"--jobs", "0"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -435,7 +435,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--jobs-max", "--jobs", "2"};
+            const std::vector<std::string> arguments {"--jobs-max", "--jobs", "2"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -449,7 +449,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
     }
 
     SECTION("invalid score value is ignored and unknown flag is rejected") {
-        const std::vector<std::string> arguments{"--score-threshold", "oops"};
+        const std::vector<std::string> arguments {"--score-threshold", "oops"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
 
@@ -457,21 +457,21 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         CHECK_FALSE(overrides.scoreThreshold.has_value());
         CHECK(index == 1);
 
-        const std::vector<std::string> unknown{"--not-a-real-flag"};
+        const std::vector<std::string> unknown {"--not-a-real-flag"};
         index = 0;
         CHECK_FALSE(consume_cli_config_flag(unknown, index, overrides));
 
-        const std::vector<std::string> removedSnyk{"--snyk"};
+        const std::vector<std::string> removedSnyk {"--snyk"};
         index = 0;
         CHECK_FALSE(consume_cli_config_flag(removedSnyk, index, overrides));
 
-        const std::vector<std::string> removedOwasp{"--owasp"};
+        const std::vector<std::string> removedOwasp {"--owasp"};
         index = 0;
         CHECK_FALSE(consume_cli_config_flag(removedOwasp, index, overrides));
     }
 
     SECTION("define flag maps proxy default target override") {
-        const std::vector<std::string> arguments{"-Dproxy.java.default=gradle"};
+        const std::vector<std::string> arguments {"-Dproxy.java.default=gradle"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
 
@@ -483,7 +483,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
 
     SECTION("osv and sbom flags map to expected overrides") {
         {
-            const std::vector<std::string> arguments{"--osv-refresh", "always"};
+            const std::vector<std::string> arguments {"--osv-refresh", "always"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -493,16 +493,16 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--ignore-vuln", "CVE-2024-1"};
+            const std::vector<std::string> arguments {"--ignore-vuln", "CVE-2024-1"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
             REQUIRE(consume_cli_config_flag(arguments, index, overrides));
-            CHECK(overrides.ignoreVulnerabilityIds == std::vector<std::string>{"CVE-2024-1"});
+            CHECK(overrides.ignoreVulnerabilityIds == std::vector<std::string> {"CVE-2024-1"});
         }
 
         {
-            const std::vector<std::string> arguments{"--sbom-format", "json"};
+            const std::vector<std::string> arguments {"--sbom-format", "json"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -512,7 +512,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
         }
 
         {
-            const std::vector<std::string> arguments{"--sbom-skip-missing-packages"};
+            const std::vector<std::string> arguments {"--sbom-skip-missing-packages"};
             std::size_t index = 0;
             ReqPackConfigOverrides overrides;
 
@@ -524,7 +524,7 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
 }
 
 TEST_CASE("configuration extracts multiple CLI overrides in one pass", "[unit][configuration][cli]") {
-    std::vector<std::string> arguments{
+    std::vector<std::string> arguments {
         "ReqPack",
         "--dry-run",
         "--json",
@@ -567,7 +567,7 @@ TEST_CASE("configuration extracts multiple CLI overrides in one pass", "[unit][c
     CHECK_FALSE(overrides.interactive.value());
     REQUIRE(overrides.osvDatabasePath.has_value());
     CHECK(overrides.osvDatabasePath.value() == "/tmp/osv-db");
-    CHECK(overrides.ignoreVulnerabilityIds == std::vector<std::string>{"CVE-2024-1"});
+    CHECK(overrides.ignoreVulnerabilityIds == std::vector<std::string> {"CVE-2024-1"});
     REQUIRE(overrides.proxyDefaultTargets.contains("java"));
     CHECK(overrides.proxyDefaultTargets.at("java") == "gradle");
     REQUIRE(overrides.sbomDefaultFormat.has_value());
@@ -583,93 +583,93 @@ TEST_CASE("configuration extracts multiple CLI overrides in one pass", "[unit][c
 TEST_CASE("cli parses token vectors and defaults list and outdated to all systems", "[unit][cli][parse]") {
     Cli cli;
     ReqPackConfig config = default_reqpack_config();
-    TempDir tempDir{"reqpack-cli-known-systems"};
+    TempDir tempDir {"reqpack-cli-known-systems"};
     write_test_plugin_bundles(tempDir.path() / "plugins");
     config.registry.pluginDirectory = (tempDir.path() / "plugins").string();
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
 
     SECTION("token vector install parse") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "git"}, config);
+            cli.parse(std::vector<std::string> {"install", "dnf", "curl", "git"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "dnf");
-        CHECK(requests.front().packages == std::vector<std::string>{"curl", "git"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl", "git"});
     }
 
     SECTION("install alias parses like install") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"i", "dnf", "curl", "git"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"i", "dnf", "curl", "git"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "dnf");
-        CHECK(requests.front().packages == std::vector<std::string>{"curl", "git"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl", "git"});
     }
 
     SECTION("remove alias parses like remove") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"rm", "dnf", "curl", "git"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"rm", "dnf", "curl", "git"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::REMOVE);
         CHECK(requests.front().system == "dnf");
-        CHECK(requests.front().packages == std::vector<std::string>{"curl", "git"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl", "git"});
     }
 
     SECTION("sys install keeps logical package names that match known systems") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "sys", "java", "maven"}, config);
+            cli.parse(std::vector<std::string> {"install", "sys", "java", "maven"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "sys");
-        CHECK(requests.front().packages == std::vector<std::string>{"java", "maven"});
+        CHECK(requests.front().packages == std::vector<std::string> {"java", "maven"});
     }
 
     SECTION("sys install still allows explicit scoped system switches") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "sys", "java", "rqp:tool@1.2.3"}, config);
+            cli.parse(std::vector<std::string> {"install", "sys", "java", "rqp:tool@1.2.3"}, config);
         REQUIRE(requests.size() == 2);
         CHECK(requests[0].action == ActionType::INSTALL);
         CHECK(requests[0].system == "sys");
-        CHECK(requests[0].packages == std::vector<std::string>{"java"});
+        CHECK(requests[0].packages == std::vector<std::string> {"java"});
         CHECK(requests[1].action == ActionType::INSTALL);
         CHECK(requests[1].system == "rqp");
-        CHECK(requests[1].packages == std::vector<std::string>{"tool@1.2.3"});
+        CHECK(requests[1].packages == std::vector<std::string> {"tool@1.2.3"});
     }
 
     SECTION("sys search keeps known system names as package prompt tokens") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"search", "sys", "java"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"search", "sys", "java"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::SEARCH);
         CHECK(requests.front().system == "sys");
-        CHECK(requests.front().packages == std::vector<std::string>{"java"});
+        CHECK(requests.front().packages == std::vector<std::string> {"java"});
     }
 
     SECTION("token vector strips proxy define flags from request payload") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "java", "artifact", "-Dproxy.java.default=gradle"}, config);
+            cli.parse(std::vector<std::string> {"install", "java", "artifact", "-Dproxy.java.default=gradle"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().system == "java");
-        CHECK(requests.front().packages == std::vector<std::string>{"artifact"});
+        CHECK(requests.front().packages == std::vector<std::string> {"artifact"});
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("install accepts jobs flags without forwarding them to plugins") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3"}, config);
+            cli.parse(std::vector<std::string> {"install", "dnf", "curl", "--jobs", "3"}, config);
         REQUIRE(requests.size() == 1);
-        CHECK(requests.front().packages == std::vector<std::string>{"curl"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl"});
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("install accepts jobs max without forwarding it to plugins") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs-max"}, config);
+            cli.parse(std::vector<std::string> {"install", "dnf", "curl", "--jobs-max"}, config);
         REQUIRE(requests.size() == 1);
-        CHECK(requests.front().packages == std::vector<std::string>{"curl"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl"});
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("conflicting jobs flags fail in config override extraction layer") {
         const ReqPackConfigOverrides overrides = extract_cli_config_overrides(
-            std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3", "--jobs-max"});
+            std::vector<std::string> {"install", "dnf", "curl", "--jobs", "3", "--jobs-max"});
         REQUIRE(overrides.errorMessage.has_value());
         CHECK(overrides.errorMessage.value() == "cannot combine --jobs with --jobs-max");
     }
@@ -683,7 +683,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
             output << "rqp";
         }
 
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", tempRoot.string()}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string> {"install", tempRoot.string()}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().usesLocalTarget);
@@ -704,7 +705,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         }
 
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"install", "rqp", tempRoot.string()}, config);
+            cli.parse(std::vector<std::string> {"install", "rqp", tempRoot.string()}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "rqp");
@@ -717,8 +718,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
     SECTION("pack builtin parses project path output payload and force") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"pack", "./demo", "--output", "./dist/demo.rqp", "--payload-dir",
-                                               "./rootfs", "--force"},
+            cli.parse(std::vector<std::string> {"pack", "./demo", "--output", "./dist/demo.rqp", "--payload-dir",
+                                                "./rootfs", "--force"},
                       config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
@@ -727,12 +728,12 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(requests.front().localPath == "./demo");
         CHECK(requests.front().outputPath == "./dist/demo.rqp");
         CHECK(requests.front().payloadPath == "./rootfs");
-        CHECK(requests.front().flags == std::vector<std::string>{"force"});
+        CHECK(requests.front().flags == std::vector<std::string> {"force"});
     }
 
     SECTION("pack builtin defaults project path to current directory") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"pack", "--output", "./dist/demo.rqp", "--force"}, config);
+            cli.parse(std::vector<std::string> {"pack", "--output", "./dist/demo.rqp", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
         CHECK(requests.front().system.empty());
@@ -740,12 +741,12 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(requests.front().localPath == ".");
         CHECK(requests.front().outputPath == "./dist/demo.rqp");
         CHECK(requests.front().payloadPath.empty());
-        CHECK(requests.front().flags == std::vector<std::string>{"force"});
+        CHECK(requests.front().flags == std::vector<std::string> {"force"});
     }
 
     SECTION("pack plugin parses known system and project path") {
         const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"pack", "dnf", "./project", "--output", "./dist/demo.pkg", "--force"}, config);
+            std::vector<std::string> {"pack", "dnf", "./project", "--output", "./dist/demo.pkg", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
         CHECK(requests.front().system == "dnf");
@@ -753,27 +754,27 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(requests.front().localPath == "./project");
         CHECK(requests.front().outputPath == "./dist/demo.pkg");
         CHECK(requests.front().payloadPath.empty());
-        CHECK(requests.front().flags == std::vector<std::string>{"force"});
+        CHECK(requests.front().flags == std::vector<std::string> {"force"});
     }
 
     SECTION("pack rejects ambiguous two argument form when first token is not known system") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"pack", "unknown-system", "./project"}, config);
+            cli.parse(std::vector<std::string> {"pack", "unknown-system", "./project"}, config);
         CHECK(requests.empty());
         CHECK(cli.parseFailed());
     }
 
     SECTION("scoped rqp package keeps rqp system and versioned package") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "rqp:tool@1.2.3"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"install", "rqp:tool@1.2.3"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "rqp");
-        CHECK(requests.front().packages == std::vector<std::string>{"tool@1.2.3"});
+        CHECK(requests.front().packages == std::vector<std::string> {"tool@1.2.3"});
         CHECK_FALSE(requests.front().usesLocalTarget);
     }
 
     SECTION("list without system targets all known systems") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"list"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"list"}, config);
         REQUIRE_FALSE(requests.empty());
         for (const Request& request : requests) {
             CHECK(request.action == ActionType::LIST);
@@ -782,7 +783,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("outdated without system targets all known systems") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"outdated"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"outdated"}, config);
         REQUIRE_FALSE(requests.empty());
         for (const Request& request : requests) {
             CHECK(request.action == ActionType::OUTDATED);
@@ -791,7 +792,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit without system targets all known systems") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"audit"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"audit"}, config);
         REQUIRE_FALSE(requests.empty());
         for (const Request& request : requests) {
             CHECK(request.action == ActionType::AUDIT);
@@ -801,25 +802,25 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update without system returns no orchestrator requests for wrapper self-update") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update"}, config);
         CHECK(requests.empty());
         CHECK_FALSE(cli.parseFailed());
     }
 
     SECTION("update alias without system returns no orchestrator requests for wrapper self-update") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"up"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"up"}, config);
         CHECK(requests.empty());
         CHECK_FALSE(cli.parseFailed());
     }
 
     SECTION("host refresh is handled outside orchestrator request parsing") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"host", "refresh"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"host", "refresh"}, config);
         CHECK(requests.empty());
         CHECK_FALSE(cli.parseFailed());
     }
 
     SECTION("update all expands to known non-builtin plugins") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "--all"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--all"}, config);
         REQUIRE_FALSE(requests.empty());
         for (const Request& request : requests) {
             CHECK(request.action == ActionType::UPDATE);
@@ -840,11 +841,11 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         config.registry.pluginDirectory = (tempRoot / "plugins").string();
         config.registry.databasePath = (tempRoot / "registry-db").string();
         config.registry.sources = {
-            {"pip", RegistrySourceEntry{.source = "https://example.test/pip.lua"}},
-            {"npm", RegistrySourceEntry{.source = "https://example.test/npm.lua"}},
+            {"pip", RegistrySourceEntry {.source = "https://example.test/pip.lua"}},
+            {"npm", RegistrySourceEntry {.source = "https://example.test/npm.lua"}},
         };
 
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "--all"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--all"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().system.empty());
         CHECK(requests.front().action == ActionType::UPDATE);
@@ -859,7 +860,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update with explicit system remains normal orchestrator request") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "pip"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
@@ -867,7 +868,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update alias with explicit system remains normal orchestrator request") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"up", "pip"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"up", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
@@ -875,16 +876,16 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update system all keeps explicit system-wide package update request") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "pip", "--all"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "pip", "--all"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
         CHECK(requests.front().packages.empty());
-        CHECK(requests.front().flags == std::vector<std::string>{"all"});
+        CHECK(requests.front().flags == std::vector<std::string> {"all"});
     }
 
     SECTION("update alias with package mode flag expands to system-wide package update request") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"up", "pip", "--dry-run"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"up", "pip", "--dry-run"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
@@ -896,16 +897,16 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update sys pip stays explicit wrapper request") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"update", "sys", "pip"}, config);
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "sys", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "sys");
-        CHECK(requests.front().packages == std::vector<std::string>{"pip"});
+        CHECK(requests.front().packages == std::vector<std::string> {"pip"});
     }
 
     SECTION("audit infers sarif format from output path") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--output", "report.sarif"}, config);
+            cli.parse(std::vector<std::string> {"audit", "dnf", "curl", "--output", "report.sarif"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().outputPath == "report.sarif");
@@ -914,45 +915,45 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
     SECTION("audit preserves table layout flags") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--wide", "--no-wrap"}, config);
+            cli.parse(std::vector<std::string> {"audit", "dnf", "curl", "--wide", "--no-wrap"}, config);
         REQUIRE(requests.size() == 1);
-        CHECK(requests.front().flags == std::vector<std::string>{"wide", "no-wrap"});
+        CHECK(requests.front().flags == std::vector<std::string> {"wide", "no-wrap"});
     }
 
     SECTION("sbom preserves table layout flags") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--wide", "--no-wrap"}, config);
+            cli.parse(std::vector<std::string> {"sbom", "dnf", "curl", "--wide", "--no-wrap"}, config);
         REQUIRE(requests.size() == 1);
-        CHECK(requests.front().flags == std::vector<std::string>{"wide", "no-wrap"});
+        CHECK(requests.front().flags == std::vector<std::string> {"wide", "no-wrap"});
     }
 
     SECTION("sbom skips missing packages via config flag without forwarding it to plugins") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--sbom-skip-missing-packages"}, config);
+            cli.parse(std::vector<std::string> {"sbom", "dnf", "curl", "--sbom-skip-missing-packages"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("snapshot preserves output path and force flag") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"snapshot", "--output", "reqpack.lua", "--force"}, config);
+            cli.parse(std::vector<std::string> {"snapshot", "--output", "reqpack.lua", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::SNAPSHOT);
         CHECK(requests.front().outputPath == "reqpack.lua");
-        CHECK(requests.front().flags == std::vector<std::string>{"force"});
+        CHECK(requests.front().flags == std::vector<std::string> {"force"});
     }
 
     SECTION("install rejects removed provider-specific security flags") {
-        CHECK(cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--snyk"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"install", "dnf", "curl", "--snyk"}, config).empty());
         CHECK(cli.parseFailed());
 
-        CHECK(cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--owasp"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"install", "dnf", "curl", "--owasp"}, config).empty());
         CHECK(cli.parseFailed());
     }
 
     SECTION("audit rejects invalid format") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--format", "xml"}, config);
+            cli.parse(std::vector<std::string> {"audit", "dnf", "curl", "--format", "xml"}, config);
         CHECK(requests.empty());
         CHECK(cli.parseFailed());
     }
@@ -969,7 +970,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         }
 
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"audit", manifestPath.string()}, config);
+            cli.parse(std::vector<std::string> {"audit", manifestPath.string()}, config);
         REQUIRE(requests.size() == 2);
         CHECK(requests[0].action == ActionType::AUDIT);
         CHECK(requests[1].action == ActionType::AUDIT);
@@ -990,12 +991,12 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         }
 
         const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"audit", "--format", "json", "--output", "report.json", manifestPath.string()},
+            std::vector<std::string> {"audit", "--format", "json", "--output", "report.json", manifestPath.string()},
             config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().system == "dnf");
-        CHECK(requests.front().packages == std::vector<std::string>{"curl"});
+        CHECK(requests.front().packages == std::vector<std::string> {"curl"});
         CHECK(requests.front().outputPath == "report.json");
         CHECK(requests.front().outputFormat == "json");
 
@@ -1015,7 +1016,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         }
 
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"audit", manifestPath.string(), "--output", "report.sarif"}, config);
+            cli.parse(std::vector<std::string> {"audit", manifestPath.string(), "--output", "report.sarif"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().outputPath == "report.sarif");
@@ -1027,49 +1028,49 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
     SECTION("search parses repeated arch and type filters") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"search", "dnf", "python3", "--arch", "noarch", "--arch", "x86_64",
-                                               "--type", "doc", "--type", "devel"},
+            cli.parse(std::vector<std::string> {"search", "dnf", "python3", "--arch", "noarch", "--arch", "x86_64",
+                                                "--type", "doc", "--type", "devel"},
                       config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::SEARCH);
         CHECK(requests.front().system == "dnf");
-        CHECK(requests.front().packages == std::vector<std::string>{"python3"});
+        CHECK(requests.front().packages == std::vector<std::string> {"python3"});
         CHECK(requests.front().flags ==
-              std::vector<std::string>{"arch=noarch", "arch=x86_64", "type=doc", "type=devel"});
+              std::vector<std::string> {"arch=noarch", "arch=x86_64", "type=doc", "type=devel"});
     }
 
     SECTION("search rejects missing filter values") {
-        CHECK(cli.parse(std::vector<std::string>{"search", "dnf", "python3", "--arch"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"search", "dnf", "python3", "--arch"}, config).empty());
         CHECK(cli.parseFailed());
-        CHECK(cli.parse(std::vector<std::string>{"search", "dnf", "python3", "--type"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"search", "dnf", "python3", "--type"}, config).empty());
         CHECK(cli.parseFailed());
     }
 
     SECTION("list and outdated parse repeated arch and type filters") {
         const std::vector<Request> listed = cli.parse(
-            std::vector<std::string>{"list", "dnf", "--arch", "noarch", "--type", "doc", "--type", "devel"}, config);
+            std::vector<std::string> {"list", "dnf", "--arch", "noarch", "--type", "doc", "--type", "devel"}, config);
         REQUIRE(listed.size() == 1);
         CHECK(listed.front().action == ActionType::LIST);
         CHECK(listed.front().system == "dnf");
-        CHECK(listed.front().flags == std::vector<std::string>{"arch=noarch", "type=doc", "type=devel"});
+        CHECK(listed.front().flags == std::vector<std::string> {"arch=noarch", "type=doc", "type=devel"});
 
         const std::vector<Request> outdated = cli.parse(
-            std::vector<std::string>{"outdated", "dnf", "--arch", "x86_64", "--arch", "noarch", "--type", "doc"},
+            std::vector<std::string> {"outdated", "dnf", "--arch", "x86_64", "--arch", "noarch", "--type", "doc"},
             config);
         REQUIRE(outdated.size() == 1);
         CHECK(outdated.front().action == ActionType::OUTDATED);
         CHECK(outdated.front().system == "dnf");
-        CHECK(outdated.front().flags == std::vector<std::string>{"arch=x86_64", "arch=noarch", "type=doc"});
+        CHECK(outdated.front().flags == std::vector<std::string> {"arch=x86_64", "arch=noarch", "type=doc"});
     }
 
     SECTION("list and outdated reject missing filter values") {
-        CHECK(cli.parse(std::vector<std::string>{"list", "dnf", "--arch"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"list", "dnf", "--arch"}, config).empty());
         CHECK(cli.parseFailed());
-        CHECK(cli.parse(std::vector<std::string>{"list", "dnf", "--type"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"list", "dnf", "--type"}, config).empty());
         CHECK(cli.parseFailed());
-        CHECK(cli.parse(std::vector<std::string>{"outdated", "dnf", "--arch"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"outdated", "dnf", "--arch"}, config).empty());
         CHECK(cli.parseFailed());
-        CHECK(cli.parse(std::vector<std::string>{"outdated", "dnf", "--type"}, config).empty());
+        CHECK(cli.parse(std::vector<std::string> {"outdated", "dnf", "--type"}, config).empty());
         CHECK(cli.parseFailed());
     }
 }
@@ -1080,7 +1081,7 @@ TEST_CASE("cli recognizes remote command and prints dedicated help", "[unit][cli
 
     SECTION("remote command does not produce orchestrator requests") {
         const std::vector<Request> requests =
-            cli.parse(std::vector<std::string>{"remote", "dev", "list", "apply"}, config);
+            cli.parse(std::vector<std::string> {"remote", "dev", "list", "apply"}, config);
         CHECK(requests.empty());
     }
 
@@ -1147,7 +1148,7 @@ TEST_CASE("cli short update alias prints update help", "[unit][cli][help]") {
 }
 
 TEST_CASE("configuration consumes extended security and execution CLI flags", "[unit][configuration][cli]") {
-    std::vector<std::string> arguments{
+    std::vector<std::string> arguments {
         "ReqPack",
         "--audit",
         "--prompt-on-unsafe",
@@ -1200,7 +1201,7 @@ TEST_CASE("configuration consumes extended security and execution CLI flags", "[
     CHECK(overrides.osvRefreshMode.value() == OsvRefreshMode::PERIODIC);
     REQUIRE(overrides.osvRefreshIntervalSeconds.has_value());
     CHECK(overrides.osvRefreshIntervalSeconds.value() == 3600);
-    CHECK(overrides.allowVulnerabilityIds == std::vector<std::string>{"CVE-ALLOW"});
+    CHECK(overrides.allowVulnerabilityIds == std::vector<std::string> {"CVE-ALLOW"});
     REQUIRE(overrides.onUnresolvedVersion.has_value());
     CHECK(overrides.onUnresolvedVersion.value() == UnsafeAction::ABORT);
     CHECK(overrides.strictEcosystemMapping.value());
@@ -1229,7 +1230,7 @@ TEST_CASE("configuration consumes extended security and execution CLI flags", "[
 }
 
 TEST_CASE("configuration consumes logging and unsafe abort CLI flags", "[unit][configuration][cli]") {
-    std::vector<std::string> arguments{
+    std::vector<std::string> arguments {
         "ReqPack",         "--log-console", "--log-pattern",     "[%l] %v",
         "--backtrace",     "--no-security", "--abort-on-unsafe", "--prompt-on-unresolved-version",
         "--report-format", "cyclonedx",
@@ -1256,7 +1257,7 @@ TEST_CASE("configuration consumes logging and unsafe abort CLI flags", "[unit][c
 
 TEST_CASE("configuration reports invalid jobs CLI combinations", "[unit][configuration][cli]") {
     {
-        const std::vector<std::string> arguments{"--jobs", "oops"};
+        const std::vector<std::string> arguments {"--jobs", "oops"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
         REQUIRE(consume_cli_config_flag(arguments, index, overrides));
@@ -1264,7 +1265,7 @@ TEST_CASE("configuration reports invalid jobs CLI combinations", "[unit][configu
         CHECK(overrides.errorMessage->find("invalid value for --jobs") != std::string::npos);
     }
     {
-        const std::vector<std::string> arguments{"--jobs", "2", "--jobs-max"};
+        const std::vector<std::string> arguments {"--jobs", "2", "--jobs-max"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
         REQUIRE(consume_cli_config_flag(arguments, index, overrides));
@@ -1274,7 +1275,7 @@ TEST_CASE("configuration reports invalid jobs CLI combinations", "[unit][configu
         CHECK(overrides.errorMessage->find("cannot combine --jobs with --jobs-max") != std::string::npos);
     }
     {
-        const std::vector<std::string> arguments{"--jobs-max", "--jobs", "2"};
+        const std::vector<std::string> arguments {"--jobs-max", "--jobs", "2"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
         REQUIRE(consume_cli_config_flag(arguments, index, overrides));
@@ -1284,7 +1285,7 @@ TEST_CASE("configuration reports invalid jobs CLI combinations", "[unit][configu
         CHECK(overrides.errorMessage->find("cannot combine --jobs with --jobs-max") != std::string::npos);
     }
     {
-        const std::vector<std::string> arguments{"--log-category"};
+        const std::vector<std::string> arguments {"--log-category"};
         std::size_t index = 0;
         ReqPackConfigOverrides overrides;
         REQUIRE(consume_cli_config_flag(arguments, index, overrides));

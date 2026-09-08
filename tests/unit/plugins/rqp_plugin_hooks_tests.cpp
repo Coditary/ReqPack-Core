@@ -71,7 +71,7 @@ TEST_CASE("rqp plugin runtime host createTempDirectory returns non-empty path", 
 }
 
 TEST_CASE("rqp_plugin_unique_nested_file_with_extension finds single nested match", "[unit][rqp_plugin_hooks]") {
-    TempDir tempDir{"reqpack-rqp-nested-file"};
+    TempDir tempDir {"reqpack-rqp-nested-file"};
     const std::filesystem::path nested = tempDir.path() / "nested" / "pkg" / "demo.rqp";
     write_file(nested, "rqp");
 
@@ -83,7 +83,7 @@ TEST_CASE("rqp_plugin_unique_nested_file_with_extension finds single nested matc
 
 TEST_CASE("rqp_plugin_unique_nested_file_with_extension returns nullopt when no match exists",
           "[unit][rqp_plugin_hooks]") {
-    TempDir tempDir{"reqpack-rqp-nested-missing"};
+    TempDir tempDir {"reqpack-rqp-nested-missing"};
     write_file(tempDir.path() / "readme.txt", "no package here");
 
     const std::optional<std::filesystem::path> match =
@@ -92,7 +92,7 @@ TEST_CASE("rqp_plugin_unique_nested_file_with_extension returns nullopt when no 
 }
 
 TEST_CASE("rqp_plugin_unique_nested_file_with_extension throws on multiple matches", "[unit][rqp_plugin_hooks]") {
-    TempDir tempDir{"reqpack-rqp-nested-ambiguous"};
+    TempDir tempDir {"reqpack-rqp-nested-ambiguous"};
     write_file(tempDir.path() / "alpha.rqp", "one");
     write_file(tempDir.path() / "nested" / "beta.rqp", "two");
 

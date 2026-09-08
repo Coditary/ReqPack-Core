@@ -121,7 +121,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("executor updateSystems skips requests with packages or local targets", "[unit][executor_update]") {
-    TempDir tempDir{"reqpack-executor-update-skip"};
+    TempDir tempDir {"reqpack-executor-update-skip"};
     ReqPackConfig config = make_executor_update_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "update", UPDATE_PLUGIN);
@@ -130,10 +130,11 @@ TEST_CASE("executor updateSystems skips requests with packages or local targets"
     registry.scanDirectory(config.registry.pluginDirectory);
     Executer executer(&registry, config);
 
-    const std::vector<Request> requests{
-        Request{.action = ActionType::UPDATE, .system = "update", .packages = {"git"}},
-        Request{.action = ActionType::UPDATE, .system = "update", .localPath = "/tmp/pkg.rpm", .usesLocalTarget = true},
-        Request{.action = ActionType::UPDATE, .system = ""},
+    const std::vector<Request> requests {
+        Request {.action = ActionType::UPDATE, .system = "update", .packages = {"git"}},
+        Request {
+            .action = ActionType::UPDATE, .system = "update", .localPath = "/tmp/pkg.rpm", .usesLocalTarget = true},
+        Request {.action = ActionType::UPDATE, .system = ""},
     };
 
     const std::vector<bool> results = executer.updateSystems(requests);
@@ -145,7 +146,7 @@ TEST_CASE("executor updateSystems skips requests with packages or local targets"
 }
 
 TEST_CASE("executor updateSystems performs dry-run without invoking plugin update", "[unit][executor_update]") {
-    TempDir tempDir{"reqpack-executor-update-dry-run"};
+    TempDir tempDir {"reqpack-executor-update-dry-run"};
     ReqPackConfig config = make_executor_update_config(tempDir.path());
     config.execution.dryRun = true;
 
@@ -164,7 +165,7 @@ TEST_CASE("executor updateSystems performs dry-run without invoking plugin updat
 }
 
 TEST_CASE("executor updateSystems dispatches system-wide update to plugin", "[unit][executor_update]") {
-    TempDir tempDir{"reqpack-executor-update-dispatch"};
+    TempDir tempDir {"reqpack-executor-update-dispatch"};
     ReqPackConfig config = make_executor_update_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "update", UPDATE_PLUGIN);
@@ -182,7 +183,7 @@ TEST_CASE("executor updateSystems dispatches system-wide update to plugin", "[un
 }
 
 TEST_CASE("executor updateSystems reports failure when plugin update returns false", "[unit][executor_update]") {
-    TempDir tempDir{"reqpack-executor-update-failure"};
+    TempDir tempDir {"reqpack-executor-update-failure"};
     ReqPackConfig config = make_executor_update_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "failing", FAILING_UPDATE_PLUGIN);
@@ -199,7 +200,7 @@ TEST_CASE("executor updateSystems reports failure when plugin update returns fal
 }
 
 TEST_CASE("executor updateSystems updates multiple systems independently", "[unit][executor_update]") {
-    TempDir tempDir{"reqpack-executor-update-multi"};
+    TempDir tempDir {"reqpack-executor-update-multi"};
     ReqPackConfig config = make_executor_update_config(tempDir.path());
     config.execution.jobs = 2;
 
@@ -210,9 +211,9 @@ TEST_CASE("executor updateSystems updates multiple systems independently", "[uni
     registry.scanDirectory(config.registry.pluginDirectory);
     Executer executer(&registry, config);
 
-    const std::vector<Request> requests{
-        Request{.action = ActionType::UPDATE, .system = "alpha"},
-        Request{.action = ActionType::UPDATE, .system = "beta"},
+    const std::vector<Request> requests {
+        Request {.action = ActionType::UPDATE, .system = "alpha"},
+        Request {.action = ActionType::UPDATE, .system = "beta"},
     };
 
     const std::vector<bool> results = executer.updateSystems(requests);

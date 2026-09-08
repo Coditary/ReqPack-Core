@@ -22,7 +22,7 @@ LuaBridgeHostRuntime::LuaBridgeHostRuntime(Logger& logger, const ReqPackConfig& 
 
 std::uint64_t LuaBridgeHostRuntime::retainRuntimeBindingContext(const PluginCallContext& context) {
     const std::uint64_t contextId = ++m_nextRuntimeBindingContextId;
-    m_runtimeBindingContexts[contextId] = LuaBridgeRuntimeBindingContext{
+    m_runtimeBindingContexts[contextId] = LuaBridgeRuntimeBindingContext {
         .host = context.host,
         .pluginId = context.pluginId,
         .sourceId = context.currentItemId.empty() ? context.pluginId : context.currentItemId,

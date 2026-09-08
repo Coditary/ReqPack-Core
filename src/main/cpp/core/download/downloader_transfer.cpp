@@ -70,7 +70,7 @@ bool Downloader::download_to_path(const std::string& source, const std::filesyst
     downloader_configure_curl_handle(curl, this->config, source);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &Downloader::write_to_file);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-    downloader_transfer_internal::CurlDownloadProgressState progressState{
+    downloader_transfer_internal::CurlDownloadProgressState progressState {
         .callback = progressCallback,
         .userData = progressUserData,
     };

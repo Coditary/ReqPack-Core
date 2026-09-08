@@ -10,18 +10,18 @@
 #include <string>
 
 struct DownloadProgressSnapshot {
-    std::optional<int> percent{};
-    std::optional<std::uint64_t> currentBytes{};
-    std::optional<std::uint64_t> totalBytes{};
-    std::optional<std::uint64_t> bytesPerSecond{};
+    std::optional<int> percent {};
+    std::optional<std::uint64_t> currentBytes {};
+    std::optional<std::uint64_t> totalBytes {};
+    std::optional<std::uint64_t> bytesPerSecond {};
 };
 
 struct DownloadFailureDetails {
-    std::string source{};
-    bool remote{false};
-    CURLcode curlCode{CURLE_OK};
-    long httpStatus{0};
-    std::string message{};
+    std::string source {};
+    bool remote {false};
+    CURLcode curlCode {CURLE_OK};
+    long httpStatus {0};
+    std::string message {};
 };
 
 using DownloadProgressCallback = int (*)(const DownloadProgressSnapshot& snapshot, void* userData);

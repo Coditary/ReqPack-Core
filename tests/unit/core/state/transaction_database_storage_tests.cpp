@@ -38,15 +38,15 @@ ReqPackConfig make_transaction_config(const std::filesystem::path& root) {
 } // namespace
 
 TEST_CASE("transaction database initializes storage and creates active run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-init"};
+    TempDir tempDir {"reqpack-transaction-db-init"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
 
     REQUIRE(database.ensureReady());
 
-    const std::vector<Package> packages{
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "git"},
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "curl"},
+    const std::vector<Package> packages {
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "git"},
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "curl"},
     };
     const std::string runId = database.createRun(packages, {"--dry-run"});
     REQUIRE_FALSE(runId.empty());
@@ -55,7 +55,7 @@ TEST_CASE("transaction database initializes storage and creates active run", "[u
     REQUIRE(activeRun.has_value());
     CHECK(activeRun->id == runId);
     CHECK(activeRun->state == "open");
-    CHECK(activeRun->flags == std::vector<std::string>{"--dry-run"});
+    CHECK(activeRun->flags == std::vector<std::string> {"--dry-run"});
 
     const std::vector<TransactionItemRecord> items = database.getRunItems(runId);
     REQUIRE(items.size() == 2);
@@ -65,12 +65,12 @@ TEST_CASE("transaction database initializes storage and creates active run", "[u
 }
 
 TEST_CASE("transaction database updates item status and commits run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-update"};
+    TempDir tempDir {"reqpack-transaction-db-update"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "ripgrep"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "ripgrep"};
     const std::string runId = database.createRun({package});
     REQUIRE_FALSE(runId.empty());
 
@@ -84,12 +84,12 @@ TEST_CASE("transaction database updates item status and commits run", "[unit][tr
 }
 
 TEST_CASE("transaction database deletes committed run records", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-delete"};
+    TempDir tempDir {"reqpack-transaction-db-delete"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::REMOVE, .system = "apt", .name = "legacy"};
+    const Package package {.action = ActionType::REMOVE, .system = "apt", .name = "legacy"};
     const std::string runId = database.createRun({package});
     REQUIRE(database.markRunCommitted(runId));
     CHECK(database.deleteRun(runId));
@@ -97,14 +97,14 @@ TEST_CASE("transaction database deletes committed run records", "[unit][transact
 }
 
 TEST_CASE("transaction database batch-updates item statuses", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-batch"};
+    TempDir tempDir {"reqpack-transaction-db-batch"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const std::vector<Package> packages{
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "one"},
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "two"},
+    const std::vector<Package> packages {
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "one"},
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "two"},
     };
     const std::string runId = database.createRun(packages);
     CHECK(database.updateItemsStatus(runId, packages, "failed", "boom"));
@@ -116,7 +116,7 @@ TEST_CASE("transaction database batch-updates item statuses", "[unit][transactio
 }
 
 TEST_CASE("transaction database ensureReady is idempotent", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-idempotent"};
+    TempDir tempDir {"reqpack-transaction-db-idempotent"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
 
@@ -125,7 +125,7 @@ TEST_CASE("transaction database ensureReady is idempotent", "[unit][transaction_
 }
 
 TEST_CASE("transaction database reports no active run when idle", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-idle"};
+    TempDir tempDir {"reqpack-transaction-db-idle"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
@@ -133,12 +133,12 @@ TEST_CASE("transaction database reports no active run when idle", "[unit][transa
 }
 
 TEST_CASE("transaction database markRunState updates active run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-state"};
+    TempDir tempDir {"reqpack-transaction-db-state"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "jq"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "jq"};
     const std::string runId = database.createRun({package});
     REQUIRE(database.markRunState(runId, "rolling-back"));
     const std::optional<TransactionRunRecord> activeRun = database.getActiveRun();
@@ -147,12 +147,12 @@ TEST_CASE("transaction database markRunState updates active run", "[unit][transa
 }
 
 TEST_CASE("transaction database loadString and prefixed entries round-trip", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-prefix"};
+    TempDir tempDir {"reqpack-transaction-db-prefix"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "prefixed"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "prefixed"};
     const std::string runId = database.createRun({package});
     REQUIRE_FALSE(runId.empty());
 
@@ -169,7 +169,7 @@ TEST_CASE("transaction database loadString and prefixed entries round-trip", "[u
 }
 
 TEST_CASE("transaction database deleteRun returns false for unknown run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-delete-missing"};
+    TempDir tempDir {"reqpack-transaction-db-delete-missing"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
@@ -177,12 +177,12 @@ TEST_CASE("transaction database deleteRun returns false for unknown run", "[unit
 }
 
 TEST_CASE("transaction database createRun rejects second active run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-active-conflict"};
+    TempDir tempDir {"reqpack-transaction-db-active-conflict"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "first"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "first"};
     const std::string firstRunId = database.createRun({package});
     REQUIRE_FALSE(firstRunId.empty());
     CHECK(database.createRun({package}).empty());
@@ -190,7 +190,7 @@ TEST_CASE("transaction database createRun rejects second active run", "[unit][tr
 }
 
 TEST_CASE("transaction database markRunState returns false for unknown run", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-mark-missing"};
+    TempDir tempDir {"reqpack-transaction-db-mark-missing"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
@@ -199,35 +199,35 @@ TEST_CASE("transaction database markRunState returns false for unknown run", "[u
 
 TEST_CASE("transaction database updateItemStatus returns false for unknown run",
           "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-update-missing"};
+    TempDir tempDir {"reqpack-transaction-db-update-missing"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "ghost"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "ghost"};
     CHECK_FALSE(database.updateItemStatus("missing-run-id", package, "failed"));
 }
 
 TEST_CASE("transaction database batch update aborts when item is missing", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-batch-missing-item"};
+    TempDir tempDir {"reqpack-transaction-db-batch-missing-item"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package first{.action = ActionType::INSTALL, .system = "dnf", .name = "one"};
-    const Package missing{.action = ActionType::INSTALL, .system = "dnf", .name = "missing"};
+    const Package first {.action = ActionType::INSTALL, .system = "dnf", .name = "one"};
+    const Package missing {.action = ActionType::INSTALL, .system = "dnf", .name = "missing"};
     const std::string runId = database.createRun({first});
     REQUIRE_FALSE(runId.empty());
     CHECK_FALSE(database.updateItemsStatus(runId, {first, missing}, "failed", "boom"));
 }
 
 TEST_CASE("transaction database deleteRun clears active run marker", "[unit][transaction_database][storage]") {
-    TempDir tempDir{"reqpack-transaction-db-delete-active"};
+    TempDir tempDir {"reqpack-transaction-db-delete-active"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);
     REQUIRE(database.ensureReady());
 
-    const Package package{.action = ActionType::INSTALL, .system = "dnf", .name = "tracked"};
+    const Package package {.action = ActionType::INSTALL, .system = "dnf", .name = "tracked"};
     const std::string runId = database.createRun({package});
     REQUIRE_FALSE(runId.empty());
     REQUIRE(database.getActiveRun().has_value());

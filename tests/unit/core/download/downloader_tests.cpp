@@ -115,7 +115,7 @@ TEST_CASE("downloader temp path and plugin target path are derived deterministic
 }
 
 TEST_CASE("downloader local copy branch succeeds for existing file", "[unit][downloader][path]") {
-    TempDir tempDir{"reqpack-downloader-copy-ok"};
+    TempDir tempDir {"reqpack-downloader-copy-ok"};
     const std::filesystem::path source = tempDir.path() / "source.lua";
     const std::filesystem::path target = tempDir.path() / "plugins/dnf/run.lua";
     write_file(source, "return {}\n");
@@ -126,7 +126,7 @@ TEST_CASE("downloader local copy branch succeeds for existing file", "[unit][dow
 }
 
 TEST_CASE("downloader local copy branch fails for missing file", "[unit][downloader][path]") {
-    TempDir tempDir{"reqpack-downloader-copy-fail"};
+    TempDir tempDir {"reqpack-downloader-copy-fail"};
     const std::filesystem::path missing = tempDir.path() / "missing.lua";
     const std::filesystem::path target = tempDir.path() / "plugins/dnf/run.lua";
 
@@ -136,14 +136,14 @@ TEST_CASE("downloader local copy branch fails for missing file", "[unit][downloa
 
 TEST_CASE("downloader materializes cached registry plugin when thin-layer metadata passes",
           "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-trust-pass"};
+    TempDir tempDir {"reqpack-downloader-trust-pass"};
     const std::string script = "return { getName = function() return 'dnf' end }\n";
     const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf", script);
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     config.security.requireThinLayer = true;
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "dnf plugin",
@@ -164,14 +164,14 @@ TEST_CASE("downloader materializes cached registry plugin when thin-layer metada
 
 TEST_CASE("downloader blocks registry plugin materialization when thin-layer metadata is missing",
           "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-trust-block"};
+    TempDir tempDir {"reqpack-downloader-trust-block"};
     const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf",
                                                              "return { getName = function() return 'dnf' end }\n");
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     config.security.requireThinLayer = true;
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "dnf plugin",
@@ -187,14 +187,14 @@ TEST_CASE("downloader blocks registry plugin materialization when thin-layer met
 
 TEST_CASE("downloader blocks registry plugin materialization when script hash mismatches",
           "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-hash-block"};
+    TempDir tempDir {"reqpack-downloader-hash-block"};
     const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf",
                                                              "return { getName = function() return 'dnf' end }\n");
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     config.security.requireThinLayer = true;
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "dnf plugin",
@@ -214,12 +214,12 @@ TEST_CASE("downloader blocks registry plugin materialization when script hash mi
 
 TEST_CASE("downloader blocks unpinned git registry plugin when thin-layer trust is required",
           "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-git-unpinned-block"};
+    TempDir tempDir {"reqpack-downloader-git-unpinned-block"};
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     config.security.requireThinLayer = true;
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = "git+https://example.test/plugins/dnf.git",
         .alias = false,
         .description = "dnf plugin",
@@ -237,7 +237,7 @@ TEST_CASE("downloader blocks unpinned git registry plugin when thin-layer trust 
 }
 
 TEST_CASE("downloader public download copies local files and reports missing sources", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-public-download"};
+    TempDir tempDir {"reqpack-downloader-public-download"};
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     Downloader downloader(nullptr, config);
 
@@ -272,7 +272,7 @@ TEST_CASE("downloader public download copies local files and reports missing sou
 }
 
 TEST_CASE("downloader rejects plugin download when disabled or database unavailable", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-guards"};
+    TempDir tempDir {"reqpack-downloader-guards"};
 
     SECTION("disabled downloader short-circuits before database access") {
         ReqPackConfig config = make_downloader_test_config(tempDir.path());
@@ -289,13 +289,13 @@ TEST_CASE("downloader rejects plugin download when disabled or database unavaila
 }
 
 TEST_CASE("downloader resolves planner aliases before materializing plugins", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-planner-alias"};
+    TempDir tempDir {"reqpack-downloader-planner-alias"};
     const std::string script = "return { getName = function() return 'dnf' end }\n";
     const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "sources", "dnf", script);
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
     config.planner.systemAliases["yum"] = "dnf";
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "dnf plugin",
@@ -314,14 +314,14 @@ TEST_CASE("downloader resolves planner aliases before materializing plugins", "[
 }
 
 TEST_CASE("downloader copies bundled plugin directories and skips git metadata", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-bundle-copy"};
+    TempDir tempDir {"reqpack-downloader-bundle-copy"};
     const std::string script = "return { getName = function() return 'dnf' end }\n";
     const std::filesystem::path bundleRoot = write_plugin_bundle(tempDir.path() / "bundle", "dnf", script);
     write_file(bundleRoot / "lib" / "helper.txt", "helper\n");
     write_file(bundleRoot / ".git" / "config", "ignored\n");
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
-    config.registry.sources["dnf"] = RegistrySourceEntry{
+    config.registry.sources["dnf"] = RegistrySourceEntry {
         .source = bundleRoot.string(),
         .alias = false,
         .description = "dnf bundle",
@@ -345,7 +345,7 @@ TEST_CASE("downloader copies bundled plugin directories and skips git metadata",
 }
 
 TEST_CASE("downloader copies bundled plugin from repo root letter-grouped layout", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-grouped-bundle-copy"};
+    TempDir tempDir {"reqpack-downloader-grouped-bundle-copy"};
     const std::string script = "return { getName = function() return 'huggingface' end }\n";
     const std::filesystem::path repositoryRoot = tempDir.path() / "repo";
     const std::filesystem::path bundleRoot =
@@ -353,7 +353,7 @@ TEST_CASE("downloader copies bundled plugin from repo root letter-grouped layout
     write_file(bundleRoot / "lib" / "helper.txt", "helper\n");
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
-    config.registry.sources["huggingface"] = RegistrySourceEntry{
+    config.registry.sources["huggingface"] = RegistrySourceEntry {
         .source = repositoryRoot.string(),
         .alias = false,
         .description = "huggingface bundle",
@@ -372,12 +372,12 @@ TEST_CASE("downloader copies bundled plugin from repo root letter-grouped layout
 }
 
 TEST_CASE("downloader escapes special characters in synthetic bundle metadata", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-json-escape"};
+    TempDir tempDir {"reqpack-downloader-json-escape"};
     const std::filesystem::path source = tempDir.path() / "special.lua";
     write_file(source, "return { getName = function() return 'special' end }\n");
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
-    config.registry.sources["special"] = RegistrySourceEntry{
+    config.registry.sources["special"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "quote\"slash\\newline\n tab\t return",
@@ -396,7 +396,7 @@ TEST_CASE("downloader escapes special characters in synthetic bundle metadata", 
 }
 
 TEST_CASE("downloader materializes run.lua bundles and removes stale bootstrap files", "[unit][downloader][service]") {
-    TempDir tempDir{"reqpack-downloader-run-bundle"};
+    TempDir tempDir {"reqpack-downloader-run-bundle"};
 
     SECTION("local source file becomes synthetic run.lua bundle") {
         const std::filesystem::path sourceDirectory = tempDir.path() / "source-with-bootstrap";
@@ -405,7 +405,7 @@ TEST_CASE("downloader materializes run.lua bundles and removes stale bootstrap f
         write_file(sourceDirectory / "bootstrap.lua", "print('boot')\n");
 
         ReqPackConfig config = make_downloader_test_config(tempDir.path() / "with-bootstrap");
-        config.registry.sources["dnf"] = RegistrySourceEntry{
+        config.registry.sources["dnf"] = RegistrySourceEntry {
             .source = source.string(),
             .alias = false,
             .description = "dnf plugin",
@@ -426,7 +426,7 @@ TEST_CASE("downloader materializes run.lua bundles and removes stale bootstrap f
         write_file(source, "return { getName = function() return 'dnf' end }\n");
 
         ReqPackConfig config = make_downloader_test_config(tempDir.path() / "without-bootstrap");
-        config.registry.sources["dnf"] = RegistrySourceEntry{
+        config.registry.sources["dnf"] = RegistrySourceEntry {
             .source = source.string(),
             .alias = false,
             .description = "dnf plugin",

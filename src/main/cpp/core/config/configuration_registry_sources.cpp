@@ -59,7 +59,7 @@ RegistrySourceMap collect_explicit_registry_sources(const ReqPackConfig& config)
     RegistrySourceMap sources;
 
     for (const auto& [name, source] : config.downloader.pluginSources) {
-        sources[configuration_internal::to_lower_copy(name)] = RegistrySourceEntry{.source = source};
+        sources[configuration_internal::to_lower_copy(name)] = RegistrySourceEntry {.source = source};
     }
 
     configuration_internal::merge_registry_sources(sources, config.registry.sources);

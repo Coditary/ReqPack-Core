@@ -24,7 +24,7 @@ inline bool is_json_registry_remote(const ReqPackConfig& config) {
 }
 
 struct RegistryDiffEntry {
-    char status{'?'};
+    char status {'?'};
     std::string path;
 };
 

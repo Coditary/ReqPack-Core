@@ -42,7 +42,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 } // namespace
 
 TEST_CASE("load_remote_profiles parses host port protocol and credentials", "[unit][remote_profiles]") {
-    TempDir tempDir{"reqpack-remote-profiles"};
+    TempDir tempDir {"reqpack-remote-profiles"};
     const std::filesystem::path remotePath = tempDir.path() / "remote.lua";
 
     write_file(remotePath, R"(
@@ -76,7 +76,7 @@ TEST_CASE("load_remote_profiles parses host port protocol and credentials", "[un
 }
 
 TEST_CASE("load_remote_profiles parses ipv6 endpoints and url aliases", "[unit][remote_profiles]") {
-    TempDir tempDir{"reqpack-remote-profiles-ipv6"};
+    TempDir tempDir {"reqpack-remote-profiles-ipv6"};
     const std::filesystem::path remotePath = tempDir.path() / "remote.lua";
 
     write_file(remotePath, R"(
@@ -113,7 +113,7 @@ TEST_CASE("load_remote_profiles parses ipv6 endpoints and url aliases", "[unit][
 }
 
 TEST_CASE("load_remote_profiles skips invalid profile entries", "[unit][remote_profiles]") {
-    TempDir tempDir{"reqpack-remote-profiles-invalid"};
+    TempDir tempDir {"reqpack-remote-profiles-invalid"};
     const std::filesystem::path remotePath = tempDir.path() / "remote.lua";
 
     write_file(remotePath, R"(
@@ -137,7 +137,7 @@ TEST_CASE("load_remote_profiles skips invalid profile entries", "[unit][remote_p
 }
 
 TEST_CASE("find_remote_profile matches profile names case-insensitively", "[unit][remote_profiles]") {
-    TempDir tempDir{"reqpack-remote-profiles-find"};
+    TempDir tempDir {"reqpack-remote-profiles-find"};
     const std::filesystem::path remotePath = tempDir.path() / "remote.lua";
 
     write_file(remotePath, R"(
@@ -161,7 +161,7 @@ TEST_CASE("find_remote_profile matches profile names case-insensitively", "[unit
 }
 
 TEST_CASE("load_remote_profiles returns empty vector for missing file", "[unit][remote_profiles]") {
-    TempDir tempDir{"reqpack-remote-profiles-missing"};
+    TempDir tempDir {"reqpack-remote-profiles-missing"};
     const std::filesystem::path remotePath = tempDir.path() / "missing-remote.lua";
     CHECK(load_remote_profiles(remotePath).empty());
 }

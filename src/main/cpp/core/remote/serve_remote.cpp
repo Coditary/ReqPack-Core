@@ -36,7 +36,7 @@ int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesyste
 
     ScopedRemoteSignalHandlers signalHandlers(serverFd);
 
-    render_command_output(CommandOutput{
+    render_command_output(CommandOutput {
         .mode = DisplayMode::SERVE,
         .sessionItems = {"remote-server"},
         .blocks = {make_command_field_value_block({
@@ -51,7 +51,7 @@ int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesyste
     });
     logger.flushSync();
 
-    RemoteServerState state{
+    RemoteServerState state {
         .config = config,
         .options = options,
         .users = load_remote_users(default_remote_profiles_path()),
@@ -63,7 +63,7 @@ int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesyste
     std::mutex commandMutex;
 
     while (!state.shutdownRequested.load() && !signalHandlers.shutdownRequested()) {
-        sockaddr_storage clientAddress{};
+        sockaddr_storage clientAddress {};
         socklen_t clientLength = sizeof(clientAddress);
         const ReqpackSocket clientFd = ::accept(serverFd, reinterpret_cast<sockaddr*>(&clientAddress), &clientLength);
         if (clientFd == REQPACK_INVALID_SOCKET) {
@@ -96,7 +96,7 @@ int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesyste
         {
             std::lock_guard<std::mutex> lock(state.mutex);
             sessionId = state.nextSessionId++;
-            state.sessions.emplace(sessionId, RemoteSessionInfo{
+            state.sessions.emplace(sessionId, RemoteSessionInfo {
                                                   .id = sessionId,
                                                   .remoteAddress = remoteAddress,
                                                   .connectedAt = std::chrono::system_clock::now(),

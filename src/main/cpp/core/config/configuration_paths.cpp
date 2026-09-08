@@ -144,32 +144,32 @@ std::string expand_env_reference(const std::string& value) {
     }
 
     const char* resolved = std::getenv(name.c_str());
-    return resolved != nullptr ? std::string(resolved) : std::string{};
+    return resolved != nullptr ? std::string(resolved) : std::string {};
 }
 
 } // namespace configuration_internal
 
 ReqPackConfig::ReqPackConfig()
-    : security(SecurityConfig{
+    : security(SecurityConfig {
           .cachePath = default_reqpack_security_cache_path().string(),
           .indexPath = default_reqpack_security_index_path().string(),
           .osvDatabasePath = default_reqpack_osv_database_path().string(),
       }),
-      execution(ExecutionConfig{
+      execution(ExecutionConfig {
           .transactionDatabasePath = default_reqpack_transaction_path().string(),
       }),
-      registry(RegistryConfig{
+      registry(RegistryConfig {
           .databasePath = default_reqpack_registry_path().string(),
           .pluginDirectory = default_reqpack_plugin_directory().string(),
       }),
-      rqp(RqpConfig{
+      rqp(RqpConfig {
           .statePath = default_reqpack_rqp_state_path().string(),
       }),
-      selfUpdate(SelfUpdateConfig{
+      selfUpdate(SelfUpdateConfig {
           .binaryDirectory = default_reqpack_self_update_binary_directory().string(),
           .linkPath = default_reqpack_self_update_link_path().string(),
       }),
-      history(HistoryConfig{
+      history(HistoryConfig {
           .historyPath = default_reqpack_history_path().string(),
       }) {
     version = reqpack_build_release_id();
@@ -207,7 +207,7 @@ ReqPackConfig::ReqPackConfig()
 }
 
 ReqPackConfig default_reqpack_config() {
-    return ReqPackConfig{};
+    return ReqPackConfig {};
 }
 
 std::string resolve_archive_password(const ReqPackConfig& config) {

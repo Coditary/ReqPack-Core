@@ -5,7 +5,7 @@
 #include <vector>
 
 struct ReqpackProcessResult {
-    int exitCode{1};
+    int exitCode {1};
     std::string stdoutText;
     std::string stderrText;
 

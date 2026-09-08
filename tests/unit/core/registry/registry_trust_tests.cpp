@@ -107,10 +107,10 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("registry materializes database-backed plugin script on load", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-materialize"};
+    TempDir tempDir {"reqpack-registry-trust-materialize"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -138,11 +138,11 @@ TEST_CASE("registry materializes database-backed plugin script on load", "[unit]
 
 TEST_CASE("registry blocks database-backed plugin when thin-layer trust metadata is missing",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-block"};
+    TempDir tempDir {"reqpack-registry-trust-block"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -159,12 +159,12 @@ TEST_CASE("registry blocks database-backed plugin when thin-layer trust metadata
 }
 
 TEST_CASE("registry exposes security metadata for trusted database-backed plugin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-metadata"};
+    TempDir tempDir {"reqpack-registry-trust-metadata"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.enabled = true;
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -186,15 +186,15 @@ TEST_CASE("registry exposes security metadata for trusted database-backed plugin
     REQUIRE(metadata.has_value());
     CHECK(metadata->role == "package-manager");
     CHECK(metadata->privilegeLevel == "none");
-    CHECK(metadata->capabilities == std::vector<std::string>{"exec"});
-    CHECK(metadata->ecosystemScopes == std::vector<std::string>{"demo-osv"});
+    CHECK(metadata->capabilities == std::vector<std::string> {"exec"});
+    CHECK(metadata->ecosystemScopes == std::vector<std::string> {"demo-osv"});
 }
 
 TEST_CASE("registry blocks load when thin-layer script hash mismatches", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-hash"};
+    TempDir tempDir {"reqpack-registry-trust-hash"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = (tempDir.path() / "remote-source" / "trusted.lua").string(),
         .alias = false,
         .description = "trusted plugin",
@@ -217,7 +217,7 @@ TEST_CASE("registry blocks load when thin-layer script hash mismatches", "[unit]
 }
 
 TEST_CASE("registry refreshPlugin rejects built-in rqp plugin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-builtin"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-builtin"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
 
     Registry registry(config);
@@ -225,11 +225,11 @@ TEST_CASE("registry refreshPlugin rejects built-in rqp plugin", "[unit][registry
 }
 
 TEST_CASE("registry blocks load when runtime security metadata mismatches record", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-runtime-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-runtime-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -252,11 +252,11 @@ TEST_CASE("registry blocks load when runtime security metadata mismatches record
 }
 
 TEST_CASE("registry getPluginSecurityMetadata returns null when security is disabled", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-disabled"};
+    TempDir tempDir {"reqpack-registry-trust-disabled"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.enabled = false;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -278,7 +278,7 @@ TEST_CASE("registry getPluginSecurityMetadata returns null when security is disa
 }
 
 TEST_CASE("registry refreshPlugin returns false for unknown plugin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-missing"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-missing"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
 
     Registry registry(config);
@@ -286,10 +286,10 @@ TEST_CASE("registry refreshPlugin returns false for unknown plugin", "[unit][reg
 }
 
 TEST_CASE("registry refreshPlugin succeeds for trusted local plugin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-success"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-success"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -311,10 +311,10 @@ TEST_CASE("registry refreshPlugin succeeds for trusted local plugin", "[unit][re
 }
 
 TEST_CASE("registry refreshPlugin honors preferLatestTag flag", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-tag"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-tag"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -336,7 +336,7 @@ TEST_CASE("registry refreshPlugin honors preferLatestTag flag", "[unit][registry
 }
 
 TEST_CASE("registry passes thin-layer trust for built-in rqp plugin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-rqp-builtin"};
+    TempDir tempDir {"reqpack-registry-trust-rqp-builtin"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
 
@@ -346,11 +346,11 @@ TEST_CASE("registry passes thin-layer trust for built-in rqp plugin", "[unit][re
 }
 
 TEST_CASE("registry refreshPlugin fails when refreshed script hash mismatches pin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-hash"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-hash"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -374,12 +374,12 @@ TEST_CASE("registry refreshPlugin fails when refreshed script hash mismatches pi
 }
 
 TEST_CASE("registry getPluginSecurityMetadata returns null when thin-layer trust fails", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-metadata-block"};
+    TempDir tempDir {"reqpack-registry-trust-metadata-block"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.enabled = true;
     config.security.requireThinLayer = true;
     const std::filesystem::path source = tempDir.path() / "remote-source" / "weak.lua";
-    config.registry.sources["weak"] = RegistrySourceEntry{
+    config.registry.sources["weak"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "weak plugin",
@@ -394,11 +394,11 @@ TEST_CASE("registry getPluginSecurityMetadata returns null when thin-layer trust
 }
 
 TEST_CASE("registry getPluginSecurityMetadata returns null when script hash mismatches pin", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-metadata-hash"};
+    TempDir tempDir {"reqpack-registry-trust-metadata-hash"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.enabled = true;
     config.security.requireThinLayer = true;
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = (tempDir.path() / "remote-source" / "trusted.lua").string(),
         .alias = false,
         .description = "trusted plugin",
@@ -421,11 +421,11 @@ TEST_CASE("registry getPluginSecurityMetadata returns null when script hash mism
 
 TEST_CASE("registry blocks load when trust record capability is missing from runtime metadata",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-capability-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-capability-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -448,11 +448,11 @@ TEST_CASE("registry blocks load when trust record capability is missing from run
 
 TEST_CASE("registry blocks load when trust record ecosystem scope is missing from runtime metadata",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-ecosystem-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-ecosystem-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -475,11 +475,11 @@ TEST_CASE("registry blocks load when trust record ecosystem scope is missing fro
 
 TEST_CASE("registry blocks load when trust record write scope is missing from runtime metadata",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-write-scope-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-write-scope-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -502,11 +502,11 @@ TEST_CASE("registry blocks load when trust record write scope is missing from ru
 
 TEST_CASE("registry blocks load when trust record network scope is missing from runtime metadata",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-network-scope-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-network-scope-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -529,11 +529,11 @@ TEST_CASE("registry blocks load when trust record network scope is missing from 
 
 TEST_CASE("registry blocks load when trust record privilege level mismatches runtime metadata",
           "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-privilege-mismatch"};
+    TempDir tempDir {"reqpack-registry-trust-privilege-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path cachedSource = tempDir.path() / "remote-source" / "trusted";
-    config.registry.sources["trusted"] = RegistrySourceEntry{
+    config.registry.sources["trusted"] = RegistrySourceEntry {
         .source = cachedSource.string(),
         .alias = false,
         .description = "trusted plugin",
@@ -555,11 +555,11 @@ TEST_CASE("registry blocks load when trust record privilege level mismatches run
 }
 
 TEST_CASE("registry refreshPlugin fails when thin-layer trust metadata is missing", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-refresh-thin-block"};
+    TempDir tempDir {"reqpack-registry-trust-refresh-thin-block"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
     const std::filesystem::path source = tempDir.path() / "remote-source" / "weak.lua";
-    config.registry.sources["weak"] = RegistrySourceEntry{
+    config.registry.sources["weak"] = RegistrySourceEntry {
         .source = source.string(),
         .alias = false,
         .description = "weak plugin",
@@ -573,11 +573,11 @@ TEST_CASE("registry refreshPlugin fails when thin-layer trust metadata is missin
 }
 
 TEST_CASE("registry getPluginSecurityMetadata returns null when database refresh fails", "[unit][registry_trust]") {
-    TempDir tempDir{"reqpack-registry-trust-metadata-refresh-fail"};
+    TempDir tempDir {"reqpack-registry-trust-metadata-refresh-fail"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.enabled = true;
     config.security.requireThinLayer = true;
-    config.registry.sources["remote"] = RegistrySourceEntry{
+    config.registry.sources["remote"] = RegistrySourceEntry {
         .source = "git+https://invalid.example.test/plugins/remote.git",
         .alias = false,
         .description = "remote plugin",

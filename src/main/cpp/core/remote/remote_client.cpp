@@ -28,7 +28,7 @@ struct UploadInstallRequest {
     std::filesystem::path filePath;
     std::string filename;
     std::string commandTemplate;
-    std::uintmax_t size{0};
+    std::uintmax_t size {0};
 };
 
 std::string trim_copy(const std::string& value) {
@@ -307,7 +307,7 @@ std::optional<std::string> extract_json_string_field(const std::string& json, co
 ReqpackSocket connect_remote(const RemoteProfile& profile) {
     reqpack_ensure_socket_runtime();
 
-    addrinfo hints{};
+    addrinfo hints {};
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 

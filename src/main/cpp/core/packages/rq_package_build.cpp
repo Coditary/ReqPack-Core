@@ -86,13 +86,13 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
     }
 
     std::vector<TarWriteEntry> packageEntries;
-    packageEntries.push_back(TarWriteEntry{
+    packageEntries.push_back(TarWriteEntry {
         .path = "metadata.json",
         .type = '0',
         .data = rq_metadata_json(metadata),
         .mode = 0644,
     });
-    packageEntries.push_back(TarWriteEntry{
+    packageEntries.push_back(TarWriteEntry {
         .path = "reqpack.lua",
         .type = '0',
         .data = read_file(reqpackPath),
@@ -101,13 +101,13 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
     append_control_tree_files(packageEntries, projectRoot / "scripts", "scripts");
 
     if (payloadArtifacts.hasPayload) {
-        packageEntries.push_back(TarWriteEntry{
+        packageEntries.push_back(TarWriteEntry {
             .path = "hashes/payload.sha256",
             .type = '0',
             .data = payloadArtifacts.hashContent,
             .mode = 0644,
         });
-        packageEntries.push_back(TarWriteEntry{
+        packageEntries.push_back(TarWriteEntry {
             .path = "payload/payload.tar.zst",
             .type = '0',
             .data = payloadArtifacts.archiveBytes,
@@ -128,7 +128,7 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
     const std::filesystem::path validationRoot = std::filesystem::temp_directory_path() / "reqpack-rqp-pack-validate";
     (void)RqPackageReader::load(outputPath, validationRoot / "work", validationRoot / "state", config, false);
 
-    return RqPackageBuildResult{
+    return RqPackageBuildResult {
         .metadata = metadata,
         .identity = rq_package_identity(metadata),
         .outputPath = outputPath,

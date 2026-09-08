@@ -112,7 +112,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("registry getAvailableNames includes built-in and scanned plugins", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-names"};
+    TempDir tempDir {"reqpack-registry-query-names"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "category", CATEGORY_PLUGIN);
@@ -127,7 +127,7 @@ TEST_CASE("registry getAvailableNames includes built-in and scanned plugins", "[
 }
 
 TEST_CASE("registry findByCategory returns plugins declaring the category", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-category"};
+    TempDir tempDir {"reqpack-registry-query-category"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "category", CATEGORY_PLUGIN);
@@ -144,7 +144,7 @@ TEST_CASE("registry findByCategory returns plugins declaring the category", "[un
 }
 
 TEST_CASE("registry resolveSystemForExtension maps built-in rqp extension", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-rqp-ext"};
+    TempDir tempDir {"reqpack-registry-query-rqp-ext"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     Registry registry(config);
@@ -152,7 +152,7 @@ TEST_CASE("registry resolveSystemForExtension maps built-in rqp extension", "[un
 }
 
 TEST_CASE("registry resolveSystemForExtension maps plugin-declared extensions", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-ext"};
+    TempDir tempDir {"reqpack-registry-query-ext"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "rpm", EXTENSION_PLUGIN);
@@ -166,7 +166,7 @@ TEST_CASE("registry resolveSystemForExtension maps plugin-declared extensions", 
 }
 
 TEST_CASE("registry resolveSystemForLocalTarget detects reqpack manifest directories", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-local-manifest"};
+    TempDir tempDir {"reqpack-registry-query-local-manifest"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     const std::filesystem::path projectDir = tempDir.path() / "project";
@@ -177,7 +177,7 @@ TEST_CASE("registry resolveSystemForLocalTarget detects reqpack manifest directo
 }
 
 TEST_CASE("registry resolveSystemForLocalTarget resolves file extension for regular files", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-local-file"};
+    TempDir tempDir {"reqpack-registry-query-local-file"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "rpm", EXTENSION_PLUGIN);
@@ -194,7 +194,7 @@ TEST_CASE("registry resolveSystemForLocalTarget resolves file extension for regu
 
 TEST_CASE("registry resolveSystemForLocalTarget returns empty for ambiguous directory contents",
           "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-ambiguous"};
+    TempDir tempDir {"reqpack-registry-query-ambiguous"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "rpm", EXTENSION_PLUGIN);
@@ -211,18 +211,18 @@ TEST_CASE("registry resolveSystemForLocalTarget returns empty for ambiguous dire
 }
 
 TEST_CASE("registry resolvePluginName follows database alias and planner aliases", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-resolve"};
+    TempDir tempDir {"reqpack-registry-query-resolve"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
     config.planner.systemAliases["brew"] = "apt";
 
     const std::filesystem::path pluginDirectory =
         add_plugin_script(tempDir.path() / "plugins", "target", CATEGORY_PLUGIN);
-    config.registry.sources["target"] = RegistrySourceEntry{
+    config.registry.sources["target"] = RegistrySourceEntry {
         .source = pluginDirectory.parent_path().string(),
         .alias = false,
         .description = "target plugin",
     };
-    config.registry.sources["alias-demo"] = RegistrySourceEntry{
+    config.registry.sources["alias-demo"] = RegistrySourceEntry {
         .source = "target",
         .alias = true,
         .description = "alias to target",
@@ -237,7 +237,7 @@ TEST_CASE("registry resolvePluginName follows database alias and planner aliases
 }
 
 TEST_CASE("registry getKnownPluginNames includes planner aliases", "[unit][registry_query]") {
-    TempDir tempDir{"reqpack-registry-query-known"};
+    TempDir tempDir {"reqpack-registry-query-known"};
     ReqPackConfig config = make_registry_query_config(tempDir.path());
     config.planner.systemAliases["brew"] = "apt";
 

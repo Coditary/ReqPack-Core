@@ -72,7 +72,7 @@ std::string RqpPlugin::readTextFile(const std::filesystem::path& path) {
 }
 
 std::string RqpPlugin::sha256Hex(const std::string& bytes) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest{};
+    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
     SHA256(reinterpret_cast<const unsigned char*>(bytes.data()), bytes.size(), digest.data());
 
     std::ostringstream stream;

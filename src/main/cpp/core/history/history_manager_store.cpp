@@ -21,9 +21,9 @@ constexpr std::string_view INSTALLED_STATE_KEY_PREFIX = "pkg:";
 constexpr std::string_view INSTALLED_STATE_INITIALIZED_KEY = "meta:initialized";
 
 struct InstalledStateEnvironment {
-    MDB_env* env{nullptr};
-    MDB_dbi dbi{0};
-    bool dbiOpen{false};
+    MDB_env* env {nullptr};
+    MDB_dbi dbi {0};
+    bool dbiOpen {false};
 
     InstalledStateEnvironment() = default;
     InstalledStateEnvironment(const InstalledStateEnvironment&) = delete;
@@ -119,7 +119,7 @@ InstalledStateEnvironment open_installed_state_environment(const std::filesystem
 }
 
 std::optional<std::string> read_value(MDB_txn* transaction, MDB_dbi dbi, const std::string& key) {
-    MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
+    MDB_val keyValue {key.size(), const_cast<char*>(key.data())};
     MDB_val value;
     if (mdb_get(transaction, dbi, &keyValue, &value) != MDB_SUCCESS) {
         return std::nullopt;
@@ -128,13 +128,13 @@ std::optional<std::string> read_value(MDB_txn* transaction, MDB_dbi dbi, const s
 }
 
 bool put_value(MDB_txn* transaction, MDB_dbi dbi, const std::string& key, const std::string& value) {
-    MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
-    MDB_val dataValue{value.size(), const_cast<char*>(value.data())};
+    MDB_val keyValue {key.size(), const_cast<char*>(key.data())};
+    MDB_val dataValue {value.size(), const_cast<char*>(value.data())};
     return mdb_put(transaction, dbi, &keyValue, &dataValue, 0) == MDB_SUCCESS;
 }
 
 bool delete_value(MDB_txn* transaction, MDB_dbi dbi, const std::string& key) {
-    MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
+    MDB_val keyValue {key.size(), const_cast<char*>(key.data())};
     const int result = mdb_del(transaction, dbi, &keyValue, nullptr);
     return result == MDB_SUCCESS || result == MDB_NOTFOUND;
 }
@@ -147,7 +147,7 @@ std::vector<std::string> collect_keys_with_prefix(MDB_txn* transaction, MDB_dbi 
         return keys;
     }
 
-    MDB_val key{prefix.size(), const_cast<char*>(prefix.data())};
+    MDB_val key {prefix.size(), const_cast<char*>(prefix.data())};
     MDB_val value;
     int result = mdb_cursor_get(cursor, &key, &value, MDB_SET_RANGE);
     while (result == MDB_SUCCESS) {
@@ -365,7 +365,7 @@ bool remove_installed_state_database(const std::filesystem::path& dbDirectory, c
         version.empty()
             ? collect_keys_with_prefix(transaction, environment.dbi,
                                        history_manager_internal::installed_state_name_prefix(system, name))
-            : std::vector<std::string>{history_manager_internal::installed_state_key(system, name, version)};
+            : std::vector<std::string> {history_manager_internal::installed_state_key(system, name, version)};
 
     if (!put_value(transaction, environment.dbi, std::string(INSTALLED_STATE_INITIALIZED_KEY), "1") ||
         !delete_keys(transaction, environment.dbi, keys)) {
@@ -562,7 +562,7 @@ bool HistoryManager::updateInstalledState(const HistoryEntry& entry) const {
     }
 
     return upsert_installed_state_database(installedStateDatabasePath(), legacyInstalledStatePath(),
-                                           InstalledEntry{
+                                           InstalledEntry {
                                                .name = entry.packageName,
                                                .version = entry.packageVersion,
                                                .system = entry.system,

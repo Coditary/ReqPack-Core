@@ -9,9 +9,9 @@ enum class RemoteProfileProtocol { AUTO, TEXT, JSON, HTTP, HTTPS };
 
 struct RemoteProfile {
     std::string name;
-    std::string host{"127.0.0.1"};
-    int port{4545};
-    RemoteProfileProtocol protocol{RemoteProfileProtocol::AUTO};
+    std::string host {"127.0.0.1"};
+    int port {4545};
+    RemoteProfileProtocol protocol {RemoteProfileProtocol::AUTO};
     std::optional<std::string> token;
     std::optional<std::string> username;
     std::optional<std::string> password;
@@ -22,7 +22,7 @@ struct RemoteUser {
     std::optional<std::string> token;
     std::optional<std::string> username;
     std::optional<std::string> password;
-    bool isAdmin{false};
+    bool isAdmin {false};
 };
 
 inline const std::string REMOTE_PROFILES_FILENAME = "remote.lua";

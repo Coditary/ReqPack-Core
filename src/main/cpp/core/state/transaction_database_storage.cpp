@@ -10,7 +10,7 @@ bool starts_with(const std::string& value, std::string_view prefix) {
 }
 
 bool load_value(MDB_txn* transaction, MDB_dbi database, const std::string& key, std::string& value) {
-    MDB_val dbKey{key.size(), const_cast<char*>(key.data())};
+    MDB_val dbKey {key.size(), const_cast<char*>(key.data())};
     MDB_val dbValue;
     if (mdb_get(transaction, database, &dbKey, &dbValue) != MDB_SUCCESS) {
         return false;
@@ -20,13 +20,13 @@ bool load_value(MDB_txn* transaction, MDB_dbi database, const std::string& key, 
 }
 
 bool put_value(MDB_txn* transaction, MDB_dbi database, const std::string& key, const std::string& value) {
-    MDB_val dbKey{key.size(), const_cast<char*>(key.data())};
-    MDB_val dbValue{value.size(), const_cast<char*>(value.data())};
+    MDB_val dbKey {key.size(), const_cast<char*>(key.data())};
+    MDB_val dbValue {value.size(), const_cast<char*>(value.data())};
     return mdb_put(transaction, database, &dbKey, &dbValue, 0) == MDB_SUCCESS;
 }
 
 bool delete_value(MDB_txn* transaction, MDB_dbi database, const std::string& key) {
-    MDB_val dbKey{key.size(), const_cast<char*>(key.data())};
+    MDB_val dbKey {key.size(), const_cast<char*>(key.data())};
     return mdb_del(transaction, database, &dbKey, nullptr) == MDB_SUCCESS;
 }
 
@@ -122,7 +122,7 @@ TransactionDatabase::loadPrefixedEntries(const std::string& prefix) const {
         return entries;
     }
 
-    MDB_val key{prefix.size(), const_cast<char*>(prefix.data())};
+    MDB_val key {prefix.size(), const_cast<char*>(prefix.data())};
     MDB_val value;
     int result = mdb_cursor_get(cursor, &key, &value, MDB_SET_RANGE);
     while (result == MDB_SUCCESS) {

@@ -47,7 +47,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 } // namespace
 
 TEST_CASE("lua bridge host runtime emits logs and transaction events", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-events"};
+    TempDir tempDir {"reqpack-lua-host-runtime-events"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -71,7 +71,7 @@ TEST_CASE("lua bridge host runtime emits logs and transaction events", "[unit][l
     metrics.totalBytes = 100;
     metrics.bytesPerSecond = 4;
     runtime.emitProgress("demo", metrics);
-    runtime.emitProgress("demo", DisplayProgressMetrics{});
+    runtime.emitProgress("demo", DisplayProgressMetrics {});
 
     const std::vector<PluginEventRecord> events = runtime.takeRecentEvents();
     REQUIRE(events.size() == 1);
@@ -84,7 +84,7 @@ TEST_CASE("lua bridge host runtime emits logs and transaction events", "[unit][l
 }
 
 TEST_CASE("lua bridge host runtime honors silent output mode", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-silent"};
+    TempDir tempDir {"reqpack-lua-host-runtime-silent"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -99,14 +99,14 @@ TEST_CASE("lua bridge host runtime honors silent output mode", "[unit][lua_bridg
 }
 
 TEST_CASE("lua bridge host runtime executes commands with override", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-exec"};
+    TempDir tempDir {"reqpack-lua-host-runtime-exec"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
     LuaBridgeHostRuntime runtime(logger, config, "demo", tempDir.path().string(), &securityMetadata);
 
     runtime.setExecOverride([](const std::string& sourceId, const std::string& command) {
-        return ExecResult{
+        return ExecResult {
             .success = true,
             .exitCode = 0,
             .stdoutText = sourceId + ":" + command,
@@ -120,7 +120,7 @@ TEST_CASE("lua bridge host runtime executes commands with override", "[unit][lua
 }
 
 TEST_CASE("lua bridge host runtime downloads local file urls", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-download"};
+    TempDir tempDir {"reqpack-lua-host-runtime-download"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -136,7 +136,7 @@ TEST_CASE("lua bridge host runtime downloads local file urls", "[unit][lua_bridg
 }
 
 TEST_CASE("lua bridge host runtime denies execution when policy enforcement fails", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-deny"};
+    TempDir tempDir {"reqpack-lua-host-runtime-deny"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -155,13 +155,13 @@ TEST_CASE("lua bridge host runtime denies execution when policy enforcement fail
 }
 
 TEST_CASE("lua bridge host runtime retains binding contexts", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-binding"};
+    TempDir tempDir {"reqpack-lua-host-runtime-binding"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
     LuaBridgeHostRuntime runtime(logger, config, "demo", tempDir.path().string(), &securityMetadata);
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = "demo",
         .pluginDirectory = tempDir.path().string(),
         .scriptPath = (tempDir.path() / "run.lua").string(),
@@ -172,13 +172,13 @@ TEST_CASE("lua bridge host runtime retains binding contexts", "[unit][lua_bridge
     const LuaBridgeRuntimeBindingContext* binding = runtime.runtimeBindingContext(contextId);
     REQUIRE(binding != nullptr);
     CHECK(binding->pluginId == "demo");
-    CHECK(binding->flags == std::vector<std::string>{kSilentRuntimeFlag});
+    CHECK(binding->flags == std::vector<std::string> {kSilentRuntimeFlag});
     CHECK(runtime.hasSilentRuntimeFlag(context.flags));
     CHECK(runtime.shouldUseSilentRuntime(context.flags));
 }
 
 TEST_CASE("lua bridge host runtime executes commands with exec rules", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-rules"};
+    TempDir tempDir {"reqpack-lua-host-runtime-rules"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -199,7 +199,7 @@ TEST_CASE("lua bridge host runtime executes commands with exec rules", "[unit][l
     )");
 
     runtime.setExecOverride([](const std::string&, const std::string&) {
-        return ExecResult{.success = true, .exitCode = 0, .stdoutText = "ok", .stderrText = {}};
+        return ExecResult {.success = true, .exitCode = 0, .stdoutText = "ok", .stderrText = {}};
     });
 
     const ExecResult result = runtime.executeCommandWithPolicy("demo", "ignored", rules, false);
@@ -207,7 +207,7 @@ TEST_CASE("lua bridge host runtime executes commands with exec rules", "[unit][l
 }
 
 TEST_CASE("lua bridge host runtime executes exec rules without policy enforcement", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-rules-open"};
+    TempDir tempDir {"reqpack-lua-host-runtime-rules-open"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -235,7 +235,7 @@ TEST_CASE("lua bridge host runtime executes exec rules without policy enforcemen
 
 TEST_CASE("lua bridge host runtime denies exec rules when policy enforcement fails",
           "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-rules-deny"};
+    TempDir tempDir {"reqpack-lua-host-runtime-rules-deny"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -269,7 +269,7 @@ TEST_CASE("lua bridge host runtime denies exec rules when policy enforcement fai
 }
 
 TEST_CASE("lua bridge host runtime download appends archive suffix to destination", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-download-suffix"};
+    TempDir tempDir {"reqpack-lua-host-runtime-download-suffix"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -284,7 +284,7 @@ TEST_CASE("lua bridge host runtime download appends archive suffix to destinatio
 }
 
 TEST_CASE("lua bridge host runtime creates temp directories", "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-temp"};
+    TempDir tempDir {"reqpack-lua-host-runtime-temp"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
@@ -298,14 +298,14 @@ TEST_CASE("lua bridge host runtime creates temp directories", "[unit][lua_bridge
 
 TEST_CASE("lua bridge host runtime execute delegates to policy-aware command runner",
           "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-execute-delegate"};
+    TempDir tempDir {"reqpack-lua-host-runtime-execute-delegate"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
     std::optional<PluginSecurityMetadata> securityMetadata;
     LuaBridgeHostRuntime runtime(logger, config, "demo", tempDir.path().string(), &securityMetadata);
 
     runtime.setExecOverride([](const std::string& sourceId, const std::string& command) {
-        return ExecResult{.success = true, .exitCode = 0, .stdoutText = sourceId + ":" + command, .stderrText = {}};
+        return ExecResult {.success = true, .exitCode = 0, .stdoutText = sourceId + ":" + command, .stderrText = {}};
     });
 
     const ExecResult result = runtime.execute("scope:demo", "echo delegated");
@@ -315,7 +315,7 @@ TEST_CASE("lua bridge host runtime execute delegates to policy-aware command run
 
 TEST_CASE("lua bridge host runtime denies execution silently when policy blocks writes",
           "[unit][lua_bridge_host_runtime]") {
-    TempDir tempDir{"reqpack-lua-host-runtime-silent-deny"};
+    TempDir tempDir {"reqpack-lua-host-runtime-silent-deny"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;

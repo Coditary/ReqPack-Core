@@ -49,7 +49,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest loads packages from returned table", "[unit][manifest][load]") {
-    TempDir dir{"reqpack-manifest-return-table"};
+    TempDir dir {"reqpack-manifest-return-table"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -81,7 +81,7 @@ TEST_CASE("manifest loads packages from returned table", "[unit][manifest][load]
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest loads packages from global variable", "[unit][manifest][load]") {
-    TempDir dir{"reqpack-manifest-global-var"};
+    TempDir dir {"reqpack-manifest-global-var"};
     write_file(dir.manifest(), R"(
         packages = {
             { system = "apt", name = "htop" },
@@ -106,7 +106,7 @@ TEST_CASE("manifest loads packages from global variable", "[unit][manifest][load
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest prefers returned table over global variable", "[unit][manifest][load]") {
-    TempDir dir{"reqpack-manifest-priority"};
+    TempDir dir {"reqpack-manifest-priority"};
     write_file(dir.manifest(), R"(
         packages = {
             { system = "ignored", name = "should-not-appear" },
@@ -129,7 +129,7 @@ TEST_CASE("manifest prefers returned table over global variable", "[unit][manife
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest entry without version has empty version string", "[unit][manifest][fields]") {
-    TempDir dir{"reqpack-manifest-no-version"};
+    TempDir dir {"reqpack-manifest-no-version"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -145,7 +145,7 @@ TEST_CASE("manifest entry without version has empty version string", "[unit][man
 }
 
 TEST_CASE("manifest entry with flags populates flags vector", "[unit][manifest][fields]") {
-    TempDir dir{"reqpack-manifest-flags"};
+    TempDir dir {"reqpack-manifest-flags"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -162,7 +162,7 @@ TEST_CASE("manifest entry with flags populates flags vector", "[unit][manifest][
 }
 
 TEST_CASE("manifest with empty flags array produces empty flags vector", "[unit][manifest][fields]") {
-    TempDir dir{"reqpack-manifest-empty-flags"};
+    TempDir dir {"reqpack-manifest-empty-flags"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -181,7 +181,7 @@ TEST_CASE("manifest with empty flags array produces empty flags vector", "[unit]
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest with empty packages table returns empty vector", "[unit][manifest][load]") {
-    TempDir dir{"reqpack-manifest-empty"};
+    TempDir dir {"reqpack-manifest-empty"};
     write_file(dir.manifest(), R"(
         return {
             packages = {}
@@ -197,7 +197,7 @@ TEST_CASE("manifest with empty packages table returns empty vector", "[unit][man
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest preserves declaration order across mixed systems", "[unit][manifest][load]") {
-    TempDir dir{"reqpack-manifest-mixed"};
+    TempDir dir {"reqpack-manifest-mixed"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -226,14 +226,14 @@ TEST_CASE("manifest preserves declaration order across mixed systems", "[unit][m
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest throws when file does not exist", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-missing"};
+    TempDir dir {"reqpack-manifest-missing"};
     const std::filesystem::path nonexistent = dir.path() / "reqpack.lua";
 
     CHECK_THROWS_AS(ManifestLoader::load(nonexistent), std::runtime_error);
 }
 
 TEST_CASE("manifest error message contains the missing path", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-missing-msg"};
+    TempDir dir {"reqpack-manifest-missing-msg"};
     const std::filesystem::path nonexistent = dir.path() / "reqpack.lua";
 
     try {
@@ -250,7 +250,7 @@ TEST_CASE("manifest error message contains the missing path", "[unit][manifest][
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest throws on invalid lua syntax", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-syntax"};
+    TempDir dir {"reqpack-manifest-syntax"};
     write_file(dir.manifest(), "this is not valid lua @@@@");
 
     CHECK_THROWS_AS(ManifestLoader::load(dir.manifest()), std::runtime_error);
@@ -261,7 +261,7 @@ TEST_CASE("manifest throws on invalid lua syntax", "[unit][manifest][error]") {
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest throws when packages table is absent", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-no-packages"};
+    TempDir dir {"reqpack-manifest-no-packages"};
     write_file(dir.manifest(), R"(
         return {
             dependencies = {
@@ -274,7 +274,7 @@ TEST_CASE("manifest throws when packages table is absent", "[unit][manifest][err
 }
 
 TEST_CASE("manifest throws when file returns a non-table and no global packages", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-returns-string"};
+    TempDir dir {"reqpack-manifest-returns-string"};
     write_file(dir.manifest(), R"(return "oops")");
 
     CHECK_THROWS_AS(ManifestLoader::load(dir.manifest()), std::runtime_error);
@@ -285,7 +285,7 @@ TEST_CASE("manifest throws when file returns a non-table and no global packages"
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest throws when entry is missing system field", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-no-system"};
+    TempDir dir {"reqpack-manifest-no-system"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -298,7 +298,7 @@ TEST_CASE("manifest throws when entry is missing system field", "[unit][manifest
 }
 
 TEST_CASE("manifest throws when entry has empty system field", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-empty-system"};
+    TempDir dir {"reqpack-manifest-empty-system"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -311,7 +311,7 @@ TEST_CASE("manifest throws when entry has empty system field", "[unit][manifest]
 }
 
 TEST_CASE("manifest throws when entry is missing name field", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-no-name"};
+    TempDir dir {"reqpack-manifest-no-name"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -324,7 +324,7 @@ TEST_CASE("manifest throws when entry is missing name field", "[unit][manifest][
 }
 
 TEST_CASE("manifest throws when entry has empty name field", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-empty-name"};
+    TempDir dir {"reqpack-manifest-empty-name"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -341,7 +341,7 @@ TEST_CASE("manifest throws when entry has empty name field", "[unit][manifest][e
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest throws when a packages entry is not a table", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-non-table-entry"};
+    TempDir dir {"reqpack-manifest-non-table-entry"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -358,7 +358,7 @@ TEST_CASE("manifest throws when a packages entry is not a table", "[unit][manife
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest error message contains failing entry index", "[unit][manifest][error]") {
-    TempDir dir{"reqpack-manifest-error-index"};
+    TempDir dir {"reqpack-manifest-error-index"};
     write_file(dir.manifest(), R"(
         return {
             packages = {
@@ -383,7 +383,7 @@ TEST_CASE("manifest error message contains failing entry index", "[unit][manifes
 // ---------------------------------------------------------------------------
 
 TEST_CASE("manifest environment exposes ffi module", "[unit][manifest][ffi]") {
-    TempDir dir{"reqpack-manifest-ffi"};
+    TempDir dir {"reqpack-manifest-ffi"};
     write_file(dir.manifest(), R"(
         assert(type(ffi) == "table", "global ffi missing in manifest env")
         local ffiModule = require("ffi")

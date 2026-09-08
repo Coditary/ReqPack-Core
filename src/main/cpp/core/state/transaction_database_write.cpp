@@ -26,7 +26,7 @@ std::string TransactionDatabase::createRun(const std::vector<Package>& packages,
 
     const std::string timestamp = transaction_database_internal::now_timestamp();
     const std::string runId = timestamp + "-" + std::to_string(packages.size());
-    TransactionRunRecord run{
+    TransactionRunRecord run {
         .id = runId, .state = "open", .createdAt = timestamp, .updatedAt = timestamp, .flags = flags};
 
     std::lock_guard<std::mutex> lock(this->mutex);
@@ -185,7 +185,7 @@ bool TransactionDatabase::markRunCommitted(const std::string& runId) const {
     }
 
     const std::string timestamp = transaction_database_internal::now_timestamp();
-    TransactionRunRecord run{.id = runId, .state = "committed", .createdAt = timestamp, .updatedAt = timestamp};
+    TransactionRunRecord run {.id = runId, .state = "committed", .createdAt = timestamp, .updatedAt = timestamp};
     std::string runPayload;
     if (transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId),
                                                   runPayload)) {

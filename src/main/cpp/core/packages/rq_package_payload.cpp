@@ -134,7 +134,7 @@ struct TarPathFields {
 
 TarPathFields split_tar_path_fields(const std::string& path) {
     if (path.size() <= 100) {
-        return TarPathFields{.name = path};
+        return TarPathFields {.name = path};
     }
     if (path.size() > 255) {
         throw std::runtime_error("archive path too long: " + path);
@@ -145,7 +145,7 @@ TarPathFields split_tar_path_fields(const std::string& path) {
         const std::string prefix = path.substr(0, separator);
         const std::string name = path.substr(separator + 1);
         if (!prefix.empty() && prefix.size() <= 155 && !name.empty() && name.size() <= 100) {
-            return TarPathFields{.name = name, .prefix = prefix};
+            return TarPathFields {.name = name, .prefix = prefix};
         }
         if (separator == 0) {
             break;
@@ -162,7 +162,7 @@ std::array<char, TAR_BLOCK_SIZE> tar_header_for_entry(const rq_package_internal:
         throw std::runtime_error("payload symlink target too long: " + entry.path);
     }
 
-    std::array<char, TAR_BLOCK_SIZE> header{};
+    std::array<char, TAR_BLOCK_SIZE> header {};
     std::memcpy(header.data(), pathFields.name.data(), pathFields.name.size());
     write_tar_octal(header.data() + 100, 8, entry.mode);
     write_tar_octal(header.data() + 108, 8, 0);
@@ -246,7 +246,7 @@ std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(con
                 throw std::runtime_error("failed to read payload symlink: " + it->path().string());
             }
             validate_payload_symlink_target(archivePath, rq_package_internal::path_string(linkTarget));
-            entries.push_back(rq_package_internal::TarWriteEntry{
+            entries.push_back(rq_package_internal::TarWriteEntry {
                 .path = archivePath,
                 .type = '2',
                 .linkTarget = rq_package_internal::path_string(linkTarget),
@@ -255,7 +255,7 @@ std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(con
             continue;
         }
         if (std::filesystem::is_directory(status)) {
-            entries.push_back(rq_package_internal::TarWriteEntry{
+            entries.push_back(rq_package_internal::TarWriteEntry {
                 .path = archivePath,
                 .type = '5',
                 .mode = 0755,
@@ -267,7 +267,7 @@ std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(con
             if (error) {
                 throw std::runtime_error("failed to stat payload file: " + it->path().string());
             }
-            entries.push_back(rq_package_internal::TarWriteEntry{
+            entries.push_back(rq_package_internal::TarWriteEntry {
                 .path = archivePath,
                 .type = '0',
                 .data = rq_package_internal::read_file(it->path()),
@@ -332,7 +332,7 @@ std::vector<TarEntry> parse_tar_entries(const std::string& content) {
             continue;
         }
 
-        entries.push_back(TarEntry{
+        entries.push_back(TarEntry {
             .path = path,
             .type = type,
             .size = size,
@@ -406,7 +406,7 @@ PayloadBuildArtifacts build_payload_from_prebuilt(const RqMetadata& metadata,
 
     const std::vector<TarEntry> entries = validate_payload_archive_bytes(artifacts.archiveBytes);
     artifacts.hashContent = actualHash + "  payload/payload.tar.zst\n";
-    artifacts.metadata = RqPayloadMetadata{
+    artifacts.metadata = RqPayloadMetadata {
         .path = "payload/payload.tar.zst",
         .archive = "tar",
         .compression = "zstd",
@@ -428,7 +428,7 @@ PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& paylo
     artifacts.archiveBytes = zstd_compress(payloadTar);
     const std::string hash = sha256_hex(artifacts.archiveBytes);
     artifacts.hashContent = hash + "  payload/payload.tar.zst\n";
-    artifacts.metadata = RqPayloadMetadata{
+    artifacts.metadata = RqPayloadMetadata {
         .path = "payload/payload.tar.zst",
         .archive = "tar",
         .compression = "zstd",
@@ -441,7 +441,7 @@ PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& paylo
 }
 
 std::string sha256_hex(const std::string& bytes) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest{};
+    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
     SHA256(reinterpret_cast<const unsigned char*>(bytes.data()), bytes.size(), digest.data());
 
     std::ostringstream stream;
@@ -518,7 +518,7 @@ void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::f
         if (!std::filesystem::is_regular_file(status)) {
             throw std::runtime_error("unsupported reserved entry type: " + archivePath);
         }
-        entries.push_back(TarWriteEntry{
+        entries.push_back(TarWriteEntry {
             .path = archivePath,
             .type = '0',
             .data = read_file(it->path()),

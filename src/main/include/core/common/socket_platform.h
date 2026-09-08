@@ -16,7 +16,7 @@ inline constexpr ReqpackSocket REQPACK_INVALID_SOCKET = INVALID_SOCKET;
 inline void reqpack_ensure_socket_runtime() {
     static bool initialized = false;
     if (!initialized) {
-        WSADATA wsa_data{};
+        WSADATA wsa_data {};
         (void)::WSAStartup(MAKEWORD(2, 2), &wsa_data);
         initialized = true;
     }

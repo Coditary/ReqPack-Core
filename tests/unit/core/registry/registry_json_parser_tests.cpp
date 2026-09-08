@@ -39,7 +39,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 } // namespace
 
 TEST_CASE("registry json parser builds main and alias records", "[unit][registry_json_parser][core]") {
-    TempDir tempDir{"reqpack-registry-json-parser"};
+    TempDir tempDir {"reqpack-registry-json-parser"};
     const std::filesystem::path path = tempDir.path() / "registry" / "d" / "dnf.json";
     write_file(path, R"({
   "schemaVersion": 1,
@@ -73,8 +73,8 @@ TEST_CASE("registry json parser builds main and alias records", "[unit][registry
     CHECK_FALSE(main.alias);
     CHECK(main.originPath == path.generic_string());
     CHECK(main.role == "package-manager");
-    CHECK(main.capabilities == std::vector<std::string>{"exec", "network"});
-    CHECK(main.ecosystemScopes == std::vector<std::string>{"rpm", "fedora"});
+    CHECK(main.capabilities == std::vector<std::string> {"exec", "network"});
+    CHECK(main.ecosystemScopes == std::vector<std::string> {"rpm", "fedora"});
     REQUIRE(main.writeScopes.size() == 2);
     CHECK(main.writeScopes[0].kind == "temp");
     CHECK(main.writeScopes[1].value == ".cache/dnf");
@@ -95,7 +95,7 @@ TEST_CASE("registry json parser builds main and alias records", "[unit][registry
 }
 
 TEST_CASE("registry json parser rejects mismatched file and missing fields", "[unit][registry_json_parser][core]") {
-    TempDir tempDir{"reqpack-registry-json-parser-invalid"};
+    TempDir tempDir {"reqpack-registry-json-parser-invalid"};
     const std::filesystem::path path = tempDir.path() / "registry" / "m" / "maven.json";
 
     write_file(path, R"({

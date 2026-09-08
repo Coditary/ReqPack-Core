@@ -89,10 +89,10 @@ CommandOutput SnapshotExporter::buildSnapshotOutput(const Request& request) cons
     }
 
     std::vector<CommandOutputField> fields;
-    fields.push_back(CommandOutputField{.key = "Format", .value = "reqpack.lua"});
-    fields.push_back(CommandOutputField{.key = "Package Count", .value = std::to_string(sorted.size())});
+    fields.push_back(CommandOutputField {.key = "Format", .value = "reqpack.lua"});
+    fields.push_back(CommandOutputField {.key = "Package Count", .value = std::to_string(sorted.size())});
     if (outputPath.empty()) {
-        fields.push_back(CommandOutputField{.key = "Output", .value = "stdout"});
+        fields.push_back(CommandOutputField {.key = "Output", .value = "stdout"});
         output.blocks.push_back(make_command_field_value_block(fields));
         output.blocks.push_back(make_command_raw_text_block(rendered));
         return output;
@@ -102,7 +102,7 @@ CommandOutput SnapshotExporter::buildSnapshotOutput(const Request& request) cons
     if (filePath.is_relative()) {
         filePath = std::filesystem::current_path() / filePath;
     }
-    fields.push_back(CommandOutputField{.key = "Output Path", .value = filePath.string()});
+    fields.push_back(CommandOutputField {.key = "Output Path", .value = filePath.string()});
     output.blocks.push_back(make_command_field_value_block(fields));
     output.blocks.push_back(make_command_artifact_block("artifact", filePath.string()));
     return output;

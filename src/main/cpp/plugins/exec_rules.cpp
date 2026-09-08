@@ -78,7 +78,7 @@ std::string to_lower_copy(const std::string& value) {
 void log_plugin_message(Logger& logger, spdlog::level::level_enum level, const std::string& pluginId,
                         const std::string& message) {
     logger.emit(OutputAction::LOG,
-                OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
+                OutputContext {.level = level, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void log_rule_warning(Logger& logger, const std::string& pluginId, const std::string& message) {
@@ -91,7 +91,7 @@ void log_rule_error(Logger& logger, const std::string& pluginId, const std::stri
 
 OutputContext plugin_output_context(const std::string& sourceId, const std::string& pluginScope) {
     const bool hasItemId = sourceId.find(':') != std::string::npos;
-    return OutputContext{.source = hasItemId ? sourceId : "plugin", .scope = pluginScope};
+    return OutputContext {.source = hasItemId ? sourceId : "plugin", .scope = pluginScope};
 }
 
 void log_exec_transcript_chunk(Logger& logger, const std::string& pluginId, const std::string& chunk,
@@ -181,7 +181,7 @@ bool write_all(int fd, const std::string& value) {
 void emit_log_action(Logger& logger, const std::string& pluginId, spdlog::level::level_enum level,
                      const std::string& message) {
     logger.emit(OutputAction::LOG,
-                OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
+                OutputContext {.level = level, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void emit_status_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope, int statusCode) {
@@ -273,7 +273,7 @@ void dispatch_resolved_action(Logger& logger, const std::string& sourceId, const
                 return;
             }
             const auto it = action.fields.find("value");
-            const std::string value = it == action.fields.end() ? std::string{} : it->second;
+            const std::string value = it == action.fields.end() ? std::string {} : it->second;
             if (value.empty()) {
                 log_rule_warning(logger, pluginScope, "send action resolved to empty value.");
                 return;
@@ -292,12 +292,13 @@ void dispatch_resolved_action(Logger& logger, const std::string& sourceId, const
         }
         case ExecRuleActionType::Log: {
             const std::string level = action.fields.contains("level") ? action.fields.at("level") : "info";
-            const std::string message = action.fields.contains("message") ? action.fields.at("message") : std::string{};
+            const std::string message =
+                action.fields.contains("message") ? action.fields.at("message") : std::string {};
             emit_log_action(logger, pluginScope, parse_log_level(level), message);
             return;
         }
         case ExecRuleActionType::Status: {
-            const std::string raw = action.fields.contains("code") ? action.fields.at("code") : std::string{};
+            const std::string raw = action.fields.contains("code") ? action.fields.at("code") : std::string {};
             const std::optional<int> code = parse_int_value(raw);
             if (!code.has_value()) {
                 log_rule_warning(logger, pluginScope, "status action value '" + raw + "' is not an integer.");
@@ -316,28 +317,28 @@ void dispatch_resolved_action(Logger& logger, const std::string& sourceId, const
         }
         case ExecRuleActionType::BeginStep:
             emit_event_action(logger, sourceId, pluginScope, "begin_step",
-                              action.fields.contains("label") ? action.fields.at("label") : std::string{});
+                              action.fields.contains("label") ? action.fields.at("label") : std::string {});
             return;
         case ExecRuleActionType::Success:
             emit_event_action(logger, sourceId, pluginScope, "success", "ok");
             return;
         case ExecRuleActionType::Failed:
             emit_event_action(logger, sourceId, pluginScope, "failed",
-                              action.fields.contains("message") ? action.fields.at("message") : std::string{});
+                              action.fields.contains("message") ? action.fields.at("message") : std::string {});
             return;
         case ExecRuleActionType::Event: {
-            const std::string name = action.fields.contains("name") ? action.fields.at("name") : std::string{};
+            const std::string name = action.fields.contains("name") ? action.fields.at("name") : std::string {};
             if (name.empty()) {
                 log_rule_warning(logger, pluginScope, "event action resolved to empty name.");
                 return;
             }
             emit_event_action(logger, sourceId, pluginScope, name,
-                              action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
+                              action.fields.contains("payload") ? action.fields.at("payload") : std::string {});
             return;
         }
         case ExecRuleActionType::Artifact:
             emit_artifact_action(logger, sourceId, pluginScope,
-                                 action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
+                                 action.fields.contains("payload") ? action.fields.at("payload") : std::string {});
             return;
         }
     } catch (const std::exception& error) {
@@ -365,7 +366,7 @@ std::string resolve_windows_cmd_exe() {
 
 bool read_windows_pipe_to_result(HANDLE readPipe, ExecResult& result,
                                  const std::function<void(const std::string&)>& onChunk) {
-    std::array<char, 4096> buffer{};
+    std::array<char, 4096> buffer {};
     for (;;) {
         DWORD count = 0;
         if (!ReadFile(readPipe, buffer.data(), static_cast<DWORD>(buffer.size()), &count, nullptr)) {
@@ -389,7 +390,7 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
                              const std::function<void(const std::string&)>& onChunk, const bool silent) {
     ExecResult result;
 
-    SECURITY_ATTRIBUTES securityAttributes{};
+    SECURITY_ATTRIBUTES securityAttributes {};
     securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.bInheritHandle = TRUE;
 
@@ -415,7 +416,7 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
         return result;
     }
 
-    STARTUPINFOA startupInfo{};
+    STARTUPINFOA startupInfo {};
     startupInfo.cb = sizeof(startupInfo);
     startupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     startupInfo.wShowWindow = SW_HIDE;
@@ -423,7 +424,7 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
     startupInfo.hStdOutput = writePipe;
     startupInfo.hStdError = writePipe;
 
-    PROCESS_INFORMATION processInfo{};
+    PROCESS_INFORMATION processInfo {};
     const std::string cmdExe = resolve_windows_cmd_exe();
     std::string commandLine = "\"" + cmdExe + "\" /c " + command;
 
@@ -478,7 +479,7 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
 
 bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, ExecResult& result,
                        const std::function<void(const std::string&)>& onChunk) {
-    std::array<char, 4096> buffer{};
+    std::array<char, 4096> buffer {};
     for (;;) {
         const ssize_t count = ::read(fd, buffer.data(), buffer.size());
         if (count > 0) {
@@ -530,7 +531,7 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
         return result;
     }
 
-    std::array<char*, 4> argv{
+    std::array<char*, 4> argv {
         const_cast<char*>("sh"),
         const_cast<char*>("-c"),
         const_cast<char*>(command.c_str()),
@@ -634,7 +635,7 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
     LineAccumulator lines;
     std::string normalizedTranscript;
 
-    std::array<char, 4096> buffer{};
+    std::array<char, 4096> buffer {};
     for (;;) {
         const ssize_t count = ::read(masterFd, buffer.data(), buffer.size());
         if (count > 0) {
@@ -714,7 +715,7 @@ ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const
         ruleset = parse_exec_rules(rules);
     } catch (const std::exception& error) {
         log_rule_error(logger, pluginScope, error.what());
-        return ExecResult{.success = false, .exitCode = 1, .stdoutText = {}, .stderrText = error.what()};
+        return ExecResult {.success = false, .exitCode = 1, .stdoutText = {}, .stderrText = error.what()};
     }
 
     switch (determine_exec_rule_runner_mode(ruleset)) {
@@ -726,5 +727,5 @@ ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const
         return run_pty_command(logger, sourceId, pluginScope, command, ruleset, silent);
     }
 
-    return ExecResult{.success = false, .exitCode = 1, .stdoutText = {}, .stderrText = "unknown runner mode"};
+    return ExecResult {.success = false, .exitCode = 1, .stdoutText = {}, .stderrText = "unknown runner mode"};
 }

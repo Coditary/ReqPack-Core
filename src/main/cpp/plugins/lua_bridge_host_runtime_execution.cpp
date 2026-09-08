@@ -13,7 +13,7 @@
 namespace {
 
 ArchiveExtractionOptions archive_options_from_config(const ReqPackConfig& config) {
-    return ArchiveExtractionOptions{
+    return ArchiveExtractionOptions {
         .password = resolve_archive_password(config),
         .interactive = config.interaction.interactive,
     };
@@ -27,14 +27,14 @@ bool LuaBridgeHostRuntime::shouldEnforceExecutionPolicy() const {
 
 ExecResult LuaBridgeHostRuntime::denyExecution(const std::string& message) const {
     if (!m_silentRuntimeOutput.load()) {
-        m_logger.emit(OutputAction::LOG, OutputContext{
+        m_logger.emit(OutputAction::LOG, OutputContext {
                                              .level = spdlog::level::err,
                                              .message = message,
                                              .source = "plugin",
                                              .scope = m_pluginId,
                                          });
     }
-    return ExecResult{.success = false, .exitCode = 126, .stdoutText = {}, .stderrText = message};
+    return ExecResult {.success = false, .exitCode = 126, .stdoutText = {}, .stderrText = message};
 }
 
 ExecResult LuaBridgeHostRuntime::runCommand(const std::string& command) const {
@@ -50,7 +50,7 @@ ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sou
         return run_plugin_command(m_logger, sourceId, m_pluginId, command, silent);
     }
 
-    const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata{});
+    const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata {});
     if (const std::optional<std::string> error =
             LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots);
         error.has_value()) {
@@ -69,7 +69,7 @@ ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sou
         return run_plugin_command(m_logger, sourceId, m_pluginId, command, rules, silent);
     }
 
-    const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata{});
+    const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata {});
     if (const std::optional<std::string> error =
             LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots);
         error.has_value()) {

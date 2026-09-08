@@ -68,7 +68,7 @@ RqStateSource RqpStateStore::parseSourceJson(const std::string& content) {
     }
 
     const ptree& tree = parsed.value();
-    return RqStateSource{
+    return RqStateSource {
         .source = required_string(tree, "source"),
         .path = required_string(tree, "path"),
         .repository = tree.get<std::string>("repository", {}),

@@ -203,7 +203,7 @@ std::string payload_block_json() {
 } // namespace
 
 TEST_CASE("rqp package reader loads valid rqp and extracts payload", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-reader-valid"};
+    TempDir tempDir {"reqpack-rqp-reader-valid"};
     const std::filesystem::path packagePath = build_rqp_package(
         tempDir.path(), "valid", "return true\n", std::make_pair(std::string("payload.txt"), std::string("hello")));
 
@@ -217,7 +217,7 @@ TEST_CASE("rqp package reader loads valid rqp and extracts payload", "[unit][rq_
 }
 
 TEST_CASE("rqp package reader rejects payload hash mismatch", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-reader-bad-hash"};
+    TempDir tempDir {"reqpack-rqp-reader-bad-hash"};
     const std::filesystem::path packagePath =
         build_rqp_package(tempDir.path(), "bad-hash", "return true\n",
                           std::make_pair(std::string("payload.txt"), std::string("hello")), std::string(64, 'a'));
@@ -242,7 +242,7 @@ TEST_CASE("rqp metadata parser normalizes missing architecture and system", "[un
                                                        "}\n");
 
     CHECK(metadata.architecture == "noarch");
-    CHECK(metadata.systems == std::vector<std::string>{"nosys"});
+    CHECK(metadata.systems == std::vector<std::string> {"nosys"});
 }
 
 TEST_CASE("rqp metadata parser accepts system string and array", "[unit][rq_package][core]") {
@@ -278,22 +278,22 @@ TEST_CASE("rqp metadata parser accepts system string and array", "[unit][rq_pack
                                                             "  \"url\": \"https://example.test/multi-tool.rqp\"\n"
                                                             "}\n");
 
-    CHECK(stringMetadata.systems == std::vector<std::string>{"debian"});
+    CHECK(stringMetadata.systems == std::vector<std::string> {"debian"});
     CHECK(stringMetadata.architecture == "noarch");
-    CHECK(arrayMetadata.systems == std::vector<std::string>{"linux", "ubuntu"});
+    CHECK(arrayMetadata.systems == std::vector<std::string> {"linux", "ubuntu"});
 }
 
 TEST_CASE("rqp system matching supports aliases and nosys", "[unit][rq_package][core]") {
     const auto aliases = rq_builtin_system_aliases();
 
-    CHECK(rq_system_matches({"nosys"}, std::set<std::string>{"fedora", "linux"}, aliases));
-    CHECK(rq_system_matches({"debian-family"}, std::set<std::string>{"ubuntu", "linux"}, aliases));
-    CHECK(rq_system_matches({"darwin"}, std::set<std::string>{"macos", "darwin"}, aliases));
-    CHECK_FALSE(rq_system_matches({"debian"}, std::set<std::string>{"fedora", "linux"}, aliases));
+    CHECK(rq_system_matches({"nosys"}, std::set<std::string> {"fedora", "linux"}, aliases));
+    CHECK(rq_system_matches({"debian-family"}, std::set<std::string> {"ubuntu", "linux"}, aliases));
+    CHECK(rq_system_matches({"darwin"}, std::set<std::string> {"macos", "darwin"}, aliases));
+    CHECK_FALSE(rq_system_matches({"debian"}, std::set<std::string> {"fedora", "linux"}, aliases));
 }
 
 TEST_CASE("rqp package builder builds control only package", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-control"};
+    TempDir tempDir {"reqpack-rqp-pack-control"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "control-only");
 
@@ -315,10 +315,10 @@ TEST_CASE("rqp package builder builds control only package", "[unit][rq_package]
 }
 
 TEST_CASE("rqp package builder defaults output into current project directory", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-default-output"};
+    TempDir tempDir {"reqpack-rqp-pack-default-output"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "default-output");
-    const ScopedCurrentPath scopedCurrentPath{projectRoot};
+    const ScopedCurrentPath scopedCurrentPath {projectRoot};
 
     const RqPackageBuildResult result = rq_build_package({
         .projectRoot = ".",
@@ -331,10 +331,10 @@ TEST_CASE("rqp package builder defaults output into current project directory", 
 }
 
 TEST_CASE("rqp package builder keeps default output next to explicit project path caller", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-default-output-explicit"};
+    TempDir tempDir {"reqpack-rqp-pack-default-output-explicit"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "explicit-output");
-    const ScopedCurrentPath scopedCurrentPath{tempDir.path()};
+    const ScopedCurrentPath scopedCurrentPath {tempDir.path()};
 
     const RqPackageBuildResult result = rq_build_package({
         .projectRoot = "./project",
@@ -347,7 +347,7 @@ TEST_CASE("rqp package builder keeps default output next to explicit project pat
 }
 
 TEST_CASE("rqp package builder builds payload from payload tree", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-payload-tree"};
+    TempDir tempDir {"reqpack-rqp-pack-payload-tree"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "payload-tree-demo");
     write_file(projectRoot / "payload-tree" / "bin" / "demo.txt", "hello world");
@@ -371,7 +371,7 @@ TEST_CASE("rqp package builder builds payload from payload tree", "[unit][rq_pac
 }
 
 TEST_CASE("rqp package builder accepts external payload dir", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-external-payload"};
+    TempDir tempDir {"reqpack-rqp-pack-external-payload"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     const std::filesystem::path payloadRoot = tempDir.path() / "rootfs";
     write_pack_project(projectRoot, "external-payload-demo");
@@ -392,7 +392,7 @@ TEST_CASE("rqp package builder accepts external payload dir", "[unit][rq_package
 }
 
 TEST_CASE("rqp package builder rebuilds validated prebuilt payload", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-prebuilt"};
+    TempDir tempDir {"reqpack-rqp-pack-prebuilt"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "prebuilt-demo");
     write_file(projectRoot / "metadata.json", base_metadata_json("prebuilt-demo", payload_block_json()));
@@ -428,7 +428,7 @@ TEST_CASE("rqp package builder rebuilds validated prebuilt payload", "[unit][rq_
 }
 
 TEST_CASE("rqp package builder rejects ambiguous payload sources", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-conflict"};
+    TempDir tempDir {"reqpack-rqp-pack-conflict"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "ambiguous-demo");
     write_file(projectRoot / "payload-tree" / "demo.txt", "hello");
@@ -445,7 +445,7 @@ TEST_CASE("rqp package builder rejects ambiguous payload sources", "[unit][rq_pa
 }
 
 TEST_CASE("rqp package builder skips host compatibility during self validation", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-cross-target"};
+    TempDir tempDir {"reqpack-rqp-pack-cross-target"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "cross-target");
     write_file(projectRoot / "metadata.json", "{\n"
@@ -515,11 +515,11 @@ TEST_CASE("rqp metadata parser reads optional dependency and binary fields", "[u
     CHECK(metadata.sourceUrl == "https://src.example.test/rich");
     CHECK(metadata.packager == "builder");
     CHECK(metadata.buildDate == "2026-01-01");
-    CHECK(metadata.tags == std::vector<std::string>{"cli", "tool"});
-    CHECK(metadata.depends == std::vector<std::string>{"lib-a"});
-    CHECK(metadata.provides == std::vector<std::string>{"tool"});
-    CHECK(metadata.conflicts == std::vector<std::string>{"legacy"});
-    CHECK(metadata.replaces == std::vector<std::string>{"old-tool"});
+    CHECK(metadata.tags == std::vector<std::string> {"cli", "tool"});
+    CHECK(metadata.depends == std::vector<std::string> {"lib-a"});
+    CHECK(metadata.provides == std::vector<std::string> {"tool"});
+    CHECK(metadata.conflicts == std::vector<std::string> {"legacy"});
+    CHECK(metadata.replaces == std::vector<std::string> {"old-tool"});
     REQUIRE(metadata.binaries.size() == 1);
     CHECK(metadata.binaries.front().name == "rich");
     CHECK(metadata.binaries.front().installPath == "/usr/bin/rich");
@@ -547,7 +547,7 @@ TEST_CASE("rqp metadata json round-trips optional fields", "[unit][rq_package][c
     metadata.provides = {"tool"};
     metadata.conflicts = {"legacy"};
     metadata.replaces = {"old-tool"};
-    metadata.payload = RqPayloadMetadata{
+    metadata.payload = RqPayloadMetadata {
         .path = "payload/payload.tar.zst",
         .archive = "tar",
         .compression = "zstd",
@@ -606,7 +606,7 @@ TEST_CASE("rqp metadata parser rejects invalid system field shape", "[unit][rq_p
 }
 
 TEST_CASE("rqp reqpack hooks parser reads install and remove hooks", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-hooks-parser"};
+    TempDir tempDir {"reqpack-rqp-hooks-parser"};
     const std::filesystem::path reqpackLua = tempDir.path() / "reqpack.lua";
     write_file(reqpackLua, "return {\n"
                            "  apiVersion = 1,\n"
@@ -623,7 +623,7 @@ TEST_CASE("rqp reqpack hooks parser reads install and remove hooks", "[unit][rq_
 }
 
 TEST_CASE("rqp reqpack hooks parser rejects missing install hook", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-hooks-missing"};
+    TempDir tempDir {"reqpack-rqp-hooks-missing"};
     const std::filesystem::path reqpackLua = tempDir.path() / "reqpack.lua";
     write_file(reqpackLua, "return { apiVersion = 1, hooks = { remove = \"scripts/remove.lua\" } }\n");
 
@@ -631,7 +631,7 @@ TEST_CASE("rqp reqpack hooks parser rejects missing install hook", "[unit][rq_pa
 }
 
 TEST_CASE("rqp package builder rejects missing project files and incomplete payload dirs", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-validation"};
+    TempDir tempDir {"reqpack-rqp-pack-validation"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     std::filesystem::create_directories(projectRoot);
 
@@ -653,7 +653,7 @@ TEST_CASE("rqp package builder rejects missing project files and incomplete payl
 }
 
 TEST_CASE("rqp package builder rejects existing output without force", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-existing-output"};
+    TempDir tempDir {"reqpack-rqp-pack-existing-output"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "existing-output");
     const std::filesystem::path outputPath = tempDir.path() / "existing-output.rqp";
@@ -669,7 +669,7 @@ TEST_CASE("rqp package builder rejects existing output without force", "[unit][r
 }
 
 TEST_CASE("rqp package builder rejects external payload when embedded tree exists", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-external-conflict"};
+    TempDir tempDir {"reqpack-rqp-pack-external-conflict"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     const std::filesystem::path payloadRoot = tempDir.path() / "rootfs";
     write_pack_project(projectRoot, "external-conflict");
@@ -687,7 +687,7 @@ TEST_CASE("rqp package builder rejects external payload when embedded tree exist
 }
 
 TEST_CASE("rqp package builder rejects missing hook script files", "[unit][rq_package][core]") {
-    TempDir tempDir{"reqpack-rqp-pack-missing-hook"};
+    TempDir tempDir {"reqpack-rqp-pack-missing-hook"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "missing-hook");
     write_file(projectRoot / "reqpack.lua", "return {\n"

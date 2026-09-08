@@ -58,7 +58,7 @@ void append_cleanup_paths(std::vector<std::filesystem::path>& tempFiles,
 }
 
 std::string internal_rqp_repository_flag(const std::string& repositoryUrl) {
-    return std::string{INTERNAL_RQP_REPOSITORY_FLAG_PREFIX} + repositoryUrl;
+    return std::string {INTERNAL_RQP_REPOSITORY_FLAG_PREFIX} + repositoryUrl;
 }
 
 bool request_has_internal_rqp_repository_flag(const Request& request, const std::string& repositoryUrl) {
@@ -86,7 +86,7 @@ std::string registry_lookup_name_from_request(const Request& request) {
 }
 
 ArchiveExtractionOptions archive_options_from_config(const ReqPackConfig& config) {
-    return ArchiveExtractionOptions{
+    return ArchiveExtractionOptions {
         .password = resolve_archive_password(config),
         .interactive = config.interaction.interactive,
     };
@@ -295,7 +295,7 @@ std::vector<std::string> collect_request_item_ids(const std::vector<Request>& re
                                          : specifier.substr(0, versionSeparator);
             const std::string version =
                 (versionSeparator == std::string::npos || versionSeparator + 1 >= specifier.size())
-                    ? std::string{}
+                    ? std::string {}
                     : specifier.substr(versionSeparator + 1);
             if (version.empty()) {
                 itemIds.push_back(system + ":" + name);
@@ -344,7 +344,7 @@ RunResultJsonDocument build_already_satisfied_json(const std::vector<Request>& r
                                          : specifier.substr(0, versionSeparator);
             const std::string version =
                 (versionSeparator == std::string::npos || versionSeparator + 1 >= specifier.size())
-                    ? std::string{}
+                    ? std::string {}
                     : specifier.substr(versionSeparator + 1);
             RunResultJsonItem item;
             item.system = system;
@@ -413,7 +413,7 @@ void expand_update_all_requests(std::vector<Request>& requests, Registry* regist
     std::vector<std::string> ordered(pluginNames.begin(), pluginNames.end());
     std::sort(ordered.begin(), ordered.end());
     for (const std::string& plugin : ordered) {
-        Request request{.action = ActionType::UPDATE, .system = plugin, .flags = flags};
+        Request request {.action = ActionType::UPDATE, .system = plugin, .flags = flags};
         request.flags.erase(
             std::remove(request.flags.begin(), request.flags.end(), "__reqpack-internal-update-all-expand"),
             request.flags.end());

@@ -103,7 +103,7 @@ std::vector<PackageInfo> Executer::list(const Request& request) const {
         return {};
     }
     IPlugin* plugin = this->registry->getPlugin(resolvedRequest->system);
-    TaskGroup taskGroup{.action = ActionType::LIST, .system = resolvedRequest->system};
+    TaskGroup taskGroup {.action = ActionType::LIST, .system = resolvedRequest->system};
     taskGroup.flags = resolvedRequest->flags;
     std::vector<PackageInfo> results = plugin->list(this->buildPluginContext(plugin, taskGroup));
     results = apply_requested_package_subset(std::move(results), resolvedRequest->packages);
@@ -124,7 +124,7 @@ std::vector<PackageInfo> Executer::outdated(const Request& request) const {
         return {};
     }
     IPlugin* plugin = this->registry->getPlugin(resolvedRequest->system);
-    TaskGroup taskGroup{.action = ActionType::OUTDATED, .system = resolvedRequest->system};
+    TaskGroup taskGroup {.action = ActionType::OUTDATED, .system = resolvedRequest->system};
     taskGroup.flags = resolvedRequest->flags;
     std::vector<PackageInfo> results = plugin->outdated(this->buildPluginContext(plugin, taskGroup));
     results = apply_requested_package_subset(std::move(results), resolvedRequest->packages);
@@ -145,7 +145,7 @@ std::vector<PackageInfo> Executer::search(const Request& request) const {
         return {};
     }
     IPlugin* plugin = this->registry->getPlugin(resolvedRequest->system);
-    TaskGroup taskGroup{.action = ActionType::SEARCH, .system = resolvedRequest->system};
+    TaskGroup taskGroup {.action = ActionType::SEARCH, .system = resolvedRequest->system};
     taskGroup.flags = resolvedRequest->flags;
     std::string prompt;
     for (std::size_t index = 0; index < resolvedRequest->packages.size(); ++index) {
@@ -172,10 +172,10 @@ PackageInfo Executer::info(const Request& request) const {
         return {};
     }
     IPlugin* plugin = this->registry->getPlugin(resolvedRequest->system);
-    TaskGroup taskGroup{.action = ActionType::INFO, .system = resolvedRequest->system};
+    TaskGroup taskGroup {.action = ActionType::INFO, .system = resolvedRequest->system};
     taskGroup.flags = resolvedRequest->flags;
     const std::string packageName =
-        resolvedRequest->packages.empty() ? std::string{} : resolvedRequest->packages.front();
+        resolvedRequest->packages.empty() ? std::string {} : resolvedRequest->packages.front();
     return plugin->info(this->buildPluginContext(plugin, taskGroup), packageName);
 }
 
@@ -193,7 +193,7 @@ std::optional<Package> Executer::resolvePackage(const Request& request, const Pa
         return std::nullopt;
     }
     IPlugin* plugin = this->registry->getPlugin(resolvedRequest->system);
-    TaskGroup taskGroup{.action = ActionType::SBOM, .system = resolvedRequest->system};
+    TaskGroup taskGroup {.action = ActionType::SBOM, .system = resolvedRequest->system};
     taskGroup.flags = resolvedRequest->flags;
     Package resolvedPackage = package;
     resolvedPackage.system = resolvedRequest->system;

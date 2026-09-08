@@ -683,7 +683,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("executor list dispatches flags and plugin context", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-list"};
+    TempDir tempDir {"reqpack-executor-list"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
     const std::filesystem::path scriptPath = add_plugin_script(tempDir.path() / "plugins", "query", QUERY_PLUGIN);
@@ -712,7 +712,7 @@ TEST_CASE("executor list dispatches flags and plugin context", "[integration][ex
 }
 
 TEST_CASE("executor list and outdated apply arch and type post filters", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-list-outdated-filters"};
+    TempDir tempDir {"reqpack-executor-list-outdated-filters"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "query", QUERY_PLUGIN);
@@ -748,15 +748,15 @@ TEST_CASE("executor list and outdated apply arch and type post filters", "[integ
 }
 
 TEST_CASE("executor list rqp returns installed plugin wrappers and aliases", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-rqp-list"};
+    TempDir tempDir {"reqpack-executor-rqp-list"};
     ScopedCurrentPath scopedCurrentPath(tempDir.path());
     ReqPackConfig config = make_executor_test_config(tempDir.path());
-    config.registry.sources["query"] = RegistrySourceEntry{
+    config.registry.sources["query"] = RegistrySourceEntry {
         .source = (tempDir.path() / "sources" / "query.lua").string(),
         .description = "Query system",
         .role = "package-manager",
     };
-    config.registry.sources["lookup"] = RegistrySourceEntry{
+    config.registry.sources["lookup"] = RegistrySourceEntry {
         .source = "query",
         .alias = true,
         .description = "Alias for query",
@@ -811,7 +811,7 @@ TEST_CASE("executor list rqp returns installed plugin wrappers and aliases", "[i
 }
 
 TEST_CASE("executor search joins package prompt and resolves aliases", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-search"};
+    TempDir tempDir {"reqpack-executor-search"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.planner.systemAliases["lookup"] = "query";
 
@@ -840,7 +840,7 @@ TEST_CASE("executor search joins package prompt and resolves aliases", "[integra
 }
 
 TEST_CASE("executor search applies arch and type post filters", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-search-filters"};
+    TempDir tempDir {"reqpack-executor-search-filters"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "query", QUERY_PLUGIN);
@@ -867,7 +867,7 @@ TEST_CASE("executor search applies arch and type post filters", "[integration][e
 }
 
 TEST_CASE("executor info forwards first package and flags", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-info"};
+    TempDir tempDir {"reqpack-executor-info"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "query", QUERY_PLUGIN);
@@ -893,7 +893,7 @@ TEST_CASE("executor info forwards first package and flags", "[integration][execu
 }
 
 TEST_CASE("executor resolves proxy plugin requests before query dispatch", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-proxy-query"};
+    TempDir tempDir {"reqpack-executor-proxy-query"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.planner.proxies["java"].defaultTarget = "query";
     config.planner.proxies["java"].targets = {"query"};
@@ -920,7 +920,7 @@ TEST_CASE("executor resolves proxy plugin requests before query dispatch", "[int
 
 TEST_CASE("executor read operations return empty values when plugin is unavailable",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-missing"};
+    TempDir tempDir {"reqpack-executor-missing"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
     Registry registry(config);
@@ -941,7 +941,7 @@ TEST_CASE("executor read operations return empty values when plugin is unavailab
 
 TEST_CASE("executor records transactional package results and leaves failed run active",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-transaction"};
+    TempDir tempDir {"reqpack-executor-transaction"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -953,9 +953,9 @@ TEST_CASE("executor records transactional package results and leaves failed run 
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "txn", .name = "already"},
-        Package{.action = ActionType::INSTALL, .system = "txn", .name = "ok"},
-        Package{.action = ActionType::INSTALL, .system = "txn", .name = "fail"},
+        Package {.action = ActionType::INSTALL, .system = "txn", .name = "already"},
+        Package {.action = ActionType::INSTALL, .system = "txn", .name = "ok"},
+        Package {.action = ActionType::INSTALL, .system = "txn", .name = "fail"},
     });
 
     executer.execute(&graph);
@@ -986,7 +986,7 @@ TEST_CASE("executor records transactional package results and leaves failed run 
 
 TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled items",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-recovery"};
+    TempDir tempDir {"reqpack-executor-recovery"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -999,8 +999,8 @@ TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled
     TransactionDatabase seedDatabase(config);
     REQUIRE(seedDatabase.ensureReady());
 
-    const Package alreadyPackage{.action = ActionType::INSTALL, .system = "recovery", .name = "already"};
-    const Package recoverPackage{.action = ActionType::INSTALL, .system = "recovery", .name = "recover"};
+    const Package alreadyPackage {.action = ActionType::INSTALL, .system = "recovery", .name = "already"};
+    const Package recoverPackage {.action = ActionType::INSTALL, .system = "recovery", .name = "recover"};
     const std::string runId = seedDatabase.createRun({alreadyPackage, recoverPackage}, {"--resume"});
     REQUIRE_FALSE(runId.empty());
 
@@ -1028,7 +1028,7 @@ TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled
 
 TEST_CASE("executor continues with current graph after recovering stale active run",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-recovery-continue"};
+    TempDir tempDir {"reqpack-executor-recovery-continue"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -1042,14 +1042,14 @@ TEST_CASE("executor continues with current graph after recovering stale active r
     TransactionDatabase seedDatabase(config);
     REQUIRE(seedDatabase.ensureReady());
 
-    const Package alreadyPackage{.action = ActionType::INSTALL, .system = "recovery", .name = "already"};
-    const Package recoverPackage{.action = ActionType::INSTALL, .system = "recovery", .name = "recover"};
+    const Package alreadyPackage {.action = ActionType::INSTALL, .system = "recovery", .name = "already"};
+    const Package recoverPackage {.action = ActionType::INSTALL, .system = "recovery", .name = "recover"};
     const std::string recoveredRunId = seedDatabase.createRun({alreadyPackage, recoverPackage}, {"--resume"});
     REQUIRE_FALSE(recoveredRunId.empty());
 
     Executer executer(&registry, config);
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "txn", .name = "ok"},
+        Package {.action = ActionType::INSTALL, .system = "txn", .name = "ok"},
     });
     executer.execute(&graph);
 
@@ -1074,7 +1074,7 @@ TEST_CASE("executor continues with current graph after recovering stale active r
 }
 
 TEST_CASE("executor dispatches local install target through installLocal", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-local"};
+    TempDir tempDir {"reqpack-executor-local"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -1089,7 +1089,7 @@ TEST_CASE("executor dispatches local install target through installLocal", "[int
     write_file(localArtifact, "rpm-bytes");
 
     Graph graph = make_linear_graph({
-        Package{
+        Package {
             .action = ActionType::INSTALL,
             .system = "localer",
             .name = "artifact.rpm",
@@ -1107,7 +1107,7 @@ TEST_CASE("executor dispatches local install target through installLocal", "[int
 }
 
 TEST_CASE("executor stopOnFirstFailure prevents later task groups from running", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-stop"};
+    TempDir tempDir {"reqpack-executor-stop"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -1122,9 +1122,9 @@ TEST_CASE("executor stopOnFirstFailure prevents later task groups from running",
 
     Graph graph;
     const Graph::vertex_descriptor stopperVertex =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "stopper", .name = "first"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "stopper", .name = "first"}, graph);
     const Graph::vertex_descriptor followerVertex =
-        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "follower", .name = "second"}, graph);
+        boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "follower", .name = "second"}, graph);
     boost::add_edge(stopperVertex, followerVertex, graph);
 
     executer.execute(&graph);
@@ -1152,7 +1152,7 @@ TEST_CASE("executor stopOnFirstFailure prevents later task groups from running",
 
 TEST_CASE("executor keeps partial batch success and marks unavailable packages precisely",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-partial-batch"};
+    TempDir tempDir {"reqpack-executor-partial-batch"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
     config.execution.deleteCommittedTransactions = false;
@@ -1164,8 +1164,8 @@ TEST_CASE("executor keeps partial batch success and marks unavailable packages p
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "batcher", .name = "ok"},
-        Package{.action = ActionType::INSTALL, .system = "batcher", .name = "missing"},
+        Package {.action = ActionType::INSTALL, .system = "batcher", .name = "ok"},
+        Package {.action = ActionType::INSTALL, .system = "batcher", .name = "missing"},
     });
 
     executer.execute(&graph);
@@ -1192,7 +1192,7 @@ TEST_CASE("executor keeps partial batch success and marks unavailable packages p
 }
 
 TEST_CASE("executor refreshes history snapshot from authoritative plugin list", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-history-sync"};
+    TempDir tempDir {"reqpack-executor-history-sync"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
 
@@ -1203,9 +1203,9 @@ TEST_CASE("executor refreshes history snapshot from authoritative plugin list", 
     Executer executer(&registry, config);
 
     Graph graph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "history", .name = "actual"},
-        Package{.action = ActionType::INSTALL, .system = "history", .name = "tool", .version = "1.0.0"},
-        Package{.action = ActionType::INSTALL, .system = "history", .name = "tool", .version = "2.0.0"},
+        Package {.action = ActionType::INSTALL, .system = "history", .name = "actual"},
+        Package {.action = ActionType::INSTALL, .system = "history", .name = "tool", .version = "1.0.0"},
+        Package {.action = ActionType::INSTALL, .system = "history", .name = "tool", .version = "2.0.0"},
     });
 
     executer.setRequestedItemCount(3, true);
@@ -1220,7 +1220,7 @@ TEST_CASE("executor refreshes history snapshot from authoritative plugin list", 
 
 TEST_CASE("executor keeps shared dependency installed until last owner is removed",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-owner-shared"};
+    TempDir tempDir {"reqpack-executor-owner-shared"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
 
@@ -1233,9 +1233,9 @@ TEST_CASE("executor keeps shared dependency installed until last owner is remove
     Executer executer(&registry, config);
 
     Graph installGraph = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "dep", .name = "maven"},
-        Package{.action = ActionType::INSTALL, .system = "app", .name = "alpha", .directRequest = true},
-        Package{.action = ActionType::INSTALL, .system = "other", .name = "beta", .directRequest = true},
+        Package {.action = ActionType::INSTALL, .system = "dep", .name = "maven"},
+        Package {.action = ActionType::INSTALL, .system = "app", .name = "alpha", .directRequest = true},
+        Package {.action = ActionType::INSTALL, .system = "other", .name = "beta", .directRequest = true},
     });
     executer.setRequestedItemCount(2, false);
     executer.execute(&installGraph);
@@ -1244,13 +1244,13 @@ TEST_CASE("executor keeps shared dependency installed until last owner is remove
     const InstalledEntry* dep = find_installed(entries, "dep", "maven", "1.0.0");
     REQUIRE(dep != nullptr);
     CHECK(dep->installMethod == "dependency");
-    CHECK(dep->owners == std::vector<std::string>{
+    CHECK(dep->owners == std::vector<std::string> {
                              installed_package_owner_id("app", "alpha"),
                              installed_package_owner_id("other", "beta"),
                          });
 
     Graph removeOneGraph = make_linear_graph({
-        Package{.action = ActionType::REMOVE, .system = "app", .name = "alpha", .directRequest = true},
+        Package {.action = ActionType::REMOVE, .system = "app", .name = "alpha", .directRequest = true},
     });
     executer.setRequestedItemCount(1, false);
     executer.execute(&removeOneGraph);
@@ -1258,10 +1258,10 @@ TEST_CASE("executor keeps shared dependency installed until last owner is remove
     entries = HistoryManager(config).loadInstalledState();
     dep = find_installed(entries, "dep", "maven", "1.0.0");
     REQUIRE(dep != nullptr);
-    CHECK(dep->owners == std::vector<std::string>{installed_package_owner_id("other", "beta")});
+    CHECK(dep->owners == std::vector<std::string> {installed_package_owner_id("other", "beta")});
 
     Graph removeLastGraph = make_linear_graph({
-        Package{.action = ActionType::REMOVE, .system = "other", .name = "beta", .directRequest = true},
+        Package {.action = ActionType::REMOVE, .system = "other", .name = "beta", .directRequest = true},
     });
     executer.setRequestedItemCount(1, false);
     executer.execute(&removeLastGraph);
@@ -1271,7 +1271,7 @@ TEST_CASE("executor keeps shared dependency installed until last owner is remove
 }
 
 TEST_CASE("executor records explicit owner for already installed direct request", "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-owner-explicit"};
+    TempDir tempDir {"reqpack-executor-owner-explicit"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
 
@@ -1282,13 +1282,13 @@ TEST_CASE("executor records explicit owner for already installed direct request"
     Executer executer(&registry, config);
 
     Graph firstInstall = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "dep", .name = "maven", .directRequest = true},
+        Package {.action = ActionType::INSTALL, .system = "dep", .name = "maven", .directRequest = true},
     });
     executer.setRequestedItemCount(1, false);
     executer.execute(&firstInstall);
 
     Graph secondInstall = make_linear_graph({
-        Package{.action = ActionType::INSTALL, .system = "dep", .name = "maven", .directRequest = true},
+        Package {.action = ActionType::INSTALL, .system = "dep", .name = "maven", .directRequest = true},
     });
     executer.setRequestedItemCount(1, false);
     executer.execute(&secondInstall);
@@ -1297,12 +1297,12 @@ TEST_CASE("executor records explicit owner for already installed direct request"
     const InstalledEntry* dep = find_installed(entries, "dep", "maven", "1.0.0");
     REQUIRE(dep != nullptr);
     CHECK(dep->installMethod == "explicit");
-    CHECK(dep->owners == std::vector<std::string>{installed_root_owner_id("dep", "maven")});
+    CHECK(dep->owners == std::vector<std::string> {installed_root_owner_id("dep", "maven")});
 }
 
 TEST_CASE("executor runs independent task groups in parallel when jobs exceed one",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-parallel-independent"};
+    TempDir tempDir {"reqpack-executor-parallel-independent"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
     config.execution.jobs = 2;
@@ -1315,9 +1315,10 @@ TEST_CASE("executor runs independent task groups in parallel when jobs exceed on
     Executer executer(&registry, config);
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.4"},
+    boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.4"},
                       graph);
-    boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "beta", .name = "two", .version = "0.4"}, graph);
+    boost::add_vertex(Package {.action = ActionType::INSTALL, .system = "beta", .name = "two", .version = "0.4"},
+                      graph);
 
     REQUIRE(executer.execute(&graph));
 
@@ -1348,7 +1349,7 @@ TEST_CASE("executor runs independent task groups in parallel when jobs exceed on
 
 TEST_CASE("executor keeps same-system task groups serialized even when jobs exceed one",
           "[integration][executor][service]") {
-    TempDir tempDir{"reqpack-executor-parallel-serialized"};
+    TempDir tempDir {"reqpack-executor-parallel-serialized"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
     config.execution.jobs = 2;
@@ -1361,9 +1362,9 @@ TEST_CASE("executor keeps same-system task groups serialized even when jobs exce
 
     Graph graph;
     const Graph::vertex_descriptor first = boost::add_vertex(
-        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.25"}, graph);
+        Package {.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.25"}, graph);
     const Graph::vertex_descriptor second = boost::add_vertex(
-        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "two", .version = "0.25"}, graph);
+        Package {.action = ActionType::INSTALL, .system = "alpha", .name = "two", .version = "0.25"}, graph);
     boost::add_edge(first, second, graph);
 
     REQUIRE(executer.execute(&graph));

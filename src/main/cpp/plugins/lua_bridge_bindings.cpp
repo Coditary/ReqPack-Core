@@ -341,8 +341,8 @@ void LuaBridgeBindings::registerContextTypes() {
         }),
         "events", sol::readonly_property([this, &lua](const PluginCallContext& context) {
             sol::table events = lua.create_table();
-            const std::array<const char*, 8> names{"installed", "deleted",  "updated",  "listed",
-                                                   "searched",  "informed", "outdated", "unavailable"};
+            const std::array<const char*, 8> names {"installed", "deleted",  "updated",  "listed",
+                                                    "searched",  "informed", "outdated", "unavailable"};
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             for (const char* name : names) {
                 events.set_function(name, [this, contextId, name](sol::object payload) {
@@ -377,13 +377,13 @@ void LuaBridgeBindings::registerContextTypes() {
                                                  binding != nullptr && binding->host != nullptr) {
                                                  return binding->host->execute(binding->sourceId, command);
                                              }
-                                             return ExecResult{};
+                                             return ExecResult {};
                                          },
                                          [this, contextId](const std::string& command, const sol::object& rules) {
                                              const LuaBridgeRuntimeBindingContext* binding =
                                                  m_hostRuntime.runtimeBindingContext(contextId);
                                              if (binding == nullptr) {
-                                                 return ExecResult{};
+                                                 return ExecResult {};
                                              }
                                              return m_hostRuntime.executeCommandWithPolicy(
                                                  binding->sourceId, command, rules,
@@ -399,7 +399,7 @@ void LuaBridgeBindings::registerContextTypes() {
                     binding != nullptr && binding->host != nullptr) {
                     return binding->host->createTempDirectory(binding->pluginId);
                 }
-                return std::string{};
+                return std::string {};
             });
             return fs;
         }),
@@ -410,7 +410,7 @@ void LuaBridgeBindings::registerContextTypes() {
                 const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
                 const DownloadResult result = binding != nullptr && binding->host != nullptr
                                                   ? binding->host->download(binding->pluginId, url, destinationPath)
-                                                  : DownloadResult{};
+                                                  : DownloadResult {};
                 return result.success;
             });
             return net;

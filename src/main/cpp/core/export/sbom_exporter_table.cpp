@@ -25,7 +25,7 @@ struct TableColumn {
     std::size_t maxWidth;
 };
 
-constexpr std::array<TableColumn, 3> TABLE_COLUMNS{{
+constexpr std::array<TableColumn, 3> TABLE_COLUMNS {{
     {"SYSTEM", 6, 10},
     {"NAME", 12, 28},
     {"VERSION", 7, 16},
@@ -162,7 +162,7 @@ std::vector<std::string> wrap_table_text(const std::string& value, const std::si
 
 std::array<std::size_t, TABLE_COLUMNS.size()>
 table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows, const std::size_t width) {
-    std::array<std::size_t, TABLE_COLUMNS.size()> widths{};
+    std::array<std::size_t, TABLE_COLUMNS.size()> widths {};
     std::size_t usedWidth = 0;
     for (std::size_t index = 0; index < TABLE_COLUMNS.size(); ++index) {
         widths[index] = TABLE_COLUMNS[index].minWidth;
@@ -179,7 +179,7 @@ table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size
     }
 
     std::size_t extra = budget - usedWidth;
-    const std::array<std::size_t, TABLE_COLUMNS.size()> growthOrder{{1, 2, 0}};
+    const std::array<std::size_t, TABLE_COLUMNS.size()> growthOrder {{1, 2, 0}};
     for (const std::size_t index : growthOrder) {
         std::size_t desired = std::strlen(TABLE_COLUMNS[index].header);
         for (const auto& row : rows) {
@@ -286,15 +286,15 @@ std::string SbomExporter::renderTable(const Graph& graph, const bool colorizeTab
     stream << std::string(std::max<std::size_t>(6, sourceWidth), '-') << '\n';
 
     for (std::size_t rowIndex = 0; rowIndex < rows.size(); ++rowIndex) {
-        const auto sourceLines = disableWrap ? std::vector<std::string>{normalize_table_value(sources[rowIndex])}
+        const auto sourceLines = disableWrap ? std::vector<std::string> {normalize_table_value(sources[rowIndex])}
                                              : wrap_table_text(sources[rowIndex], sourceWidth);
-        const std::string systemColor = colorizeTable ? system_color_spec_for(rows[rowIndex][0]) : std::string{};
-        const std::string sourceColor = colorizeTable ? source_color_spec_for(sources[rowIndex]) : std::string{};
+        const std::string systemColor = colorizeTable ? system_color_spec_for(rows[rowIndex][0]) : std::string {};
+        const std::string sourceColor = colorizeTable ? source_color_spec_for(sources[rowIndex]) : std::string {};
         for (std::size_t lineIndex = 0; lineIndex < sourceLines.size(); ++lineIndex) {
             for (std::size_t columnIndex = 0; columnIndex < TABLE_COLUMNS.size(); ++columnIndex) {
                 const bool colorizeColumn = lineIndex == 0 && columnIndex == 0 && !systemColor.empty();
                 append_table_cell(stream, lineIndex == 0 ? rows[rowIndex][columnIndex] : "", widths[columnIndex],
-                                  colorizeColumn ? systemColor : std::string{});
+                                  colorizeColumn ? systemColor : std::string {});
             }
             if (lineIndex == 0 && !sourceColor.empty()) {
                 stream << ansi_wrap(sourceLines[lineIndex], sourceColor) << '\n';

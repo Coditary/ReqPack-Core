@@ -15,17 +15,17 @@ struct SemverValue {
 };
 
 struct Pep440Value {
-    long epoch{0};
+    long epoch {0};
     std::vector<std::string> release;
-    int stageRank{4};
-    long stageNumber{0};
-    bool hasDev{false};
-    long devNumber{0};
+    int stageRank {4};
+    long stageNumber {0};
+    bool hasDev {false};
+    long devNumber {0};
     std::vector<std::string> local;
 };
 
 struct RpmEvrValue {
-    long epoch{0};
+    long epoch {0};
     std::string version;
     std::string release;
 };
@@ -115,8 +115,8 @@ int compare_semver(const std::string& left, const std::string& right) {
     const SemverValue parsedRight = parse_semver(right);
     const std::size_t maxCoreSize = std::max<std::size_t>(3, std::max(parsedLeft.core.size(), parsedRight.core.size()));
     for (std::size_t index = 0; index < maxCoreSize; ++index) {
-        const std::string leftPart = index < parsedLeft.core.size() ? parsedLeft.core[index] : std::string{"0"};
-        const std::string rightPart = index < parsedRight.core.size() ? parsedRight.core[index] : std::string{"0"};
+        const std::string leftPart = index < parsedLeft.core.size() ? parsedLeft.core[index] : std::string {"0"};
+        const std::string rightPart = index < parsedRight.core.size() ? parsedRight.core[index] : std::string {"0"};
         const int comparison = compare_numeric_strings(leftPart, rightPart);
         if (comparison != 0) {
             return comparison;
@@ -252,9 +252,9 @@ int compare_pep440(const std::string& left, const std::string& right) {
 
     const std::size_t maxReleaseSize = std::max(parsedLeft.release.size(), parsedRight.release.size());
     for (std::size_t index = 0; index < maxReleaseSize; ++index) {
-        const std::string leftPart = index < parsedLeft.release.size() ? parsedLeft.release[index] : std::string{"0"};
+        const std::string leftPart = index < parsedLeft.release.size() ? parsedLeft.release[index] : std::string {"0"};
         const std::string rightPart =
-            index < parsedRight.release.size() ? parsedRight.release[index] : std::string{"0"};
+            index < parsedRight.release.size() ? parsedRight.release[index] : std::string {"0"};
         const int comparison = compare_numeric_strings(leftPart, rightPart);
         if (comparison != 0) {
             return comparison;
@@ -302,7 +302,7 @@ RpmEvrValue parse_rpm_evr(const std::string& raw) {
 
     const std::size_t releaseSeparator = value.rfind('-');
     parsed.version = releaseSeparator == std::string::npos ? value : value.substr(0, releaseSeparator);
-    parsed.release = releaseSeparator == std::string::npos ? std::string{} : value.substr(releaseSeparator + 1);
+    parsed.release = releaseSeparator == std::string::npos ? std::string {} : value.substr(releaseSeparator + 1);
     return parsed;
 }
 
@@ -417,7 +417,7 @@ std::vector<std::string> tokenize_maven(const std::string& raw) {
 }
 
 std::pair<int, std::string> maven_qualifier_key(const std::string& token) {
-    static const std::map<std::string, int> knownQualifiers{
+    static const std::map<std::string, int> knownQualifiers {
         {"alpha", 1}, {"a", 1},        {"beta", 2}, {"b", 2},  {"milestone", 3}, {"m", 3},       {"rc", 4},
         {"cr", 4},    {"snapshot", 5}, {"", 6},     {"ga", 6}, {"final", 6},     {"release", 6}, {"sp", 7},
     };
@@ -440,7 +440,7 @@ int compare_maven_token(const std::string& left, const std::string& right) {
         return 0;
     }
     if (left.empty() || right.empty()) {
-        const std::string emptySide = left.empty() ? std::string{} : left;
+        const std::string emptySide = left.empty() ? std::string {} : left;
         const std::string otherSide = left.empty() ? right : left;
         if (is_numeric_token(otherSide)) {
             const int comparison = compare_numeric_strings(emptySide.empty() ? "0" : emptySide, otherSide);
@@ -476,8 +476,8 @@ int compare_maven(const std::string& left, const std::string& right) {
     const std::vector<std::string> rightTokens = tokenize_maven(right);
     const std::size_t maxSize = std::max(leftTokens.size(), rightTokens.size());
     for (std::size_t index = 0; index < maxSize; ++index) {
-        const std::string leftToken = index < leftTokens.size() ? leftTokens[index] : std::string{};
-        const std::string rightToken = index < rightTokens.size() ? rightTokens[index] : std::string{};
+        const std::string leftToken = index < leftTokens.size() ? leftTokens[index] : std::string {};
+        const std::string rightToken = index < rightTokens.size() ? rightTokens[index] : std::string {};
         const int comparison = compare_maven_token(leftToken, rightToken);
         if (comparison != 0) {
             return comparison;
@@ -491,7 +491,7 @@ std::vector<std::string> tokenize(const std::string& value, const VersionCompara
         return {spec.caseInsensitive ? lower_copy(value) : value};
     }
 
-    const std::string pattern = spec.tokenPattern.empty() ? std::string{"[0-9]+|[A-Za-z]+"} : spec.tokenPattern;
+    const std::string pattern = spec.tokenPattern.empty() ? std::string {"[0-9]+|[A-Za-z]+"} : spec.tokenPattern;
     std::regex_constants::syntax_option_type options = std::regex_constants::ECMAScript;
     if (spec.caseInsensitive) {
         options |= std::regex_constants::icase;
@@ -547,8 +547,8 @@ int version_compare_values(const std::string& left, const std::string& right, co
     const std::vector<std::string> rightTokens = tokenize(right, spec);
     const std::size_t maxSize = std::max(leftTokens.size(), rightTokens.size());
     for (std::size_t index = 0; index < maxSize; ++index) {
-        const std::string leftToken = index < leftTokens.size() ? leftTokens[index] : std::string{"0"};
-        const std::string rightToken = index < rightTokens.size() ? rightTokens[index] : std::string{"0"};
+        const std::string leftToken = index < leftTokens.size() ? leftTokens[index] : std::string {"0"};
+        const std::string rightToken = index < rightTokens.size() ? rightTokens[index] : std::string {"0"};
         const int comparison = compare_tokens(leftToken, rightToken);
         if (comparison != 0) {
             return comparison;

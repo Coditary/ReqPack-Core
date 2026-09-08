@@ -129,13 +129,13 @@ std::optional<RepositoryExtraValue> load_repository_extra_value(const sol::objec
         return std::nullopt;
     }
     if (object.get_type() == sol::type::string) {
-        return RepositoryExtraValue{object.as<std::string>()};
+        return RepositoryExtraValue {object.as<std::string>()};
     }
     if (object.get_type() == sol::type::boolean) {
-        return RepositoryExtraValue{object.as<bool>()};
+        return RepositoryExtraValue {object.as<bool>()};
     }
     if (object.get_type() == sol::type::number) {
-        return RepositoryExtraValue{object.as<double>()};
+        return RepositoryExtraValue {object.as<double>()};
     }
     if (object.get_type() != sol::type::table) {
         return std::nullopt;
@@ -145,7 +145,7 @@ std::optional<RepositoryExtraValue> load_repository_extra_value(const sol::objec
     if (!configuration_internal::load_string_array_strict(object, values)) {
         return std::nullopt;
     }
-    return RepositoryExtraValue{std::move(values)};
+    return RepositoryExtraValue {std::move(values)};
 }
 
 std::optional<RepositoryEntry> load_repository_entry(const sol::table& table) {

@@ -43,7 +43,7 @@ std::optional<ptree> parse_json_tree(const std::string& json) {
 }
 
 ArchiveExtractionOptions archive_options_from_config(const ReqPackConfig& config) {
-    return ArchiveExtractionOptions{
+    return ArchiveExtractionOptions {
         .password = resolve_archive_password(config),
         .interactive = config.interaction.interactive,
     };
@@ -68,32 +68,32 @@ class RqpRuntimeHost final : public IPluginRuntimeHost {
     void logDebug(const std::string& pluginId, const std::string& message) override {
         Logger::instance().emit(
             OutputAction::LOG,
-            OutputContext{.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
+            OutputContext {.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logInfo(const std::string& pluginId, const std::string& message) override {
         Logger::instance().emit(
             OutputAction::LOG,
-            OutputContext{.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
+            OutputContext {.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logWarn(const std::string& pluginId, const std::string& message) override {
         Logger::instance().emit(
             OutputAction::LOG,
-            OutputContext{.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
+            OutputContext {.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logError(const std::string& pluginId, const std::string& message) override {
         Logger::instance().emit(
             OutputAction::LOG,
-            OutputContext{.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
+            OutputContext {.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void emitStatus(const std::string& pluginId, int statusCode) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
         Logger::instance().emit(
             OutputAction::PLUGIN_STATUS,
-            OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .statusCode = statusCode});
+            OutputContext {.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .statusCode = statusCode});
     }
 
     void emitProgress(const std::string& pluginId, const DisplayProgressMetrics& metrics) override {
@@ -103,7 +103,7 @@ class RqpRuntimeHost final : public IPluginRuntimeHost {
             !normalized.totalBytes.has_value() && !normalized.bytesPerSecond.has_value()) {
             return;
         }
-        Logger::instance().emit(OutputAction::PLUGIN_PROGRESS, OutputContext{
+        Logger::instance().emit(OutputAction::PLUGIN_PROGRESS, OutputContext {
                                                                    .source = hasItemId ? pluginId : "plugin",
                                                                    .scope = "rqp",
                                                                    .progressPercent = normalized.percent,
@@ -115,49 +115,49 @@ class RqpRuntimeHost final : public IPluginRuntimeHost {
 
     void emitBeginStep(const std::string& pluginId, const std::string& label) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
-                                                                          .scope = "rqp",
-                                                                          .eventName = "begin_step",
-                                                                          .payload = label});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext {.source = hasItemId ? pluginId : "plugin",
+                                                                           .scope = "rqp",
+                                                                           .eventName = "begin_step",
+                                                                           .payload = label});
     }
 
     void emitCommit(const std::string& pluginId) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
-                                                                          .scope = "rqp",
-                                                                          .eventName = "commit",
-                                                                          .payload = "committed"});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext {.source = hasItemId ? pluginId : "plugin",
+                                                                           .scope = "rqp",
+                                                                           .eventName = "commit",
+                                                                           .payload = "committed"});
     }
 
     void emitSuccess(const std::string& pluginId) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
-                                                                          .scope = "rqp",
-                                                                          .eventName = "success",
-                                                                          .payload = "ok"});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext {.source = hasItemId ? pluginId : "plugin",
+                                                                           .scope = "rqp",
+                                                                           .eventName = "success",
+                                                                           .payload = "ok"});
     }
 
     void emitFailure(const std::string& pluginId, const std::string& message) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
-                                                                          .scope = "rqp",
-                                                                          .eventName = "failed",
-                                                                          .payload = message});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext {.source = hasItemId ? pluginId : "plugin",
+                                                                           .scope = "rqp",
+                                                                           .eventName = "failed",
+                                                                           .payload = message});
     }
 
     void emitEvent(const std::string& pluginId, const std::string& eventName, const std::string& payload) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
-                                                                          .scope = "rqp",
-                                                                          .eventName = eventName,
-                                                                          .payload = payload});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext {.source = hasItemId ? pluginId : "plugin",
+                                                                           .scope = "rqp",
+                                                                           .eventName = eventName,
+                                                                           .payload = payload});
     }
 
     void registerArtifact(const std::string& pluginId, const std::string& payload) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
         Logger::instance().emit(
             OutputAction::PLUGIN_ARTIFACT,
-            OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .payload = payload});
+            OutputContext {.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .payload = payload});
         artifactPayloads_.push_back(payload);
     }
 
@@ -193,12 +193,12 @@ class RqpRuntimeHost final : public IPluginRuntimeHost {
         auto finalize = [&](const std::filesystem::path& path) -> DownloadResult {
             try {
                 const ArchiveExtractionOptions options =
-                    config_ != nullptr ? archive_options_from_config(*config_) : ArchiveExtractionOptions{};
+                    config_ != nullptr ? archive_options_from_config(*config_) : ArchiveExtractionOptions {};
                 (void)extract_archive_in_place(path, options);
             } catch (...) {
                 return {};
             }
-            return DownloadResult{.success = true, .resolvedPath = path.string()};
+            return DownloadResult {.success = true, .resolvedPath = path.string()};
         };
 
         std::error_code error;
@@ -265,9 +265,9 @@ class RqpRuntimeHost final : public IPluginRuntimeHost {
     }
 
   private:
-    const ReqPackConfig* config_{nullptr};
-    std::vector<std::filesystem::path> tempDirectories_{};
-    std::vector<std::string> artifactPayloads_{};
+    const ReqPackConfig* config_ {nullptr};
+    std::vector<std::filesystem::path> tempDirectories_ {};
+    std::vector<std::string> artifactPayloads_ {};
 };
 
 RqpRuntimeHost RQP_RUNTIME_HOST;
@@ -412,7 +412,7 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
         if (!tree.has_value()) {
             continue;
         }
-        manifest.push_back(ManifestEntry{
+        manifest.push_back(ManifestEntry {
             .type = tree->get<std::string>("type", {}),
             .path = tree->get<std::string>("path", {}),
         });

@@ -10,9 +10,9 @@
 namespace {
 
 struct ProcessResult {
-    int exitCode{1};
-    std::string stdoutText{};
-    std::string stderrText{};
+    int exitCode {1};
+    std::string stdoutText {};
+    std::string stderrText {};
 };
 
 bool run_process_quiet(const std::vector<std::string>& arguments);
@@ -29,7 +29,7 @@ std::string trim_copy(const std::string& value) {
 
 ProcessResult run_process_capture(const std::vector<std::string>& arguments) {
     const ReqpackProcessResult captured = reqpack_run_process_capture(arguments);
-    return ProcessResult{
+    return ProcessResult {
         .exitCode = captured.exitCode,
         .stdoutText = captured.stdoutText,
         .stderrText = captured.stderrText,
@@ -168,7 +168,7 @@ std::optional<std::string> latest_git_tag_for_source(const std::string& source) 
             continue;
         }
         if (!bestNormalized.has_value() || version_compare_values(normalized.value(), bestNormalized.value(),
-                                                                  VersionComparatorSpec{.profile = "semver"}) > 0) {
+                                                                  VersionComparatorSpec {.profile = "semver"}) > 0) {
             bestTag = tag;
             bestNormalized = normalized;
         }

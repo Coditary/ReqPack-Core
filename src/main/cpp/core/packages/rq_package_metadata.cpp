@@ -110,7 +110,7 @@ std::vector<RqBinaryEntry> load_binaries(const boost::optional<const ptree&>& va
         return result;
     }
     for (const auto& [_, child] : values.value()) {
-        result.push_back(RqBinaryEntry{
+        result.push_back(RqBinaryEntry {
             .name = child.get<std::string>("name", {}),
             .installPath = child.get<std::string>("installPath", {}),
             .primary = child.get<bool>("primary", false),

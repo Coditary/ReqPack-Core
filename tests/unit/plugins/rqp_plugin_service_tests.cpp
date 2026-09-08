@@ -224,7 +224,7 @@ ReqPackConfig make_plugin_config(const TempDir& tempDir) {
 }
 
 PluginCallContext make_plugin_context(RqpPlugin& plugin, std::vector<std::string> flags = {}) {
-    return PluginCallContext{
+    return PluginCallContext {
         .pluginId = plugin.getPluginId(),
         .pluginDirectory = plugin.getPluginDirectory(),
         .scriptPath = plugin.getScriptPath(),
@@ -237,7 +237,7 @@ PluginCallContext make_plugin_context(RqpPlugin& plugin, std::vector<std::string
 } // namespace
 
 TEST_CASE("rqp plugin exposes built-in metadata and capabilities", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-metadata"};
+    TempDir tempDir {"reqpack-rqp-plugin-metadata"};
     RqpPlugin plugin(make_plugin_config(tempDir));
 
     CHECK(plugin.init());
@@ -258,7 +258,7 @@ TEST_CASE("rqp plugin exposes built-in metadata and capabilities", "[unit][rqp_p
 }
 
 TEST_CASE("rqp plugin installLocal persists installed package state", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-local"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-local"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "local-demo");
 
@@ -274,7 +274,7 @@ TEST_CASE("rqp plugin installLocal persists installed package state", "[unit][rq
 }
 
 TEST_CASE("rqp plugin list and info report installed rqp packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-list-info"};
+    TempDir tempDir {"reqpack-rqp-plugin-list-info"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "listed-tool", "2.1.0");
 
@@ -295,7 +295,7 @@ TEST_CASE("rqp plugin list and info report installed rqp packages", "[unit][rqp_
 }
 
 TEST_CASE("rqp plugin install resolves repository packages from file index", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "repo-demo", "3.0.0");
     const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "repo-demo", "3.0.0", packagePath);
@@ -315,7 +315,7 @@ TEST_CASE("rqp plugin install resolves repository packages from file index", "[u
 }
 
 TEST_CASE("rqp plugin search and resolvePackage use configured repositories", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-search-resolve"};
+    TempDir tempDir {"reqpack-rqp-plugin-search-resolve"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "searchable", "4.2.0");
     const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "searchable", "4.2.0", packagePath);
@@ -339,7 +339,7 @@ TEST_CASE("rqp plugin search and resolvePackage use configured repositories", "[
 }
 
 TEST_CASE("rqp plugin remove uninstalls previously installed packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-remove"};
+    TempDir tempDir {"reqpack-rqp-plugin-remove"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "removable", "1.4.0");
 
@@ -356,7 +356,7 @@ TEST_CASE("rqp plugin remove uninstalls previously installed packages", "[unit][
 }
 
 TEST_CASE("rqp plugin getMissingPackages skips installed packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-missing"};
+    TempDir tempDir {"reqpack-rqp-plugin-missing"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "present", "1.0.0");
 
@@ -378,7 +378,7 @@ TEST_CASE("rqp plugin getMissingPackages skips installed packages", "[unit][rqp_
 }
 
 TEST_CASE("rqp plugin pack builds output archive from project directory", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-pack"};
+    TempDir tempDir {"reqpack-rqp-plugin-pack"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_file(projectRoot / "metadata.json", "{\n"
@@ -419,7 +419,7 @@ return {
 }
 
 TEST_CASE("rqp plugin install fails when repositories are not configured", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-no-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-no-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     config.rqp.repositories.clear();
 
@@ -434,7 +434,7 @@ TEST_CASE("rqp plugin install fails when repositories are not configured", "[uni
 }
 
 TEST_CASE("rqp plugin installLocal fails when directory has no installable rqp file", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-local-empty"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-local-empty"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path emptyDir = tempDir.path() / "empty";
     std::filesystem::create_directories(emptyDir);
@@ -447,7 +447,7 @@ TEST_CASE("rqp plugin installLocal fails when directory has no installable rqp f
 }
 
 TEST_CASE("rqp plugin update installs newer repository version", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-update-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-update-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path artifactV1 = build_rqp_package(tempDir.path() / "v1", "updatable-demo", "1.0.0");
     const std::filesystem::path artifactV2 = build_rqp_package(tempDir.path() / "v2", "updatable-demo", "1.1.0");
@@ -477,7 +477,7 @@ TEST_CASE("rqp plugin update installs newer repository version", "[unit][rqp_plu
 }
 
 TEST_CASE("rqp plugin install short-circuits when package is already installed", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-short-circuit"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-short-circuit"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "already-there", "2.0.0");
     const std::filesystem::path indexPath =
@@ -497,7 +497,7 @@ TEST_CASE("rqp plugin install short-circuits when package is already installed",
 }
 
 TEST_CASE("rqp plugin install fails on repository artifact sha256 mismatch", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-bad-hash"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-bad-hash"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "bad-hash", "1.0.0");
     const std::filesystem::path indexPath =
@@ -516,7 +516,7 @@ TEST_CASE("rqp plugin install fails on repository artifact sha256 mismatch", "[u
 }
 
 TEST_CASE("rqp plugin info reports repository-only packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-info-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-info-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "repo-only", "5.0.0");
     const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "repo-only", "5.0.0", packagePath);
@@ -535,7 +535,7 @@ TEST_CASE("rqp plugin info reports repository-only packages", "[unit][rqp_plugin
 }
 
 TEST_CASE("rqp plugin list includes scanned local plugin directory", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-list-plugins"};
+    TempDir tempDir {"reqpack-rqp-plugin-list-plugins"};
     ReqPackConfig config = make_plugin_config(tempDir);
     write_plugin_bundle(std::filesystem::path(config.registry.pluginDirectory), "scanned-demo", "2.3.4");
 
@@ -553,7 +553,7 @@ TEST_CASE("rqp plugin list includes scanned local plugin directory", "[unit][rqp
 }
 
 TEST_CASE("rqp plugin outdated returns empty results", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-outdated"};
+    TempDir tempDir {"reqpack-rqp-plugin-outdated"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "current", "1.0.0");
 
@@ -566,7 +566,7 @@ TEST_CASE("rqp plugin outdated returns empty results", "[unit][rqp_plugin]") {
 }
 
 TEST_CASE("rqp plugin install uses internal repository flag override", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-internal-repo-flag"};
+    TempDir tempDir {"reqpack-rqp-plugin-internal-repo-flag"};
     ReqPackConfig config = make_plugin_config(tempDir);
     config.rqp.repositories.clear();
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "flagged-repo", "1.0.0");
@@ -586,7 +586,7 @@ TEST_CASE("rqp plugin install uses internal repository flag override", "[unit][r
 }
 
 TEST_CASE("rqp plugin installLocal finds nested rqp in extracted directory", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-nested-local"};
+    TempDir tempDir {"reqpack-rqp-plugin-nested-local"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "nested-local", "1.0.0");
     const std::filesystem::path extractedDir = tempDir.path() / "extracted";
@@ -602,7 +602,7 @@ TEST_CASE("rqp plugin installLocal finds nested rqp in extracted directory", "[u
 }
 
 TEST_CASE("rqp plugin search finds repository packages by term", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-search-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-search-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "searchable-repo", "6.0.0");
     const std::filesystem::path indexPath =
@@ -621,7 +621,7 @@ TEST_CASE("rqp plugin search finds repository packages by term", "[unit][rqp_plu
 }
 
 TEST_CASE("rqp plugin resolvePackage prefers installed versions", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-resolve-installed"};
+    TempDir tempDir {"reqpack-rqp-plugin-resolve-installed"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "resolved-local", "3.3.3");
 
@@ -639,7 +639,7 @@ TEST_CASE("rqp plugin resolvePackage prefers installed versions", "[unit][rqp_pl
 }
 
 TEST_CASE("rqp plugin info reports multiple installed versions message", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-info-multi"};
+    TempDir tempDir {"reqpack-rqp-plugin-info-multi"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packageV1 = build_rqp_package(tempDir.path() / "v1", "multi-info", "1.0.0");
     const std::filesystem::path packageV2 = build_rqp_package(tempDir.path() / "v2", "multi-info", "2.0.0");
@@ -656,7 +656,7 @@ TEST_CASE("rqp plugin info reports multiple installed versions message", "[unit]
 }
 
 TEST_CASE("rqp plugin remove uninstalls repository-installed package", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-remove-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-remove-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "removable-repo", "1.5.0");
     const std::filesystem::path indexPath =
@@ -680,7 +680,7 @@ void add_registry_plugin_source(ReqPackConfig& config, const TempDir& tempDir, c
     const std::filesystem::path sourceRoot = tempDir.path() / "remote-source";
     write_plugin_bundle(sourceRoot, pluginName, "1.0.0");
     write_file(sourceRoot / pluginName / "run.lua", script);
-    config.registry.sources[pluginName] = RegistrySourceEntry{
+    config.registry.sources[pluginName] = RegistrySourceEntry {
         .source = (sourceRoot / pluginName).string(),
         .alias = false,
         .description = pluginName + " registry plugin",
@@ -689,7 +689,7 @@ void add_registry_plugin_source(ReqPackConfig& config, const TempDir& tempDir, c
 }
 
 TEST_CASE("rqp plugin info reads registry-backed plugin records", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-info-registry"};
+    TempDir tempDir {"reqpack-rqp-plugin-info-registry"};
     ReqPackConfig config = make_plugin_config(tempDir);
     add_registry_plugin_source(config, tempDir, "registry-demo", R"(
 plugin = {}
@@ -718,7 +718,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("rqp plugin search includes registry plugin records", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-search-registry"};
+    TempDir tempDir {"reqpack-rqp-plugin-search-registry"};
     ReqPackConfig config = make_plugin_config(tempDir);
     add_registry_plugin_source(config, tempDir, "searchable-plugin", R"(
 plugin = {}
@@ -748,7 +748,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("rqp plugin install records unavailable events for missing packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-install-missing"};
+    TempDir tempDir {"reqpack-rqp-plugin-install-missing"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "available-only", "1.0.0");
     const std::filesystem::path indexPath =
@@ -771,7 +771,7 @@ TEST_CASE("rqp plugin install records unavailable events for missing packages", 
 }
 
 TEST_CASE("rqp plugin remove reports multiple installed versions", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-remove-multi"};
+    TempDir tempDir {"reqpack-rqp-plugin-remove-multi"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packageV1 = build_rqp_package(tempDir.path() / "v1", "multi-remove", "1.0.0");
     const std::filesystem::path packageV2 = build_rqp_package(tempDir.path() / "v2", "multi-remove", "2.0.0");
@@ -788,7 +788,7 @@ TEST_CASE("rqp plugin remove reports multiple installed versions", "[unit][rqp_p
 }
 
 TEST_CASE("rqp plugin installLocal rejects multiple nested rqp files", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-nested-ambiguous"};
+    TempDir tempDir {"reqpack-rqp-plugin-nested-ambiguous"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packageA = build_rqp_package(tempDir.path() / "a", "nested-a", "1.0.0");
     const std::filesystem::path packageB = build_rqp_package(tempDir.path() / "b", "nested-b", "1.0.0");
@@ -806,7 +806,7 @@ TEST_CASE("rqp plugin installLocal rejects multiple nested rqp files", "[unit][r
 }
 
 TEST_CASE("rqp plugin update upgrades repository-installed package", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-update-repo"};
+    TempDir tempDir {"reqpack-rqp-plugin-update-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packageV1 = build_rqp_package(tempDir.path() / "v1", "update-repo", "1.0.0");
     const std::filesystem::path packageV2 = build_rqp_package(tempDir.path() / "v2", "update-repo", "2.0.0");
@@ -851,7 +851,7 @@ class RecordingDownloadHost final : public IPluginRuntimeHost {
     void emitEvent(const std::string&, const std::string&, const std::string&) override {}
     void registerArtifact(const std::string&, const std::string&) override {}
     ExecResult execute(const std::string&, const std::string&) override {
-        return ExecResult{.success = true, .exitCode = 0};
+        return ExecResult {.success = true, .exitCode = 0};
     }
 
     std::string createTempDirectory(const std::string&) override {
@@ -868,7 +868,7 @@ class RecordingDownloadHost final : public IPluginRuntimeHost {
     }
 
   private:
-    int tempCounter{0};
+    int tempCounter {0};
 };
 
 std::filesystem::path build_rqp_package_with_manifest_install(const std::filesystem::path& root,
@@ -925,7 +925,7 @@ return true
 }
 
 TEST_CASE("rqp plugin getMissingPackages filters already installed packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-missing-packages"};
+    TempDir tempDir {"reqpack-rqp-plugin-missing-packages"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "missing-filter", "1.0.0");
 
@@ -934,9 +934,9 @@ TEST_CASE("rqp plugin getMissingPackages filters already installed packages", "[
     const PluginCallContext context = make_plugin_context(plugin);
     REQUIRE(plugin.installLocal(context, packagePath.string()));
 
-    const std::vector<Package> requests{
-        Package{.action = ActionType::INSTALL, .system = "rqp", .name = "missing-filter", .version = "1.0.0"},
-        Package{.action = ActionType::INSTALL, .system = "rqp", .name = "other-package"},
+    const std::vector<Package> requests {
+        Package {.action = ActionType::INSTALL, .system = "rqp", .name = "missing-filter", .version = "1.0.0"},
+        Package {.action = ActionType::INSTALL, .system = "rqp", .name = "other-package"},
     };
     const std::vector<Package> missing = plugin.getMissingPackages(requests);
     REQUIRE(missing.size() == 1);
@@ -944,11 +944,11 @@ TEST_CASE("rqp plugin getMissingPackages filters already installed packages", "[
 }
 
 TEST_CASE("rqp plugin list includes installed packages and registry aliases", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-list-aliases"};
+    TempDir tempDir {"reqpack-rqp-plugin-list-aliases"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "listed-alias", "2.0.0");
     write_plugin_bundle(tempDir.path() / "plugins", "target-plugin", "1.0.0");
-    config.registry.sources["alias-plugin"] = RegistrySourceEntry{
+    config.registry.sources["alias-plugin"] = RegistrySourceEntry {
         .source = "target-plugin",
         .alias = true,
         .description = "Alias for target-plugin",
@@ -976,7 +976,7 @@ TEST_CASE("rqp plugin list includes installed packages and registry aliases", "[
 }
 
 TEST_CASE("rqp plugin search skips installed packages but finds repository matches", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-search-filter"};
+    TempDir tempDir {"reqpack-rqp-plugin-search-filter"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path installedPackage =
         build_rqp_package(tempDir.path() / "installed", "installed-search", "1.0.0");
@@ -1003,7 +1003,7 @@ TEST_CASE("rqp plugin search skips installed packages but finds repository match
 }
 
 TEST_CASE("rqp plugin info resolves versioned repository package names", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-info-versioned"};
+    TempDir tempDir {"reqpack-rqp-plugin-info-versioned"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "versioned-info", "5.5.5");
     const std::filesystem::path indexPath =
@@ -1019,7 +1019,7 @@ TEST_CASE("rqp plugin info resolves versioned repository package names", "[unit]
 }
 
 TEST_CASE("rqp plugin install and remove persist and clean manifest artifacts", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-manifest"};
+    TempDir tempDir {"reqpack-rqp-plugin-manifest"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath =
         build_rqp_package_with_manifest_install(tempDir.path(), "manifest-demo", "1.0.0");
@@ -1043,7 +1043,7 @@ TEST_CASE("rqp plugin install and remove persist and clean manifest artifacts", 
 }
 
 TEST_CASE("rqp plugin remove cleans empty manifest directories", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-manifest-dir"};
+    TempDir tempDir {"reqpack-rqp-plugin-manifest-dir"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::string name = "manifest-dir-demo";
     const std::filesystem::path packageRoot = tempDir.path() / (name + "-pkg");
@@ -1107,13 +1107,13 @@ return true
 }
 
 TEST_CASE("rqp plugin install fails when repository index cannot be loaded", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-repo-load-fail"};
+    TempDir tempDir {"reqpack-rqp-plugin-repo-load-fail"};
     ReqPackConfig config = make_plugin_config(tempDir);
     config.rqp.repositories = {"https://repo.test/missing-index.json"};
 
     RecordingDownloadHost host;
     host.tempRoot = tempDir.path();
-    host.onDownload = [](const std::string&, const std::string&) { return DownloadResult{}; };
+    host.onDownload = [](const std::string&, const std::string&) { return DownloadResult {}; };
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());
@@ -1127,7 +1127,7 @@ TEST_CASE("rqp plugin install fails when repository index cannot be loaded", "[u
 }
 
 TEST_CASE("rqp plugin install resolves downloaded repository directory artifacts", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-repo-directory"};
+    TempDir tempDir {"reqpack-rqp-plugin-repo-directory"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "directory-repo", "1.0.0");
     const std::filesystem::path bundleDirectory = tempDir.path() / "bundle";
@@ -1181,14 +1181,14 @@ TEST_CASE("rqp plugin install resolves downloaded repository directory artifacts
 }
 
 TEST_CASE("rqp plugin outdated returns empty stub list", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-outdated-stub"};
+    TempDir tempDir {"reqpack-rqp-plugin-outdated-stub"};
     RqpPlugin plugin(make_plugin_config(tempDir));
     REQUIRE(plugin.init());
     CHECK(plugin.outdated(make_plugin_context(plugin)).empty());
 }
 
 TEST_CASE("rqp plugin list exposes request name aliases for installed packages", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-request-alias"};
+    TempDir tempDir {"reqpack-rqp-plugin-request-alias"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "actual-name", "1.0.0");
     const std::filesystem::path indexPath =
@@ -1217,7 +1217,7 @@ TEST_CASE("rqp plugin list exposes request name aliases for installed packages",
 }
 
 TEST_CASE("rqp plugin info returns empty package for unknown names", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-info-missing"};
+    TempDir tempDir {"reqpack-rqp-plugin-info-missing"};
     ReqPackConfig config = make_plugin_config(tempDir);
 
     RqpPlugin plugin(config);
@@ -1228,7 +1228,7 @@ TEST_CASE("rqp plugin info returns empty package for unknown names", "[unit][rqp
 }
 
 TEST_CASE("rqp plugin ignores empty internal repository flag overrides", "[unit][rqp_plugin]") {
-    TempDir tempDir{"reqpack-rqp-plugin-empty-repo-flag"};
+    TempDir tempDir {"reqpack-rqp-plugin-empty-repo-flag"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "flagged-empty", "1.0.0");
     const std::filesystem::path indexPath =

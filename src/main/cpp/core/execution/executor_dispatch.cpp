@@ -23,15 +23,15 @@ PluginCallContext Executer::buildPluginContext(IPlugin* plugin, const TaskGroup&
         itemId = package_item_id(taskGroup.system, taskGroup.packages.front());
     }
 
-    return PluginCallContext{.pluginId = plugin->getPluginId(),
-                             .pluginDirectory = plugin->getPluginDirectory(),
-                             .scriptPath = plugin->getScriptPath(),
-                             .flags = taskGroup.flags,
-                             .host = plugin->getRuntimeHost(),
-                             .proxy = proxy_config_for_system(this->config, plugin->getPluginId()),
-                             .currentItemId = itemId,
-                             .repositories = repositories_for_ecosystem(this->config, plugin->getPluginId()),
-                             .hostInfo = HostInfoService::currentSnapshot()};
+    return PluginCallContext {.pluginId = plugin->getPluginId(),
+                              .pluginDirectory = plugin->getPluginDirectory(),
+                              .scriptPath = plugin->getScriptPath(),
+                              .flags = taskGroup.flags,
+                              .host = plugin->getRuntimeHost(),
+                              .proxy = proxy_config_for_system(this->config, plugin->getPluginId()),
+                              .currentItemId = itemId,
+                              .repositories = repositories_for_ecosystem(this->config, plugin->getPluginId()),
+                              .hostInfo = HostInfoService::currentSnapshot()};
 }
 
 std::vector<Executer::TransactionRecord> Executer::executeTaskGroup(const TaskGroup& taskGroup,
@@ -68,7 +68,8 @@ std::vector<Executer::TransactionRecord> Executer::executeTaskGroup(const TaskGr
                 "on the host.",
                 "Install the required tools with a Windows package manager (for example Chocolatey or winget) or "
                 "manually, then retry.",
-                packageList.empty() ? std::string{} : ("packages: " + packageList), taskGroup.system, "nix-soft-skip"));
+                packageList.empty() ? std::string {} : ("packages: " + packageList), taskGroup.system,
+                "nix-soft-skip"));
         }
 
         // Soft-skip: no plugin call and no success history records.
@@ -197,12 +198,12 @@ std::vector<Executer::TransactionRecord> Executer::buildSuccessRecords(const Tas
     records.reserve(taskGroup.packages.size());
 
     for (const Package& package : taskGroup.packages) {
-        records.push_back(TransactionRecord{.runId = {},
-                                            .system = taskGroup.system,
-                                            .action = taskGroup.action,
-                                            .packageName = package.name,
-                                            .packageVersion = package.version,
-                                            .status = "success"});
+        records.push_back(TransactionRecord {.runId = {},
+                                             .system = taskGroup.system,
+                                             .action = taskGroup.action,
+                                             .packageName = package.name,
+                                             .packageVersion = package.version,
+                                             .status = "success"});
     }
 
     return records;
@@ -246,12 +247,12 @@ Executer::buildAlreadySatisfiedRecords(const std::vector<TaskGroup>& allTaskGrou
                 }
             }
 
-            records.push_back(TransactionRecord{.runId = {},
-                                                .system = taskGroup.system,
-                                                .action = taskGroup.action,
-                                                .packageName = package.name,
-                                                .packageVersion = version,
-                                                .status = "skipped"});
+            records.push_back(TransactionRecord {.runId = {},
+                                                 .system = taskGroup.system,
+                                                 .action = taskGroup.action,
+                                                 .packageName = package.name,
+                                                 .packageVersion = version,
+                                                 .status = "skipped"});
         }
     }
 
@@ -263,12 +264,12 @@ std::vector<Executer::TransactionRecord> Executer::buildFailureRecords(const Tas
     records.reserve(taskGroup.packages.size());
 
     for (const Package& package : taskGroup.packages) {
-        records.push_back(TransactionRecord{.runId = {},
-                                            .system = taskGroup.system,
-                                            .action = taskGroup.action,
-                                            .packageName = package.name,
-                                            .packageVersion = package.version,
-                                            .status = "failed"});
+        records.push_back(TransactionRecord {.runId = {},
+                                             .system = taskGroup.system,
+                                             .action = taskGroup.action,
+                                             .packageName = package.name,
+                                             .packageVersion = package.version,
+                                             .status = "failed"});
     }
 
     return records;

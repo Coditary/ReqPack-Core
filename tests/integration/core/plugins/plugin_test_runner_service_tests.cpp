@@ -996,7 +996,7 @@ void write_java_plugin_fixture(const std::filesystem::path& pluginRoot) {
 } // namespace
 
 TEST_CASE("plugin test command runs hermetic case and writes report", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-pass"};
+    TempDir tempDir {"reqpack-plugin-test-pass"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     const std::filesystem::path reportPath = tempDir.path() / "report.json";
@@ -1019,7 +1019,7 @@ TEST_CASE("plugin test command runs hermetic case and writes report", "[integrat
 
 TEST_CASE("plugin test command treats zero-exit stderr output as success by default",
           "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-stderr-success"};
+    TempDir tempDir {"reqpack-plugin-test-stderr-success"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     write_plugin_bundle(plugins, "demo", TEST_PLUGIN);
@@ -1036,7 +1036,7 @@ TEST_CASE("plugin test command treats zero-exit stderr output as success by defa
 
 TEST_CASE("plugin test command loads cases from directory and returns failures",
           "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-dir"};
+    TempDir tempDir {"reqpack-plugin-test-dir"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     write_plugin_bundle(plugins, "demo", TEST_PLUGIN);
@@ -1063,7 +1063,7 @@ TEST_CASE("plugin test command loads cases from directory and returns failures",
 }
 
 TEST_CASE("plugin test command supports query cases and help", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-help"};
+    TempDir tempDir {"reqpack-plugin-test-help"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     write_plugin_bundle(plugins, "demo", TEST_PLUGIN);
@@ -1082,7 +1082,7 @@ TEST_CASE("plugin test command supports query cases and help", "[integration][pl
 }
 
 TEST_CASE("plugin test command supports filesystem fixtures", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-fixtures"};
+    TempDir tempDir {"reqpack-plugin-test-fixtures"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     write_plugin_bundle(plugins, "fixture-demo", FIXTURE_INFO_PLUGIN);
@@ -1099,7 +1099,7 @@ TEST_CASE("plugin test command supports filesystem fixtures", "[integration][plu
 }
 
 TEST_CASE("plugin test command validates artifacts and supports presets", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-preset"};
+    TempDir tempDir {"reqpack-plugin-test-preset"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
     const std::filesystem::path presetDir = plugins / "demo" / ".reqpack-test" / "core";
@@ -1118,7 +1118,7 @@ TEST_CASE("plugin test command validates artifacts and supports presets", "[inte
 }
 
 TEST_CASE("plugin test command runs repo dnf preset cases", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-dnf-preset"};
+    TempDir tempDir {"reqpack-plugin-test-dnf-preset"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     write_dnf_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
@@ -1130,7 +1130,7 @@ TEST_CASE("plugin test command runs repo dnf preset cases", "[integration][plugi
 }
 
 TEST_CASE("plugin test command runs repo maven preset cases", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-maven-preset"};
+    TempDir tempDir {"reqpack-plugin-test-maven-preset"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     write_maven_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
@@ -1142,7 +1142,7 @@ TEST_CASE("plugin test command runs repo maven preset cases", "[integration][plu
 }
 
 TEST_CASE("plugin test command runs repo sys preset cases", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-sys-preset"};
+    TempDir tempDir {"reqpack-plugin-test-sys-preset"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     write_sys_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
@@ -1154,7 +1154,7 @@ TEST_CASE("plugin test command runs repo sys preset cases", "[integration][plugi
 }
 
 TEST_CASE("plugin test command runs repo java preset case", "[integration][plugin-test][service]") {
-    TempDir tempDir{"reqpack-plugin-test-java-preset"};
+    TempDir tempDir {"reqpack-plugin-test-java-preset"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     write_java_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);

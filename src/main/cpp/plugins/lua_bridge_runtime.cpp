@@ -28,7 +28,7 @@ bool execute_file(sol::state& lua, Logger& logger, const std::string& path) {
 
 void log_lua_error(Logger& logger, const std::string& scope, const std::string& message) {
     logger.emit(OutputAction::LOG,
-                OutputContext{.level = spdlog::level::err, .message = message, .source = "lua", .scope = scope});
+                OutputContext {.level = spdlog::level::err, .message = message, .source = "lua", .scope = scope});
 }
 
 LuaBridgeScriptRuntime::LuaBridgeScriptRuntime() {
@@ -58,7 +58,7 @@ bool LuaBridgeScriptRuntime::validatePluginContract(Logger& logger, const std::s
         return false;
     }
 
-    const std::array<const char*, 10> requiredMethods{
+    const std::array<const char*, 10> requiredMethods {
         "getName", "getVersion",   "getRequirements", "getCategories", "getMissingPackages",
         "install", "installLocal", "remove",          "update",        "list"};
 
@@ -70,7 +70,7 @@ bool LuaBridgeScriptRuntime::validatePluginContract(Logger& logger, const std::s
         }
     }
 
-    const std::array<const char*, 2> requiredQueryMethods{"search", "info"};
+    const std::array<const char*, 2> requiredQueryMethods {"search", "info"};
     for (const char* method : requiredQueryMethods) {
         sol::protected_function function = m_pluginTable[method];
         if (!function.valid()) {

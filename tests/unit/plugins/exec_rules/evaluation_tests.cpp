@@ -18,8 +18,8 @@ ExecRuleset make_control_ruleset() {
     first.repeat = false;
     first.stop = true;
     first.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "first"}, {"payload", "one"}}},
-        ExecRuleAction{.type = ExecRuleActionType::State, .fields = {{"value", "done"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Event, .fields = {{"name", "first"}, {"payload", "one"}}},
+        ExecRuleAction {.type = ExecRuleActionType::State, .fields = {{"value", "done"}}},
     };
 
     ExecRule second;
@@ -28,7 +28,7 @@ ExecRuleset make_control_ruleset() {
     second.regexText = "^TOKEN$";
     second.regex = std::regex(second.regexText, std::regex::ECMAScript);
     second.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "second"}, {"payload", "two"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Event, .fields = {{"name", "second"}, {"payload", "two"}}},
     };
 
     ruleset.rules = {first, second};
@@ -48,8 +48,8 @@ ExecRuleset make_screen_ruleset() {
     screen.repeat = false;
     screen.stop = true;
     screen.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Send, .fields = {{"value", "y\n"}}},
-        ExecRuleAction{.type = ExecRuleActionType::State, .fields = {{"value", "running"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Send, .fields = {{"value", "y\n"}}},
+        ExecRuleAction {.type = ExecRuleActionType::State, .fields = {{"value", "running"}}},
     };
 
     ExecRule line;
@@ -59,7 +59,7 @@ ExecRuleset make_screen_ruleset() {
     line.regex = std::regex(line.regexText, std::regex::ECMAScript);
     line.repeat = false;
     line.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "ack"}, {"payload", "${1}"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Event, .fields = {{"name", "ack"}, {"payload", "${1}"}}},
     };
 
     ruleset.rules = {screen, line};
@@ -91,15 +91,15 @@ TEST_CASE("evaluation resolves placeholders", "[unit][exec_rules][evaluation]") 
     rule.regexText = "^Progress:\\s+(\\d+)% loaded=(\\d+\\.\\d+) total=(\\d+\\.\\d+) speed=(\\d+\\.\\d+)$";
     rule.regex = std::regex(rule.regexText, std::regex::ECMAScript);
     rule.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Progress,
-                       .fields = {{"percent", "${1}"},
-                                  {"current", "${2}"},
-                                  {"currentUnit", "MiB"},
-                                  {"total", "${3}"},
-                                  {"totalUnit", "MiB"},
-                                  {"speed", "${4}"},
-                                  {"speedUnit", "MiB/s"}}},
-        ExecRuleAction{
+        ExecRuleAction {.type = ExecRuleActionType::Progress,
+                        .fields = {{"percent", "${1}"},
+                                   {"current", "${2}"},
+                                   {"currentUnit", "MiB"},
+                                   {"total", "${3}"},
+                                   {"totalUnit", "MiB"},
+                                   {"speed", "${4}"},
+                                   {"speedUnit", "MiB/s"}}},
+        ExecRuleAction {
             .type = ExecRuleActionType::Event,
             .fields = {{"name", "progress"}, {"payload", "match=${0};value=${1};current=${2};total=${3};speed=${4}"}}},
     };
@@ -147,7 +147,7 @@ TEST_CASE("line evaluation honors repeat and state gating", "[unit][exec_rules][
     gated.regexText = "^READY$";
     gated.regex = std::regex(gated.regexText, std::regex::ECMAScript);
     gated.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "ready"}, {"payload", "yes"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Event, .fields = {{"name", "ready"}, {"payload", "yes"}}},
     };
 
     ExecRule repeatable;
@@ -156,7 +156,7 @@ TEST_CASE("line evaluation honors repeat and state gating", "[unit][exec_rules][
     repeatable.regex = std::regex(repeatable.regexText, std::regex::ECMAScript);
     repeatable.repeat = true;
     repeatable.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "ping"}, {"payload", "1"}}},
+        ExecRuleAction {.type = ExecRuleActionType::Event, .fields = {{"name", "ping"}, {"payload", "1"}}},
     };
 
     ruleset.rules = {gated, repeatable};

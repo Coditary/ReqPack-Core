@@ -64,7 +64,7 @@ std::filesystem::path write_plugin_bundle(const std::filesystem::path& pluginDir
 }
 
 PluginCallContext make_context(LuaBridge& bridge, const ReqPackConfig& config, std::vector<std::string> flags = {}) {
-    return PluginCallContext{
+    return PluginCallContext {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
@@ -189,7 +189,7 @@ plugin.fileExtensions = { ".demo", ".pkg" }
 } // namespace
 
 TEST_CASE("lua bridge initializes plugin metadata and security fields", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-init"};
+    TempDir tempDir {"reqpack-lua-bridge-core-init"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
@@ -199,7 +199,7 @@ TEST_CASE("lua bridge initializes plugin metadata and security fields", "[unit][
     CHECK(bridge.getVersion() == "booted");
     REQUIRE(bridge.getSecurityMetadata().has_value());
     CHECK(bridge.getSecurityMetadata()->role == "security-provider");
-    CHECK(bridge.getSecurityMetadata()->capabilities == std::vector<std::string>{"network"});
+    CHECK(bridge.getSecurityMetadata()->capabilities == std::vector<std::string> {"network"});
     REQUIRE(bridge.init());
 
     const std::vector<std::string> categories = bridge.getCategories();
@@ -209,7 +209,7 @@ TEST_CASE("lua bridge initializes plugin metadata and security fields", "[unit][
 }
 
 TEST_CASE("lua bridge parses requirements and missing package names", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-requirements"};
+    TempDir tempDir {"reqpack-lua-bridge-core-requirements"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
@@ -224,9 +224,9 @@ TEST_CASE("lua bridge parses requirements and missing package names", "[unit][lu
     CHECK(requirements[0].version == "8.0");
     CHECK(requirements[0].sourcePath == "/tmp/curl.rpm");
     CHECK(requirements[0].localTarget);
-    CHECK(requirements[0].flags == std::vector<std::string>{"dep-flag"});
+    CHECK(requirements[0].flags == std::vector<std::string> {"dep-flag"});
 
-    const Package requested{
+    const Package requested {
         .action = ActionType::INSTALL,
         .system = "query",
         .name = "demo",
@@ -242,7 +242,7 @@ TEST_CASE("lua bridge parses requirements and missing package names", "[unit][lu
 }
 
 TEST_CASE("lua bridge list search and info parse query results", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-query"};
+    TempDir tempDir {"reqpack-lua-bridge-core-query"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
@@ -271,7 +271,7 @@ TEST_CASE("lua bridge list search and info parse query results", "[unit][lua_bri
 }
 
 TEST_CASE("lua bridge installLocal accepts non-empty paths", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-install-local"};
+    TempDir tempDir {"reqpack-lua-bridge-core-install-local"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
@@ -284,17 +284,17 @@ TEST_CASE("lua bridge installLocal accepts non-empty paths", "[unit][lua_bridge_
 }
 
 TEST_CASE("lua bridge reads fileExtensions from plugin table", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-extensions"};
+    TempDir tempDir {"reqpack-lua-bridge-core-extensions"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "extensions", "extensions", EXTENSIONS_PLUGIN);
 
     LuaBridge bridge(scriptPath.string(), config);
-    CHECK(bridge.getFileExtensions() == std::vector<std::string>{".demo", ".pkg"});
+    CHECK(bridge.getFileExtensions() == std::vector<std::string> {".demo", ".pkg"});
 }
 
 TEST_CASE("lua bridge init fails for invalid plugin contract", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-bad-init"};
+    TempDir tempDir {"reqpack-lua-bridge-core-bad-init"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "broken", "broken",
                                                                  R"(
@@ -308,7 +308,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge shutdown succeeds for valid plugin", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-shutdown"};
+    TempDir tempDir {"reqpack-lua-bridge-core-shutdown"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "shutdown", "shutdown",
                                                                  R"(
@@ -334,7 +334,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge exposes context bindings to plugin scripts", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-context"};
+    TempDir tempDir {"reqpack-lua-bridge-core-context"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "context", "context",
                                                                  R"(
@@ -372,20 +372,20 @@ function plugin.shutdown() return true end
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    PluginCallContext context{
+    PluginCallContext context {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
         .host = bridge.getRuntimeHost(),
         .proxy =
-            ProxyConfig{
+            ProxyConfig {
                 .defaultTarget = "dnf",
                 .targets = {"dnf", "apt"},
                 .options = {{"arch", "x86_64"}},
             },
         .repositories =
             {
-                RepositoryEntry{
+                RepositoryEntry {
                     .id = "main",
                     .url = "https://example.test/repo",
                     .priority = 1,
@@ -394,7 +394,7 @@ function plugin.shutdown() return true end
                     .auth = {},
                     .validation = {.checksum = RepositoryChecksumPolicy::WARN, .tlsVerify = true},
                     .scope = {.include = {"*"}, .exclude = {}},
-                    .extras = {{"tags", std::vector<std::string>{"stable"}}},
+                    .extras = {{"tags", std::vector<std::string> {"stable"}}},
                 },
             },
         .hostInfo = HostInfoService::currentSnapshot(),
@@ -413,7 +413,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge reads security metadata from plugin scripts", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-security"};
+    TempDir tempDir {"reqpack-lua-bridge-core-security"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "secured", "secured",
                                                                  R"(
@@ -450,7 +450,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge init returns false when init hook fails", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-init-fail"};
+    TempDir tempDir {"reqpack-lua-bridge-core-init-fail"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "init-fail", "init-fail",
                                                                  R"(
@@ -476,7 +476,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge tolerates missing script files during construction", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-missing-script"};
+    TempDir tempDir {"reqpack-lua-bridge-core-missing-script"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = tempDir.path() / "plugins" / "ghost" / "run.lua";
 
@@ -486,7 +486,7 @@ TEST_CASE("lua bridge tolerates missing script files during construction", "[uni
 }
 
 TEST_CASE("lua bridge routes print output through logger", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-print"};
+    TempDir tempDir {"reqpack-lua-bridge-core-print"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "printer", "printer",
                                                                  R"(
@@ -511,12 +511,12 @@ function plugin.shutdown() return true end
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
-    CHECK(bridge.install(make_context(bridge, config), {Package{.name = "demo"}}));
+    CHECK(bridge.install(make_context(bridge, config), {Package {.name = "demo"}}));
     CHECK(bridge.shutdown());
 }
 
 TEST_CASE("lua bridge shutdown propagates plugin failure", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-shutdown-fail"};
+    TempDir tempDir {"reqpack-lua-bridge-core-shutdown-fail"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "shutdown-fail", "shutdown-fail",
@@ -543,7 +543,7 @@ function plugin.shutdown() return false end
 }
 
 TEST_CASE("lua bridge init reports lua errors from init hook", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-init-lua-error"};
+    TempDir tempDir {"reqpack-lua-bridge-core-init-lua-error"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "init-error", "init-error",
@@ -570,7 +570,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("lua bridge shutdown reports lua errors from shutdown hook", "[unit][lua_bridge_core]") {
-    TempDir tempDir{"reqpack-lua-bridge-core-shutdown-lua-error"};
+    TempDir tempDir {"reqpack-lua-bridge-core-shutdown-lua-error"};
     ReqPackConfig config;
     const std::filesystem::path scriptPath =
         write_plugin_bundle(tempDir.path() / "plugins" / "shutdown-error", "shutdown-error",

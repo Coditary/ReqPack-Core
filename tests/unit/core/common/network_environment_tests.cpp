@@ -44,33 +44,33 @@ bool contains_prefix(const std::vector<std::string>& values, const std::string& 
 } // namespace
 
 TEST_CASE("network environment prefers configured CA bundle when valid", "[unit][network][env]") {
-    TempDir tempDir{"reqpack-network-env"};
+    TempDir tempDir {"reqpack-network-env"};
     const std::filesystem::path bundlePath = tempDir.path() / "ca-bundle.pem";
     std::ofstream output(bundlePath);
     REQUIRE(output.is_open());
     output << "test";
     output.close();
 
-    ScopedEnvVar sslCertFile{"SSL_CERT_FILE", bundlePath.string()};
-    ScopedEnvVar curlCaBundle{"CURL_CA_BUNDLE"};
-    ScopedEnvVar gitSslCaInfo{"GIT_SSL_CAINFO"};
+    ScopedEnvVar sslCertFile {"SSL_CERT_FILE", bundlePath.string()};
+    ScopedEnvVar curlCaBundle {"CURL_CA_BUNDLE"};
+    ScopedEnvVar gitSslCaInfo {"GIT_SSL_CAINFO"};
 
     CHECK(reqpack_ca_bundle_path() == bundlePath.string());
 }
 
 TEST_CASE("network environment strips bundled library paths and seeds CA vars", "[unit][network][env]") {
-    TempDir tempDir{"reqpack-network-sanitize"};
+    TempDir tempDir {"reqpack-network-sanitize"};
     const std::filesystem::path bundlePath = tempDir.path() / "ca-bundle.pem";
     std::ofstream output(bundlePath);
     REQUIRE(output.is_open());
     output << "test";
     output.close();
 
-    ScopedEnvVar ldLibraryPath{"LD_LIBRARY_PATH", "/tmp/reqpack/lib"};
-    ScopedEnvVar dyldLibraryPath{"DYLD_LIBRARY_PATH", "/tmp/reqpack/lib"};
-    ScopedEnvVar sslCertFile{"SSL_CERT_FILE", bundlePath.string()};
-    ScopedEnvVar curlCaBundle{"CURL_CA_BUNDLE"};
-    ScopedEnvVar gitSslCaInfo{"GIT_SSL_CAINFO"};
+    ScopedEnvVar ldLibraryPath {"LD_LIBRARY_PATH", "/tmp/reqpack/lib"};
+    ScopedEnvVar dyldLibraryPath {"DYLD_LIBRARY_PATH", "/tmp/reqpack/lib"};
+    ScopedEnvVar sslCertFile {"SSL_CERT_FILE", bundlePath.string()};
+    ScopedEnvVar curlCaBundle {"CURL_CA_BUNDLE"};
+    ScopedEnvVar gitSslCaInfo {"GIT_SSL_CAINFO"};
 
     const std::vector<std::string> environment = reqpack_sanitized_process_environment();
     CHECK_FALSE(contains_prefix(environment, "LD_LIBRARY_PATH="));

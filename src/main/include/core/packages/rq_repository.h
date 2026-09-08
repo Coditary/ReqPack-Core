@@ -11,8 +11,8 @@ struct RqRepositoryPackage {
     std::string repository;
     std::string name;
     std::string version;
-    int release{0};
-    int revision{0};
+    int release {0};
+    int revision {0};
     std::string architecture;
     std::vector<std::string> systems;
     std::string summary;

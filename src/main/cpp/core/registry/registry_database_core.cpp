@@ -25,7 +25,7 @@ bool is_github_repository_https_url(const std::string& normalized) {
         return false;
     }
 
-    const std::string path = normalized.substr(std::string{"https://github.com/"}.size());
+    const std::string path = normalized.substr(std::string {"https://github.com/"}.size());
     if (path.empty()) {
         return false;
     }
@@ -133,7 +133,7 @@ std::pair<std::string, std::string> registry_record_payload_files(const Registry
     if (record.bundleSource && !record.bundlePath.empty() && std::filesystem::exists(record.bundlePath)) {
         if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(record.bundlePath, record.name);
             layout.has_value()) {
-            return {read_text_file(layout->runScriptPath), std::string{}};
+            return {read_text_file(layout->runScriptPath), std::string {}};
         }
 
         const std::filesystem::path bundlePath(record.bundlePath);
@@ -196,7 +196,7 @@ bool registry_database_is_valid_sha256(const std::string& value) {
 }
 
 std::string registry_database_sha256_hex(const std::string& value) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest{};
+    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
     SHA256(reinterpret_cast<const unsigned char*>(value.data()), value.size(), digest.data());
 
     std::ostringstream stream;
@@ -337,7 +337,7 @@ std::string registry_database_git_source_with_ref(const std::string& source, con
     if (ref.empty()) {
         return gitPrefixed ? "git+" + base : base;
     }
-    return (gitPrefixed ? "git+" : std::string{}) + base + "?ref=" + ref;
+    return (gitPrefixed ? "git+" : std::string {}) + base + "?ref=" + ref;
 }
 
 std::filesystem::path registry_database_git_repository_cache_path(const ReqPackConfig& config,
@@ -357,7 +357,7 @@ std::vector<std::string> registry_database_extract_git_tags(const std::string& o
         if (marker == std::string::npos) {
             continue;
         }
-        const std::string tag = line.substr(marker + std::string{"refs/tags/"}.size());
+        const std::string tag = line.substr(marker + std::string {"refs/tags/"}.size());
         if (!tag.empty()) {
             tags.push_back(tag);
         }

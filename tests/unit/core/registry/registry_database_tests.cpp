@@ -276,11 +276,11 @@ TEST_CASE("registry database alias records may omit script payload", "[unit][reg
 }
 
 TEST_CASE("registry database stores sync metadata in dedicated meta db", "[unit][registry_database][meta]") {
-    TempDir tempDir{"reqpack-registry-meta"};
+    TempDir tempDir {"reqpack-registry-meta"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
-    config.registry.sources["yum"] = RegistrySourceEntry{
+    config.registry.sources["yum"] = RegistrySourceEntry {
         .source = "dnf",
         .alias = true,
         .description = "Alias",
@@ -309,7 +309,7 @@ TEST_CASE("registry database stores sync metadata in dedicated meta db", "[unit]
 }
 
 TEST_CASE("registry database stores last successful sync timestamp meta key", "[unit][registry_database][meta]") {
-    TempDir tempDir{"reqpack-registry-sync-meta"};
+    TempDir tempDir {"reqpack-registry-sync-meta"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
@@ -322,7 +322,7 @@ TEST_CASE("registry database stores last successful sync timestamp meta key", "[
 }
 
 TEST_CASE("registry database refreshRecord loads script files with bootstrap", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-script"};
+    TempDir tempDir {"reqpack-registry-payload-script"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
@@ -331,7 +331,7 @@ TEST_CASE("registry database refreshRecord loads script files with bootstrap", "
     const std::string bootstrap = "print('bootstrap')\n";
     write_file(scriptPath, script);
     write_file(scriptPath.parent_path() / "bootstrap.lua", bootstrap);
-    config.registry.sources["standalone"] = RegistrySourceEntry{
+    config.registry.sources["standalone"] = RegistrySourceEntry {
         .source = scriptPath.string(),
         .alias = false,
         .description = "standalone script",
@@ -352,13 +352,13 @@ TEST_CASE("registry database refreshRecord loads script files with bootstrap", "
 }
 
 TEST_CASE("registry database refreshRecord rejects invalid script sources", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-invalid"};
+    TempDir tempDir {"reqpack-registry-payload-invalid"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
     const std::filesystem::path scriptPath = tempDir.path() / "invalid.lua";
     write_file(scriptPath, "<html><body>not a plugin</body></html>");
-    config.registry.sources["invalid"] = RegistrySourceEntry{
+    config.registry.sources["invalid"] = RegistrySourceEntry {
         .source = scriptPath.string(),
         .alias = false,
         .description = "invalid script",
@@ -372,16 +372,16 @@ TEST_CASE("registry database refreshRecord rejects invalid script sources", "[un
 }
 
 TEST_CASE("registry database refreshRecord preserves alias and package entries", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-alias"};
+    TempDir tempDir {"reqpack-registry-payload-alias"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
-    config.registry.sources["alias-demo"] = RegistrySourceEntry{
+    config.registry.sources["alias-demo"] = RegistrySourceEntry {
         .source = "target",
         .alias = true,
         .description = "Alias plugin",
     };
-    config.registry.sources["pkg-demo"] = RegistrySourceEntry{
+    config.registry.sources["pkg-demo"] = RegistrySourceEntry {
         .source = "https://example.test/pkg.rqp",
         .alias = false,
         .description = "Registry package",
@@ -405,13 +405,13 @@ TEST_CASE("registry database refreshRecord preserves alias and package entries",
 }
 
 TEST_CASE("registry database refreshRecord rejects hash mismatches", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-hash"};
+    TempDir tempDir {"reqpack-registry-payload-hash"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
     const std::filesystem::path sourceRoot = tempDir.path() / "sources";
     write_plugin_bundle(sourceRoot, "hash-demo", PAYLOAD_PLUGIN_SCRIPT);
-    config.registry.sources["hash-demo"] = RegistrySourceEntry{
+    config.registry.sources["hash-demo"] = RegistrySourceEntry {
         .source = sourceRoot.string(),
         .alias = false,
         .description = "hash demo",
@@ -425,14 +425,14 @@ TEST_CASE("registry database refreshRecord rejects hash mismatches", "[unit][reg
 }
 
 TEST_CASE("registry database refreshRecord loads file url plugin sources", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-file-url"};
+    TempDir tempDir {"reqpack-registry-payload-file-url"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
     const std::filesystem::path scriptPath = tempDir.path() / "remote.lua";
     const std::string script = "return { getName = function() return 'remote' end }\n";
     write_file(scriptPath, script);
-    config.registry.sources["remote"] = RegistrySourceEntry{
+    config.registry.sources["remote"] = RegistrySourceEntry {
         .source = "file://" + scriptPath.string(),
         .alias = false,
         .description = "remote file plugin",
@@ -448,11 +448,11 @@ TEST_CASE("registry database refreshRecord loads file url plugin sources", "[uni
 
 TEST_CASE("registry database refreshRecord fails for unreachable git plugin sources",
           "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-git-fail"};
+    TempDir tempDir {"reqpack-registry-payload-git-fail"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
-    config.registry.sources["git-plugin"] = RegistrySourceEntry{
+    config.registry.sources["git-plugin"] = RegistrySourceEntry {
         .source = "git+https://github.com/example/nonexistent-plugin-repo.git?ref=main",
         .alias = false,
         .description = "git plugin",
@@ -465,11 +465,11 @@ TEST_CASE("registry database refreshRecord fails for unreachable git plugin sour
 }
 
 TEST_CASE("registry database refreshRecord rejects empty sources", "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-empty"};
+    TempDir tempDir {"reqpack-registry-payload-empty"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
-    config.registry.sources["empty"] = RegistrySourceEntry{
+    config.registry.sources["empty"] = RegistrySourceEntry {
         .source = "",
         .alias = false,
         .description = "empty source",
@@ -483,7 +483,7 @@ TEST_CASE("registry database refreshRecord rejects empty sources", "[unit][regis
 
 TEST_CASE("registry database refreshRecord loads sibling bootstrap for single-file sources",
           "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-sibling-bootstrap"};
+    TempDir tempDir {"reqpack-registry-payload-sibling-bootstrap"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
@@ -492,7 +492,7 @@ TEST_CASE("registry database refreshRecord loads sibling bootstrap for single-fi
     const std::string bootstrap = "print('bootstrap')\n";
     write_file(scriptPath, PAYLOAD_PLUGIN_SCRIPT);
     write_file(sourceDirectory / "bootstrap.lua", bootstrap);
-    config.registry.sources["bootstrap-demo"] = RegistrySourceEntry{
+    config.registry.sources["bootstrap-demo"] = RegistrySourceEntry {
         .source = scriptPath.string(),
         .alias = false,
         .description = "bootstrap demo",
@@ -509,13 +509,13 @@ TEST_CASE("registry database refreshRecord loads sibling bootstrap for single-fi
 
 TEST_CASE("registry database refreshRecord loads plugin lua from directory source",
           "[unit][registry_database][payload]") {
-    TempDir tempDir{"reqpack-registry-payload-directory-lua"};
+    TempDir tempDir {"reqpack-registry-payload-directory-lua"};
     ReqPackConfig config;
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.security.requireThinLayer = false;
     const std::filesystem::path sourceRoot = tempDir.path() / "sources";
     write_file(sourceRoot / "lua-demo.lua", PAYLOAD_PLUGIN_SCRIPT);
-    config.registry.sources["lua-demo"] = RegistrySourceEntry{
+    config.registry.sources["lua-demo"] = RegistrySourceEntry {
         .source = sourceRoot.string(),
         .alias = false,
         .description = "lua demo",

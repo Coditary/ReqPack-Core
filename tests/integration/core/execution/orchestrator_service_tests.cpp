@@ -584,8 +584,8 @@ std::filesystem::path write_remote_users(const std::filesystem::path& root, cons
 }
 
 struct CommandRunResult {
-    int exitCode{1};
-    std::string output{};
+    int exitCode {1};
+    std::string output {};
 };
 
 std::string run_reqpack(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
@@ -935,7 +935,7 @@ class ServerProcess {
     }
 
   private:
-    pid_t pid_{-1};
+    pid_t pid_ {-1};
 };
 
 int reserve_tcp_port() {
@@ -944,7 +944,7 @@ int reserve_tcp_port() {
         throw std::runtime_error("failed to create port reservation socket");
     }
 
-    sockaddr_in address{};
+    sockaddr_in address {};
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     address.sin_port = 0;
@@ -969,7 +969,7 @@ int connect_with_retry(const std::string& host, int port) {
         if (fd == -1) {
             continue;
         }
-        sockaddr_in address{};
+        sockaddr_in address {};
         address.sin_family = AF_INET;
         address.sin_port = htons(static_cast<uint16_t>(port));
         if (::inet_pton(AF_INET, host.c_str(), &address.sin_addr) != 1) {
@@ -1502,7 +1502,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator list command loads plugin from workspace plugins directory",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-workspace-list"};
+    TempDir tempDir {"reqpack-orchestrator-workspace-list"};
     const std::filesystem::path configuredPluginDirectory = tempDir.path() / "configured-plugins";
     const std::filesystem::path workspacePluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), configuredPluginDirectory);
@@ -1521,7 +1521,7 @@ TEST_CASE("orchestrator list command loads plugin from workspace plugins directo
 
 TEST_CASE("orchestrator outdated command prints normalized latest version columns",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-outdated"};
+    TempDir tempDir {"reqpack-orchestrator-outdated"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -1542,7 +1542,7 @@ TEST_CASE("orchestrator outdated command prints normalized latest version column
 
 TEST_CASE("orchestrator dnf list normalizes metadata and filters architecture",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-dnf-list-arch-filter"};
+    TempDir tempDir {"reqpack-orchestrator-dnf-list-arch-filter"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1588,7 +1588,7 @@ TEST_CASE("orchestrator dnf list normalizes metadata and filters architecture",
 }
 
 TEST_CASE("orchestrator dnf outdated shows installed and latest versions", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-dnf-outdated"};
+    TempDir tempDir {"reqpack-orchestrator-dnf-outdated"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1652,7 +1652,7 @@ TEST_CASE("orchestrator dnf outdated shows installed and latest versions", "[int
 
 TEST_CASE("orchestrator maven list normalizes type metadata without fake status description",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-maven-list"};
+    TempDir tempDir {"reqpack-orchestrator-maven-list"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1715,7 +1715,7 @@ TEST_CASE("orchestrator maven list normalizes type metadata without fake status 
 
 TEST_CASE("orchestrator maven outdated shows latest version once per artifact",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-maven-outdated"};
+    TempDir tempDir {"reqpack-orchestrator-maven-outdated"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1800,7 +1800,7 @@ TEST_CASE("orchestrator maven outdated shows latest version once per artifact",
 }
 
 TEST_CASE("orchestrator search command prints executor search results", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-search"};
+    TempDir tempDir {"reqpack-orchestrator-search"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -1817,7 +1817,7 @@ TEST_CASE("orchestrator search command prints executor search results", "[integr
 }
 
 TEST_CASE("orchestrator info command prints executor info result", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-info"};
+    TempDir tempDir {"reqpack-orchestrator-info"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -1834,7 +1834,7 @@ TEST_CASE("orchestrator info command prints executor info result", "[integration
 }
 
 TEST_CASE("orchestrator dnf search parses indented native dnf results", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-dnf-search"};
+    TempDir tempDir {"reqpack-orchestrator-dnf-search"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1877,7 +1877,7 @@ TEST_CASE("orchestrator dnf search parses indented native dnf results", "[integr
 }
 
 TEST_CASE("orchestrator dnf search honors arch filter", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-dnf-search-arch-filter"};
+    TempDir tempDir {"reqpack-orchestrator-dnf-search-arch-filter"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -1918,7 +1918,7 @@ TEST_CASE("orchestrator dnf search honors arch filter", "[integration][orchestra
 
 TEST_CASE("orchestrator install command plans validates and executes plugin install",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install"};
+    TempDir tempDir {"reqpack-orchestrator-install"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -1934,7 +1934,7 @@ TEST_CASE("orchestrator install command plans validates and executes plugin inst
 
 TEST_CASE("orchestrator resolves proxy plugin install requests to configured target",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-proxy-install"};
+    TempDir tempDir {"reqpack-orchestrator-proxy-install"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
@@ -1955,7 +1955,7 @@ TEST_CASE("orchestrator resolves proxy plugin install requests to configured tar
 
 TEST_CASE("orchestrator proxy default target can be overridden from CLI define flag",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-proxy-override"};
+    TempDir tempDir {"reqpack-orchestrator-proxy-override"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
@@ -1977,7 +1977,7 @@ TEST_CASE("orchestrator proxy default target can be overridden from CLI define f
 
 TEST_CASE("orchestrator resolves proxy plugin search requests before logging output",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-proxy-search"};
+    TempDir tempDir {"reqpack-orchestrator-proxy-search"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven' }");
@@ -1995,7 +1995,7 @@ TEST_CASE("orchestrator resolves proxy plugin search requests before logging out
 
 TEST_CASE("orchestrator loads repo java proxy plugin from workspace and routes install to configured target",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-repo-java-proxy"};
+    TempDir tempDir {"reqpack-orchestrator-repo-java-proxy"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
@@ -2016,7 +2016,7 @@ TEST_CASE("orchestrator loads repo java proxy plugin from workspace and routes i
 
 TEST_CASE("orchestrator install local rqp resolves to built-in rqp by extension",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-rqp"};
+    TempDir tempDir {"reqpack-orchestrator-install-rqp"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -2054,13 +2054,13 @@ TEST_CASE("reqpack version commands print build release id", "[integration][orch
     const std::string versionOutput = run_command_capture(binaryPath + " version 2>&1");
     const std::string flagOutput = run_command_capture(binaryPath + " --version 2>&1");
 
-    CHECK(versionOutput.find(std::string{"ReqPack "} + reqpack_build_release_id()) != std::string::npos);
-    CHECK(flagOutput.find(std::string{"ReqPack "} + reqpack_build_release_id()) != std::string::npos);
+    CHECK(versionOutput.find(std::string {"ReqPack "} + reqpack_build_release_id()) != std::string::npos);
+    CHECK(flagOutput.find(std::string {"ReqPack "} + reqpack_build_release_id()) != std::string::npos);
 }
 
 TEST_CASE("orchestrator install local archive passes extracted directory to plugin",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-archive"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-archive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2099,7 +2099,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator install file-url archive resolves system after extraction",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-file-url-archive"};
+    TempDir tempDir {"reqpack-orchestrator-install-file-url-archive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2133,7 +2133,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator install local zstd file resolves system by extracted filename",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-zstd-file"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-zstd-file"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2172,7 +2172,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("orchestrator install encrypted local archive accepts CLI password", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-cli"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-archive-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2210,7 +2210,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator install encrypted local archive accepts config password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-config"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-archive-config"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
 
@@ -2282,7 +2282,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator install encrypted local archive accepts env password fallback",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-env"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-archive-env"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     int status = 0;
@@ -2321,7 +2321,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("orchestrator install encrypted local archive fails without password in non-interactive mode",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-missing-password"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-archive-missing-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     int status = 0;
@@ -2340,7 +2340,7 @@ TEST_CASE("orchestrator install encrypted local archive fails without password i
 
 TEST_CASE("orchestrator install encrypted local archive fails on invalid password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-invalid-password"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-archive-invalid-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     int status = 0;
@@ -2360,7 +2360,7 @@ TEST_CASE("orchestrator install encrypted local archive fails on invalid passwor
 
 TEST_CASE("orchestrator install encrypted seven zip archive accepts CLI password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-7z-cli"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-encrypted-7z-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2385,7 +2385,7 @@ TEST_CASE("orchestrator install encrypted seven zip archive accepts CLI password
 }
 
 TEST_CASE("orchestrator install gpg wrapped zip archive accepts CLI password", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-zip-gpg-cli"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-zip-gpg-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2404,7 +2404,7 @@ TEST_CASE("orchestrator install gpg wrapped zip archive accepts CLI password", "
 
 TEST_CASE("orchestrator install gpg wrapped tar gz archive accepts CLI password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-targz-gpg-cli"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-targz-gpg-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2423,7 +2423,7 @@ TEST_CASE("orchestrator install gpg wrapped tar gz archive accepts CLI password"
 
 TEST_CASE("orchestrator install gpg wrapped seven zip archive accepts CLI password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-7z-gpg-cli"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-7z-gpg-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -2442,7 +2442,7 @@ TEST_CASE("orchestrator install gpg wrapped seven zip archive accepts CLI passwo
 
 TEST_CASE("orchestrator install gpg wrapped archive fails on invalid password",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-local-gpg-invalid-password"};
+    TempDir tempDir {"reqpack-orchestrator-install-local-gpg-invalid-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     int status = 0;
@@ -2464,7 +2464,7 @@ TEST_CASE("orchestrator install gpg wrapped archive fails on invalid password",
 
 TEST_CASE("orchestrator install named rqp package resolves from repository index",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-rqp-repo"};
+    TempDir tempDir {"reqpack-orchestrator-install-rqp-repo"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactPath = build_rqp_package(
         tempDir.path(), "repo-artifact",
@@ -2489,7 +2489,7 @@ TEST_CASE("orchestrator install named rqp package resolves from repository index
 
 TEST_CASE("orchestrator install registry package entry routes to rqp repository package",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-registry-rqp-package"};
+    TempDir tempDir {"reqpack-orchestrator-install-registry-rqp-package"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
@@ -2506,18 +2506,18 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
 
     init_git_repository(remoteRegistry);
     write_file(remoteRegistry / "registry" / "p" / "prebyte.json",
-               std::string{"{\n"
-                           "  \"schemaVersion\": 1,\n"
-                           "  \"name\": \"prebyte\",\n"
-                           "  \"version\": \"1.0.0\",\n"
-                           "  \"source\": \"file://" +
-                           indexPath.string() +
-                           "\",\n"
-                           "  \"description\": \"Prebyte templating CLI packaged as ReqPack artifact.\",\n"
-                           "  \"role\": \"package\",\n"
-                           "  \"targetSystem\": \"rqp\",\n"
-                           "  \"privilegeLevel\": \"none\"\n"
-                           "}\n"});
+               std::string {"{\n"
+                            "  \"schemaVersion\": 1,\n"
+                            "  \"name\": \"prebyte\",\n"
+                            "  \"version\": \"1.0.0\",\n"
+                            "  \"source\": \"file://" +
+                            indexPath.string() +
+                            "\",\n"
+                            "  \"description\": \"Prebyte templating CLI packaged as ReqPack artifact.\",\n"
+                            "  \"role\": \"package\",\n"
+                            "  \"targetSystem\": \"rqp\",\n"
+                            "  \"privilegeLevel\": \"none\"\n"
+                            "}\n"});
     require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
                             escape_shell_arg(remoteRegistry.string()) + " commit -m 'add prebyte package'");
 
@@ -2526,7 +2526,7 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
     ReqPackConfig seedConfig = defaults;
     seedConfig.registry.pluginDirectory = pluginDirectory.string();
     seedConfig.registry.databasePath = (tempDir.path() / "registry-db").string();
-    seedConfig.registry.remoteUrl = std::string{"git+"} + remoteRegistry.string();
+    seedConfig.registry.remoteUrl = std::string {"git+"} + remoteRegistry.string();
     seedConfig.registry.remoteBranch = "main";
     seedConfig.registry.remotePluginsPath = "registry";
     RegistryDatabase seedDatabase(seedConfig);
@@ -2590,7 +2590,7 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
 
 TEST_CASE("orchestrator install named rqp package resolves repository zip artifact",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-rqp-repo-zip"};
+    TempDir tempDir {"reqpack-orchestrator-install-rqp-repo-zip"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactPath = build_rqp_package(
         tempDir.path(), "repo-zipped-artifact",
@@ -2615,7 +2615,7 @@ TEST_CASE("orchestrator install named rqp package resolves repository zip artifa
 
 TEST_CASE("orchestrator install rqp package aborts on repository artifact hash mismatch",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-install-rqp-repo-bad-hash"};
+    TempDir tempDir {"reqpack-orchestrator-install-rqp-repo-bad-hash"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactPath =
         build_rqp_package(tempDir.path(), "repo-bad-hash", "return true\n",
@@ -2634,7 +2634,7 @@ TEST_CASE("orchestrator install rqp package aborts on repository artifact hash m
 }
 
 TEST_CASE("orchestrator list and info read installed rqp state", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-list-info"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-list-info"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -2660,7 +2660,7 @@ TEST_CASE("orchestrator list and info read installed rqp state", "[integration][
 }
 
 TEST_CASE("orchestrator rqp search reads local registry records", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-search-registry"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-search-registry"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path registrySourceRoot = tempDir.path() / "registry-sources";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -2727,7 +2727,7 @@ TEST_CASE("orchestrator rqp search reads local registry records", "[integration]
 }
 
 TEST_CASE("orchestrator remove rqp package deletes state and artifacts", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-remove"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-remove"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -2750,7 +2750,7 @@ TEST_CASE("orchestrator remove rqp package deletes state and artifacts", "[integ
 
 TEST_CASE("orchestrator remove rqp package installed hook exposes fs and exec helpers",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-remove-hook-context"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-remove-hook-context"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -2773,7 +2773,7 @@ context.artifacts.register_symlink(link)
 return true
 )",
                           std::make_pair(std::string("payload.txt"), std::string("hello-remove-hook")), std::nullopt,
-                          "1.0.0", std::optional<std::string>{R"(local function shell_quote(value)
+                          "1.0.0", std::optional<std::string> {R"(local function shell_quote(value)
   return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
 end
 local link = os.getenv('HOME') .. '/removable-link'
@@ -2806,7 +2806,7 @@ return true
 
 TEST_CASE("orchestrator remove rqp package failure exits nonzero when transactional mode enabled",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-remove-failure"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-remove-failure"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory, true);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -2815,7 +2815,7 @@ TEST_CASE("orchestrator remove rqp package failure exits nonzero when transactio
         "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
         "'/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
         std::make_pair(std::string("payload.txt"), std::string("hello-remove-failure")), std::nullopt, "1.0.0",
-        std::optional<std::string>{"context.tx.failed('expected remove failure')\nreturn false\n"});
+        std::optional<std::string> {"context.tx.failed('expected remove failure')\nreturn false\n"});
     const std::filesystem::path stateDir =
         tempDir.path() / "rqp-state" / "failing-remove-artifact" / "failing-remove-artifact@1.0.0-1+r0";
 
@@ -2832,7 +2832,7 @@ TEST_CASE("orchestrator remove rqp package failure exits nonzero when transactio
 }
 
 TEST_CASE("orchestrator update rqp package no-ops for local source", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-update-local-noop"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-update-local-noop"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -2854,7 +2854,7 @@ TEST_CASE("orchestrator update rqp package no-ops for local source", "[integrati
 }
 
 TEST_CASE("orchestrator update rqp package installs newer repository version", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-rqp-update-repo"};
+    TempDir tempDir {"reqpack-orchestrator-rqp-update-repo"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactV1 = build_rqp_package(
         tempDir.path() / "v1", "updatable-artifact",
@@ -2916,7 +2916,7 @@ TEST_CASE("orchestrator update rqp package installs newer repository version", "
 
 TEST_CASE("wrapper self-update downloads latest release binary and swaps local symlink",
           "[integration][orchestrator][service][self-update]") {
-    TempDir tempDir{"reqpack-wrapper-self-update"};
+    TempDir tempDir {"reqpack-wrapper-self-update"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path releaseApiRoot = tempDir.path() / "release-api";
@@ -3040,7 +3040,7 @@ TEST_CASE("wrapper self-update downloads latest release binary and swaps local s
 
 TEST_CASE("self-update metadata download failures include actionable transfer details",
           "[integration][orchestrator][service][self-update]") {
-    TempDir tempDir{"reqpack-wrapper-self-update-metadata-error"};
+    TempDir tempDir {"reqpack-wrapper-self-update-metadata-error"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path releaseApiRoot = tempDir.path() / "release-api";
@@ -3104,7 +3104,7 @@ TEST_CASE("self-update metadata download failures include actionable transfer de
 
 TEST_CASE("self-update missing asset failure names expected archive",
           "[integration][orchestrator][service][self-update]") {
-    TempDir tempDir{"reqpack-wrapper-self-update-missing-asset"};
+    TempDir tempDir {"reqpack-wrapper-self-update-missing-asset"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path releaseApiRoot = tempDir.path() / "release-api";
@@ -3184,7 +3184,7 @@ TEST_CASE("self-update missing asset failure names expected archive",
 
 TEST_CASE("self-update refreshes main registry before downloading release",
           "[integration][orchestrator][service][self-update]") {
-    TempDir tempDir{"reqpack-wrapper-self-update-registry-refresh"};
+    TempDir tempDir {"reqpack-wrapper-self-update-registry-refresh"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path releaseApiRoot = tempDir.path() / "release-api";
@@ -3212,7 +3212,7 @@ TEST_CASE("self-update refreshes main registry before downloading release",
     ReqPackConfig seedConfig = defaults;
     seedConfig.registry.pluginDirectory = pluginDirectory.string();
     seedConfig.registry.databasePath = (tempDir.path() / "registry-db").string();
-    seedConfig.registry.remoteUrl = std::string{"git+"} + remoteRegistry.string();
+    seedConfig.registry.remoteUrl = std::string {"git+"} + remoteRegistry.string();
     seedConfig.registry.remoteBranch = "main";
     seedConfig.registry.remotePluginsPath = "registry";
     RegistryDatabase seedDatabase(seedConfig);
@@ -3299,7 +3299,7 @@ TEST_CASE("self-update refreshes main registry before downloading release",
 
 TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git",
           "[integration][orchestrator][service][self-update]") {
-    TempDir tempDir{"reqpack-wrapper-self-update-registry-env-sanitize"};
+    TempDir tempDir {"reqpack-wrapper-self-update-registry-env-sanitize"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path releaseApiRoot = tempDir.path() / "release-api";
@@ -3330,7 +3330,7 @@ TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git",
     ReqPackConfig seedConfig = defaults;
     seedConfig.registry.pluginDirectory = pluginDirectory.string();
     seedConfig.registry.databasePath = (tempDir.path() / "registry-db").string();
-    seedConfig.registry.remoteUrl = std::string{"git+"} + remoteRegistry.string();
+    seedConfig.registry.remoteUrl = std::string {"git+"} + remoteRegistry.string();
     seedConfig.registry.remoteBranch = "main";
     seedConfig.registry.remotePluginsPath = "registry";
     RegistryDatabase seedDatabase(seedConfig);
@@ -3423,7 +3423,7 @@ TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git",
 
 TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-update-all-main-registry"};
+    TempDir tempDir {"reqpack-plugin-wrapper-update-all-main-registry"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -3442,16 +3442,16 @@ TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
     commit_plugin_source_version(npmRepoPath, "npm", "v2", "2.1.0", "v2.1.0");
     commit_plugin_source_version(npmRepoPath, "npm", "head", "9.9.9-dev");
 
-    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{"{\n"
-                                                                           "  \"schemaVersion\": 1,\n"
-                                                                           "  \"name\": \"pip\",\n"
-                                                                           "  \"source\": \"git+" +
-                                                                           pipRepoPath.string() +
-                                                                           "\",\n"
-                                                                           "  \"description\": \"pip plugin\",\n"
-                                                                           "  \"role\": \"package-manager\",\n"
-                                                                           "  \"privilegeLevel\": \"none\"\n"
-                                                                           "}\n"});
+    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string {"{\n"
+                                                                            "  \"schemaVersion\": 1,\n"
+                                                                            "  \"name\": \"pip\",\n"
+                                                                            "  \"source\": \"git+" +
+                                                                            pipRepoPath.string() +
+                                                                            "\",\n"
+                                                                            "  \"description\": \"pip plugin\",\n"
+                                                                            "  \"role\": \"package-manager\",\n"
+                                                                            "  \"privilegeLevel\": \"none\"\n"
+                                                                            "}\n"});
     require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
                             escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial registry'");
 
@@ -3460,22 +3460,22 @@ TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
     ReqPackConfig seedConfig = defaults;
     seedConfig.registry.pluginDirectory = pluginDirectory.string();
     seedConfig.registry.databasePath = (tempDir.path() / "registry-db").string();
-    seedConfig.registry.remoteUrl = std::string{"git+"} + remoteRegistry.string();
+    seedConfig.registry.remoteUrl = std::string {"git+"} + remoteRegistry.string();
     seedConfig.registry.remoteBranch = "main";
     seedConfig.registry.remotePluginsPath = "registry";
     RegistryDatabase seedDatabase(seedConfig);
     REQUIRE(seedDatabase.ensureReady());
 
-    write_file(remoteRegistry / "registry" / "n" / "npm.json", std::string{"{\n"
-                                                                           "  \"schemaVersion\": 1,\n"
-                                                                           "  \"name\": \"npm\",\n"
-                                                                           "  \"source\": \"git+" +
-                                                                           npmRepoPath.string() +
-                                                                           "\",\n"
-                                                                           "  \"description\": \"npm plugin\",\n"
-                                                                           "  \"role\": \"package-manager\",\n"
-                                                                           "  \"privilegeLevel\": \"none\"\n"
-                                                                           "}\n"});
+    write_file(remoteRegistry / "registry" / "n" / "npm.json", std::string {"{\n"
+                                                                            "  \"schemaVersion\": 1,\n"
+                                                                            "  \"name\": \"npm\",\n"
+                                                                            "  \"source\": \"git+" +
+                                                                            npmRepoPath.string() +
+                                                                            "\",\n"
+                                                                            "  \"description\": \"npm plugin\",\n"
+                                                                            "  \"role\": \"package-manager\",\n"
+                                                                            "  \"privilegeLevel\": \"none\"\n"
+                                                                            "}\n"});
     require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
                             escape_shell_arg(remoteRegistry.string()) + " commit -m 'add npm registry entry'");
 
@@ -3522,7 +3522,7 @@ TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
 }
 
 TEST_CASE("host refresh rewrites cached host snapshot", "[integration][orchestrator][service][host]") {
-    TempDir tempDir{"reqpack-host-refresh"};
+    TempDir tempDir {"reqpack-host-refresh"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -3548,7 +3548,7 @@ TEST_CASE("host refresh rewrites cached host snapshot", "[integration][orchestra
 
 TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-update"};
+    TempDir tempDir {"reqpack-plugin-wrapper-update"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pluginRepoPath = tempDir.path() / "plugin-origin";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -3613,7 +3613,7 @@ TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version",
 
 TEST_CASE("update system --all calls plugin update with empty package list",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-system-update-all"};
+    TempDir tempDir {"reqpack-system-update-all"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -3628,7 +3628,7 @@ TEST_CASE("update system --all calls plugin update with empty package list",
 
 TEST_CASE("update --all refreshes only installed plugin wrappers",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-update-all"};
+    TempDir tempDir {"reqpack-plugin-wrapper-update-all"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     const std::filesystem::path npmRepoPath = tempDir.path() / "npm-origin";
@@ -3707,7 +3707,7 @@ TEST_CASE("update --all refreshes only installed plugin wrappers",
 
 TEST_CASE("update --all does nothing when no plugins are installed locally",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-update-all-config-sources"};
+    TempDir tempDir {"reqpack-plugin-wrapper-update-all-config-sources"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     const std::filesystem::path npmRepoPath = tempDir.path() / "npm-origin";
@@ -3772,7 +3772,7 @@ TEST_CASE("update --all does nothing when no plugins are installed locally",
 
 TEST_CASE("orchestrator install plugin wrapper materializes configured git source",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-install"};
+    TempDir tempDir {"reqpack-plugin-wrapper-install"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -3828,7 +3828,7 @@ TEST_CASE("orchestrator install plugin wrapper materializes configured git sourc
 
 TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle",
           "[integration][orchestrator][service][plugin-update]") {
-    TempDir tempDir{"reqpack-plugin-wrapper-remove"};
+    TempDir tempDir {"reqpack-plugin-wrapper-remove"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -3889,7 +3889,7 @@ TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle",
 
 TEST_CASE("orchestrator sbom command exports planned graph without executing plugin install",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom"};
+    TempDir tempDir {"reqpack-orchestrator-sbom"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -3917,7 +3917,7 @@ TEST_CASE("orchestrator sbom command exports planned graph without executing plu
 
 TEST_CASE("orchestrator sbom resolves installed version for unversioned package request",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-installed-version"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-installed-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
@@ -3951,7 +3951,7 @@ TEST_CASE("orchestrator sbom resolves installed version for unversioned package 
 
 TEST_CASE("orchestrator sbom resolves unversioned package via info without list noise",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-info-only-version"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-info-only-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -3981,7 +3981,7 @@ TEST_CASE("orchestrator sbom resolves unversioned package via info without list 
 
 TEST_CASE("orchestrator sbom fails by default when info cannot resolve version",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-unresolved-version"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-unresolved-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -4010,7 +4010,7 @@ TEST_CASE("orchestrator sbom fails by default when info cannot resolve version",
 }
 
 TEST_CASE("orchestrator sbom fails when requested package cannot be resolved", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-missing-fails"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-missing-fails"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -4036,7 +4036,7 @@ TEST_CASE("orchestrator sbom fails when requested package cannot be resolved", "
 }
 
 TEST_CASE("orchestrator sbom can skip missing package via cli flag", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-missing-skip-cli"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-missing-skip-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -4064,7 +4064,7 @@ TEST_CASE("orchestrator sbom can skip missing package via cli flag", "[integrati
 }
 
 TEST_CASE("orchestrator sbom can skip missing package via config", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-sbom-missing-skip-config"};
+    TempDir tempDir {"reqpack-orchestrator-sbom-missing-skip-config"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
@@ -4128,7 +4128,7 @@ TEST_CASE("orchestrator sbom can skip missing package via config", "[integration
 
 TEST_CASE("orchestrator audit command exports sarif without executing plugin install",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-audit-export"};
+    TempDir tempDir {"reqpack-orchestrator-audit-export"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -4209,7 +4209,7 @@ TEST_CASE("orchestrator audit command exports sarif without executing plugin ins
 }
 
 TEST_CASE("orchestrator audit command returns non-zero on stdout findings", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-audit-stdout"};
+    TempDir tempDir {"reqpack-orchestrator-audit-stdout"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -4284,7 +4284,7 @@ TEST_CASE("orchestrator audit command returns non-zero on stdout findings", "[in
 }
 
 TEST_CASE("orchestrator audit system-only request audits installed packages", "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-audit-system-only"};
+    TempDir tempDir {"reqpack-orchestrator-audit-system-only"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -4366,7 +4366,7 @@ TEST_CASE("orchestrator audit system-only request audits installed packages", "[
 
 TEST_CASE("orchestrator audit resolves explicit package versions before matching findings",
           "[integration][orchestrator][service]") {
-    TempDir tempDir{"reqpack-orchestrator-audit-resolve-version"};
+    TempDir tempDir {"reqpack-orchestrator-audit-resolve-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -4440,7 +4440,7 @@ TEST_CASE("orchestrator audit resolves explicit package versions before matching
 
 TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped security index",
           "[integration][orchestrator][security]") {
-    TempDir tempDir{"reqpack-orchestrator-install-snyk-maven"};
+    TempDir tempDir {"reqpack-orchestrator-install-snyk-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path apiRoot = tempDir.path() / "snyk-api" / "orgs" / "org-1";
     const std::filesystem::path exportFile = tempDir.path() / "snyk-export.csv";
@@ -4450,7 +4450,7 @@ TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped s
     write_file(apiRoot / "export.json", R"({"export_id":"exp-1"})");
     write_file(apiRoot / "jobs" / "export" / "exp-1.json", R"({"status":"FINISHED"})");
     write_file(apiRoot / "export" / "exp-1.json",
-               std::string{"{"} + "\"download_url\":\"file://" + exportFile.string() + "\"}");
+               std::string {"{"} + "\"download_url\":\"file://" + exportFile.string() + "\"}");
     write_file(exportFile,
                "PROBLEM_ID,PROBLEM_TITLE,CVE,PACKAGE_NAME_AND_VERSION,SEMVER_VULNERABLE_RANGE,ISSUE_SEVERITY,NVD_SCORE,"
                "SNYK_CVSS_SCORE,UPDATED_AT,FIXED_IN_VERSION,PRODUCT_NAME\n"
@@ -4565,7 +4565,7 @@ TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped s
 
 TEST_CASE("orchestrator install trivy maven imports shared advisories into scoped security index",
           "[integration][orchestrator][security]") {
-    TempDir tempDir{"reqpack-orchestrator-install-trivy-maven"};
+    TempDir tempDir {"reqpack-orchestrator-install-trivy-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path trivyRoot = tempDir.path() / "trivy-db";
     const std::filesystem::path helperPath = tempDir.path() / "trivy-helper.sh";
@@ -4583,7 +4583,7 @@ TEST_CASE("orchestrator install trivy maven imports shared advisories into scope
                "/example.test/"
                "CVE-2021-44228\"],\"modified\":\"2021-12-10T00:00:00Z\",\"published\":\"2021-12-10T00:00:00Z\","
                "\"ranges\":[{\"introduced\":\"2.0-beta9\",\"fixed\":\"2.15.0\"}]}'\n");
-    REQUIRE(std::system((std::string{"chmod +x "} + escape_shell_arg(helperPath.string())).c_str()) == 0);
+    REQUIRE(std::system((std::string {"chmod +x "} + escape_shell_arg(helperPath.string())).c_str()) == 0);
 
     write_file(configPath, "return {\n"
                            "  execution = {\n"
@@ -4685,7 +4685,7 @@ TEST_CASE("orchestrator install trivy maven imports shared advisories into scope
 
 TEST_CASE("orchestrator install gh-advisory pip imports shared advisories into scoped security index",
           "[integration][orchestrator][security]") {
-    TempDir tempDir{"reqpack-orchestrator-install-gh-advisory-pip"};
+    TempDir tempDir {"reqpack-orchestrator-install-gh-advisory-pip"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path advisoryRoot =
         tempDir.path() / "gh-advisory-db" / "advisories" / "github-reviewed" / "2026" / "01";
@@ -4835,7 +4835,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("reqpack install stdin batches install commands until eof", "[integration][orchestrator][stdin]") {
-    TempDir tempDir{"reqpack-orchestrator-install-stdin"};
+    TempDir tempDir {"reqpack-orchestrator-install-stdin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -4885,7 +4885,7 @@ function plugin.shutdown() return true end
 
 TEST_CASE("reqpack serve stdin executes commands line by line and continues after parse errors",
           "[integration][orchestrator][stdin]") {
-    TempDir tempDir{"reqpack-orchestrator-serve-stdin"};
+    TempDir tempDir {"reqpack-orchestrator-serve-stdin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -4906,7 +4906,7 @@ TEST_CASE("reqpack serve stdin executes commands line by line and continues afte
 
 TEST_CASE("reqpack install returns non-zero when security validation blocks execution",
           "[integration][orchestrator][security]") {
-    TempDir tempDir{"reqpack-orchestrator-security-block"};
+    TempDir tempDir {"reqpack-orchestrator-security-block"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -4979,7 +4979,7 @@ TEST_CASE("reqpack install returns non-zero when security validation blocks exec
 
 TEST_CASE("reqpack install refuses prompted unsafe run in non-interactive mode",
           "[integration][orchestrator][security]") {
-    TempDir tempDir{"reqpack-orchestrator-security-prompt-non-interactive"};
+    TempDir tempDir {"reqpack-orchestrator-security-prompt-non-interactive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -5049,7 +5049,7 @@ TEST_CASE("reqpack install refuses prompted unsafe run in non-interactive mode",
 }
 
 TEST_CASE("reqpack serve remote text mode supports token auth", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-text"};
+    TempDir tempDir {"reqpack-orchestrator-remote-text"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5079,7 +5079,7 @@ TEST_CASE("reqpack serve remote text mode supports token auth", "[integration][o
 
 TEST_CASE("reqpack serve remote returns error when security validation blocks execution",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-security-block"};
+    TempDir tempDir {"reqpack-orchestrator-remote-security-block"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -5159,7 +5159,7 @@ TEST_CASE("reqpack serve remote returns error when security validation blocks ex
 }
 
 TEST_CASE("reqpack serve remote readonly rejects mutating commands", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-readonly"};
+    TempDir tempDir {"reqpack-orchestrator-remote-readonly"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5181,7 +5181,7 @@ TEST_CASE("reqpack serve remote readonly rejects mutating commands", "[integrati
 }
 
 TEST_CASE("reqpack serve remote json mode returns json responses", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-json"};
+    TempDir tempDir {"reqpack-orchestrator-remote-json"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5203,7 +5203,7 @@ TEST_CASE("reqpack serve remote json mode returns json responses", "[integration
 }
 
 TEST_CASE("reqpack serve remote json mode rejects invalid json requests", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-json-invalid"};
+    TempDir tempDir {"reqpack-orchestrator-remote-json-invalid"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5226,7 +5226,7 @@ TEST_CASE("reqpack serve remote json mode rejects invalid json requests", "[inte
 }
 
 TEST_CASE("reqpack serve remote json mode accepts empty commands after auth", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-json-empty"};
+    TempDir tempDir {"reqpack-orchestrator-remote-json-empty"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5248,7 +5248,7 @@ TEST_CASE("reqpack serve remote json mode accepts empty commands after auth", "[
 }
 
 TEST_CASE("reqpack serve remote autodetects json clients without json flag", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-auto-json"};
+    TempDir tempDir {"reqpack-orchestrator-remote-auto-json"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5269,7 +5269,7 @@ TEST_CASE("reqpack serve remote autodetects json clients without json flag", "[i
 }
 
 TEST_CASE("reqpack serve remote enforces max connections", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-limit"};
+    TempDir tempDir {"reqpack-orchestrator-remote-limit"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5292,7 +5292,7 @@ TEST_CASE("reqpack serve remote enforces max connections", "[integration][orches
 }
 
 TEST_CASE("reqpack serve remote http and https modes report unimplemented", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-http"};
+    TempDir tempDir {"reqpack-orchestrator-remote-http"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -5315,7 +5315,7 @@ TEST_CASE("reqpack serve remote http and https modes report unimplemented", "[in
 
 TEST_CASE("reqpack serve remote supports admin commands from server remote users",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-admin"};
+    TempDir tempDir {"reqpack-orchestrator-remote-admin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5378,7 +5378,7 @@ TEST_CASE("reqpack serve remote supports admin commands from server remote users
 
 TEST_CASE("reqpack serve remote reload-config reloads users and readonly state",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-reload"};
+    TempDir tempDir {"reqpack-orchestrator-remote-reload"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5461,7 +5461,7 @@ TEST_CASE("reqpack serve remote reload-config reloads users and readonly state",
 
 TEST_CASE("reqpack remote loads profile from default remote.lua and forwards command",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-profile"};
+    TempDir tempDir {"reqpack-orchestrator-remote-profile"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5494,7 +5494,7 @@ TEST_CASE("reqpack remote loads profile from default remote.lua and forwards com
 
 TEST_CASE("reqpack remote preserves forwarded command flags after profile name",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-profile-flags"};
+    TempDir tempDir {"reqpack-orchestrator-remote-profile-flags"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5524,7 +5524,7 @@ TEST_CASE("reqpack remote preserves forwarded command flags after profile name",
 }
 
 TEST_CASE("reqpack remote uploads local install file over text protocol", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-upload"};
+    TempDir tempDir {"reqpack-orchestrator-remote-upload"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5558,7 +5558,7 @@ TEST_CASE("reqpack remote uploads local install file over text protocol", "[inte
 }
 
 TEST_CASE("reqpack remote rejects file upload over json protocol", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-upload-json"};
+    TempDir tempDir {"reqpack-orchestrator-remote-upload-json"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5595,7 +5595,7 @@ TEST_CASE("reqpack remote rejects file upload over json protocol", "[integration
 }
 
 TEST_CASE("reqpack remote upload respects readonly server mode", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-upload-readonly"};
+    TempDir tempDir {"reqpack-orchestrator-remote-upload-readonly"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5631,7 +5631,7 @@ TEST_CASE("reqpack remote upload respects readonly server mode", "[integration][
 }
 
 TEST_CASE("reqpack remote reports missing named profile", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-missing-profile"};
+    TempDir tempDir {"reqpack-orchestrator-remote-missing-profile"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -5647,7 +5647,7 @@ TEST_CASE("reqpack remote reports missing named profile", "[integration][orchest
 }
 
 TEST_CASE("reqpack remote json profiles require forwarded command", "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-json-no-command"};
+    TempDir tempDir {"reqpack-orchestrator-remote-json-no-command"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -5668,7 +5668,7 @@ TEST_CASE("reqpack remote json profiles require forwarded command", "[integratio
 
 TEST_CASE("reqpack remote rejects invalid local upload arguments before connecting",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-upload-errors"};
+    TempDir tempDir {"reqpack-orchestrator-remote-upload-errors"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -5705,7 +5705,7 @@ TEST_CASE("reqpack remote rejects invalid local upload arguments before connecti
 
 TEST_CASE("reqpack remote interactive client reports local input errors through diagnostics",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-client-input-errors"};
+    TempDir tempDir {"reqpack-orchestrator-remote-client-input-errors"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path logPath = tempDir.path() / "server.log";
@@ -5743,7 +5743,7 @@ TEST_CASE("reqpack remote interactive client reports local input errors through 
 
 TEST_CASE("reqpack remote client reports http and https profiles as unimplemented",
           "[integration][orchestrator][remote]") {
-    TempDir tempDir{"reqpack-orchestrator-remote-http-client"};
+    TempDir tempDir {"reqpack-orchestrator-remote-http-client"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
@@ -5773,7 +5773,7 @@ TEST_CASE("reqpack remote client reports http and https profiles as unimplemente
 }
 
 TEST_CASE("orchestrator sys plugin maps logical packages to apt backend", "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-sys-apt"};
+    TempDir tempDir {"reqpack-orchestrator-sys-apt"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -5821,7 +5821,7 @@ TEST_CASE("orchestrator sys plugin maps logical packages to apt backend", "[inte
 
 TEST_CASE("orchestrator install maven provisions sys requirements before invoking mvn",
           "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-sys-maven"};
+    TempDir tempDir {"reqpack-orchestrator-sys-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -5894,7 +5894,7 @@ TEST_CASE("orchestrator install maven provisions sys requirements before invokin
 
 TEST_CASE("orchestrator install maven uses configured repositories and auth settings",
           "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-maven-repositories"};
+    TempDir tempDir {"reqpack-orchestrator-maven-repositories"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_maven_repositories(tempDir.path(), pluginDirectory,
@@ -5988,7 +5988,7 @@ TEST_CASE("orchestrator install maven uses configured repositories and auth sett
 
 TEST_CASE("orchestrator install maven fails when configured repositories do not match scope",
           "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-maven-scope-miss"};
+    TempDir tempDir {"reqpack-orchestrator-maven-scope-miss"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath =
         write_config_with_maven_repositories(tempDir.path(), pluginDirectory,
@@ -6037,7 +6037,7 @@ TEST_CASE("orchestrator install maven fails when configured repositories do not 
 }
 
 TEST_CASE("orchestrator sys plugin installs packages via nix backend", "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-sys-nix"};
+    TempDir tempDir {"reqpack-orchestrator-sys-nix"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -6080,7 +6080,7 @@ TEST_CASE("orchestrator sys plugin installs packages via nix backend", "[integra
 
 TEST_CASE("orchestrator sys plugin falls back to nix when backend package is unavailable",
           "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-sys-nix-fallback"};
+    TempDir tempDir {"reqpack-orchestrator-sys-nix-fallback"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -6152,7 +6152,7 @@ TEST_CASE("orchestrator sys plugin falls back to nix when backend package is una
 
 TEST_CASE("orchestrator sys plugin bootstraps nix when nix backend is selected but missing",
           "[integration][orchestrator][service][sys]") {
-    TempDir tempDir{"reqpack-orchestrator-sys-nix-bootstrap"};
+    TempDir tempDir {"reqpack-orchestrator-sys-nix-bootstrap"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -6223,7 +6223,7 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
         std::string logicalNeedle;
     };
 
-    const std::vector<BackendCase> cases{
+    const std::vector<BackendCase> cases {
         {"yum", "REQPACK_SYS_YUM_BIN", "yum", "REQPACK_SYS_RPM_BIN", "rpm", "install -y", "maven"},
         {"zypper", "REQPACK_SYS_ZYPPER_BIN", "zypper", "REQPACK_SYS_RPM_BIN", "rpm",
          "install --auto-agree-with-licenses", "maven"},
@@ -6240,7 +6240,7 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
 
     for (const BackendCase& testCase : cases) {
         CAPTURE(testCase.backend);
-        TempDir tempDir{"reqpack-orchestrator-sys-" + testCase.backend};
+        TempDir tempDir {"reqpack-orchestrator-sys-" + testCase.backend};
         const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
         const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
         const std::filesystem::path fakeBin = tempDir.path() / "bin";
@@ -6256,7 +6256,7 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
                                                       "exit 0\n");
         REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / testCase.binaryName).string())).c_str()) == 0);
 
-        std::vector<std::pair<std::string, std::string>> environment{
+        std::vector<std::pair<std::string, std::string>> environment {
             {"REQPACK_SYS_BACKEND", testCase.backend},
             {"REQPACK_SYS_NO_SUDO", "1"},
             {"REQPACK_SYS_NIX_BIN", (fakeBin / "missing-nix-env").string()},
@@ -6320,7 +6320,7 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
 
 TEST_CASE("orchestrator pack builds builtin rqp and install can consume it",
           "[integration][orchestrator][service][pack]") {
-    TempDir tempDir{"reqpack-orchestrator-pack-builtin"};
+    TempDir tempDir {"reqpack-orchestrator-pack-builtin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
@@ -6371,7 +6371,7 @@ return {
 
 TEST_CASE("orchestrator pack defaults to current directory when project path omitted",
           "[integration][orchestrator][service][pack]") {
-    TempDir tempDir{"reqpack-orchestrator-pack-default-project"};
+    TempDir tempDir {"reqpack-orchestrator-pack-default-project"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
@@ -6408,7 +6408,7 @@ return {
 
 TEST_CASE("orchestrator pack passes external payload dir to builtin builder",
           "[integration][orchestrator][service][pack]") {
-    TempDir tempDir{"reqpack-orchestrator-pack-external-payload"};
+    TempDir tempDir {"reqpack-orchestrator-pack-external-payload"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
@@ -6439,7 +6439,7 @@ TEST_CASE("orchestrator pack passes external payload dir to builtin builder",
 }
 
 TEST_CASE("orchestrator pack dispatches to plugin pack", "[integration][orchestrator][service][pack]") {
-    TempDir tempDir{"reqpack-orchestrator-pack-plugin"};
+    TempDir tempDir {"reqpack-orchestrator-pack-plugin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "native-project";
@@ -6458,7 +6458,7 @@ TEST_CASE("orchestrator pack dispatches to plugin pack", "[integration][orchestr
 
 TEST_CASE("orchestrator pack fails when plugin reports success without artifact",
           "[integration][orchestrator][service][pack]") {
-    TempDir tempDir{"reqpack-orchestrator-pack-plugin-no-artifact"};
+    TempDir tempDir {"reqpack-orchestrator-pack-plugin-no-artifact"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "native-project";

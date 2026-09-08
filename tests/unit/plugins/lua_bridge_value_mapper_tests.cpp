@@ -50,7 +50,7 @@ TEST_CASE("LuaBridgeValueMapper stringArrayFromObject parses lua string arrays",
     const std::optional<std::vector<std::string>> parsed =
         LuaBridgeValueMapper::stringArrayFromObject(sol::make_object(lua, table));
     REQUIRE(parsed.has_value());
-    CHECK(parsed.value() == std::vector<std::string>{"one", "two"});
+    CHECK(parsed.value() == std::vector<std::string> {"one", "two"});
     CHECK_FALSE(LuaBridgeValueMapper::stringArrayFromObject(sol::make_object(lua, 7)).has_value());
 }
 
@@ -63,7 +63,7 @@ TEST_CASE("LuaBridgeValueMapper packageFromObject parses action and fields", "[u
     table["version"] = "8.0";
     table["sourcePath"] = "/tmp/curl.rpm";
     table["localTarget"] = true;
-    table["flags"] = std::vector<std::string>{"force"};
+    table["flags"] = std::vector<std::string> {"force"};
 
     const std::optional<Package> parsed = LuaBridgeValueMapper::packageFromObject(sol::make_object(lua, table));
     REQUIRE(parsed.has_value());
@@ -73,7 +73,7 @@ TEST_CASE("LuaBridgeValueMapper packageFromObject parses action and fields", "[u
     CHECK(parsed->version == "8.0");
     CHECK(parsed->sourcePath == "/tmp/curl.rpm");
     CHECK(parsed->localTarget);
-    CHECK(parsed->flags == std::vector<std::string>{"force"});
+    CHECK(parsed->flags == std::vector<std::string> {"force"});
 }
 
 TEST_CASE("LuaBridgeValueMapper packagesFromObject parses package tables", "[unit][lua_bridge_value_mapper]") {
@@ -96,8 +96,8 @@ TEST_CASE("LuaBridgeValueMapper packagesFromObject parses package tables", "[uni
 }
 
 TEST_CASE("LuaBridgeValueMapper inheritMissingPackageFields fills missing values", "[unit][lua_bridge_value_mapper]") {
-    const std::vector<Package> sourcePackages{
-        Package{
+    const std::vector<Package> sourcePackages {
+        Package {
             .action = ActionType::INSTALL,
             .system = "dnf",
             .name = "curl",
@@ -108,8 +108,8 @@ TEST_CASE("LuaBridgeValueMapper inheritMissingPackageFields fills missing values
         },
     };
 
-    std::vector<Package> packages{
-        Package{
+    std::vector<Package> packages {
+        Package {
             .action = ActionType::UNKNOWN,
             .name = "curl",
         },
@@ -121,7 +121,7 @@ TEST_CASE("LuaBridgeValueMapper inheritMissingPackageFields fills missing values
     CHECK(packages.front().version == "8.0");
     CHECK(packages.front().sourcePath == "/tmp/curl.rpm");
     CHECK(packages.front().localTarget);
-    CHECK(packages.front().flags == std::vector<std::string>{"dep-flag"});
+    CHECK(packages.front().flags == std::vector<std::string> {"dep-flag"});
 }
 
 TEST_CASE("LuaBridgeValueMapper packageInfoFromObject maps nested fields", "[unit][lua_bridge_value_mapper]") {
@@ -139,7 +139,7 @@ TEST_CASE("LuaBridgeValueMapper packageInfoFromObject maps nested fields", "[uni
     CHECK(parsed.version == "1.0.0");
     CHECK(parsed.summary == "short");
     CHECK(parsed.description == "long");
-    CHECK(parsed.dependencies == std::vector<std::string>{"lib-a", "lib-b"});
+    CHECK(parsed.dependencies == std::vector<std::string> {"lib-a", "lib-b"});
     REQUIRE(parsed.extraFields.size() == 1);
     CHECK(parsed.extraFields.front().first == "license");
     CHECK(parsed.extraFields.front().second == "MIT");
@@ -169,9 +169,9 @@ TEST_CASE("LuaBridgeValueMapper proxyResolutionFromObject parses proxy tables", 
         LuaBridgeValueMapper::proxyResolutionFromObject(sol::make_object(lua, table));
     REQUIRE(parsed.has_value());
     CHECK(parsed->targetSystem == "maven");
-    CHECK(parsed->packages == std::vector<std::string>{"org.demo:artifact"});
+    CHECK(parsed->packages == std::vector<std::string> {"org.demo:artifact"});
     CHECK(parsed->localPath == "/tmp/demo");
-    CHECK(parsed->flags == std::vector<std::string>{"--offline"});
+    CHECK(parsed->flags == std::vector<std::string> {"--offline"});
 }
 
 TEST_CASE("LuaBridgeValueMapper pluginSecurityMetadataFromObject normalizes metadata",
@@ -195,8 +195,8 @@ TEST_CASE("LuaBridgeValueMapper pluginSecurityMetadataFromObject normalizes meta
         LuaBridgeValueMapper::pluginSecurityMetadataFromObject(sol::make_object(lua, metadata));
     REQUIRE(parsed.has_value());
     CHECK(parsed->role == "security-provider");
-    CHECK(parsed->capabilities == std::vector<std::string>{"network"});
-    CHECK(parsed->ecosystemScopes == std::vector<std::string>{"demo-osv"});
+    CHECK(parsed->capabilities == std::vector<std::string> {"network"});
+    CHECK(parsed->ecosystemScopes == std::vector<std::string> {"demo-osv"});
     REQUIRE(parsed->writeScopes.size() == 1);
     CHECK(parsed->writeScopes.front().kind == "temp");
     REQUIRE(parsed->networkScopes.size() == 1);
@@ -218,6 +218,6 @@ TEST_CASE("LuaBridgeValueMapper fileExtensionsFromPluginTable reads extension li
     pluginTable["fileExtensions"] = lua.create_table_with(1, ".rqp", 2, ".rqpack");
 
     const std::vector<std::string> extensions = LuaBridgeValueMapper::fileExtensionsFromPluginTable(pluginTable);
-    CHECK(extensions == std::vector<std::string>{".rqp", ".rqpack"});
+    CHECK(extensions == std::vector<std::string> {".rqp", ".rqpack"});
     CHECK(LuaBridgeValueMapper::fileExtensionsFromPluginTable(lua.create_table()).empty());
 }

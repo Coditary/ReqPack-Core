@@ -105,7 +105,7 @@ void Planner::addPackageToGraph(Graph& graph, const Package& package) const {
 
         std::optional<PluginBundleLayout> layout = plugin_bundle_find_installed(this->config, currentPackage.system);
         if (!layout.has_value() && this->config.planner.autoDownloadMissingDependencies) {
-            this->queueDependencyDownload(Package{.action = ActionType::INSTALL, .system = currentPackage.system});
+            this->queueDependencyDownload(Package {.action = ActionType::INSTALL, .system = currentPackage.system});
             layout = plugin_bundle_find_installed(this->config, currentPackage.system);
         }
 

@@ -97,7 +97,7 @@ std::vector<char> build_windows_environment_block(const std::vector<std::string>
 }
 
 HANDLE open_windows_nul_handle() {
-    SECURITY_ATTRIBUTES securityAttributes{};
+    SECURITY_ATTRIBUTES securityAttributes {};
     securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.bInheritHandle = TRUE;
 
@@ -106,7 +106,7 @@ HANDLE open_windows_nul_handle() {
 }
 
 bool read_windows_pipe(HANDLE pipe, std::string& output, std::string& errorText) {
-    std::array<char, 4096> buffer{};
+    std::array<char, 4096> buffer {};
     for (;;) {
         DWORD bytesRead = 0;
         if (!ReadFile(pipe, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, nullptr)) {
@@ -125,13 +125,13 @@ bool read_windows_pipe(HANDLE pipe, std::string& output, std::string& errorText)
 }
 
 struct WindowsProcessHandles {
-    HANDLE process{nullptr};
-    HANDLE thread{nullptr};
-    HANDLE stdoutRead{nullptr};
-    HANDLE stderrRead{nullptr};
-    HANDLE stdinHandle{nullptr};
-    HANDLE stdoutWrite{nullptr};
-    HANDLE stderrWrite{nullptr};
+    HANDLE process {nullptr};
+    HANDLE thread {nullptr};
+    HANDLE stdoutRead {nullptr};
+    HANDLE stderrRead {nullptr};
+    HANDLE stdinHandle {nullptr};
+    HANDLE stdoutWrite {nullptr};
+    HANDLE stderrWrite {nullptr};
 };
 
 void close_windows_handle(HANDLE& handle) {
@@ -159,11 +159,11 @@ std::optional<WindowsProcessHandles> start_windows_process(const std::vector<std
         return std::nullopt;
     }
 
-    SECURITY_ATTRIBUTES securityAttributes{};
+    SECURITY_ATTRIBUTES securityAttributes {};
     securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.bInheritHandle = TRUE;
 
-    WindowsProcessHandles handles{};
+    WindowsProcessHandles handles {};
 
     if (captureOutput) {
         HANDLE stdoutRead = nullptr;
@@ -201,7 +201,7 @@ std::optional<WindowsProcessHandles> start_windows_process(const std::vector<std
         return std::nullopt;
     }
 
-    STARTUPINFOA startupInfo{};
+    STARTUPINFOA startupInfo {};
     startupInfo.cb = sizeof(startupInfo);
     startupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     startupInfo.wShowWindow = SW_HIDE;
@@ -209,7 +209,7 @@ std::optional<WindowsProcessHandles> start_windows_process(const std::vector<std
     startupInfo.hStdOutput = captureOutput ? handles.stdoutWrite : GetStdHandle(STD_OUTPUT_HANDLE);
     startupInfo.hStdError = captureOutput ? handles.stderrWrite : GetStdHandle(STD_ERROR_HANDLE);
 
-    PROCESS_INFORMATION processInfo{};
+    PROCESS_INFORMATION processInfo {};
     std::string commandLine = build_windows_command_line(arguments);
     std::vector<char> commandLineBuffer(commandLine.begin(), commandLine.end());
     commandLineBuffer.push_back('\0');
@@ -217,7 +217,7 @@ std::optional<WindowsProcessHandles> start_windows_process(const std::vector<std
     std::vector<std::string> environmentStorage = reqpack_sanitized_process_environment();
     std::vector<char> environmentBlock = build_windows_environment_block(environmentStorage);
 
-    const std::string workingDirectoryString = workingDirectory.empty() ? std::string{} : workingDirectory.string();
+    const std::string workingDirectoryString = workingDirectory.empty() ? std::string {} : workingDirectory.string();
     const char* workingDirectoryPointer = workingDirectoryString.empty() ? nullptr : workingDirectoryString.c_str();
 
     const BOOL created =
@@ -262,7 +262,7 @@ bool wait_for_posix_process(pid_t pid, int& exitCode, std::string& errorText) {
     int status = 0;
     while (waitpid(pid, &status, 0) == -1) {
         if (errno != EINTR) {
-            errorText = std::string{"waitpid failed: "} + std::strerror(errno);
+            errorText = std::string {"waitpid failed: "} + std::strerror(errno);
             return false;
         }
     }
@@ -297,7 +297,7 @@ bool read_posix_fd(int fd, std::string& output, std::string& errorText) {
         if (errno == EINTR) {
             continue;
         }
-        errorText += std::string{"read failed: "} + std::strerror(errno);
+        errorText += std::string {"read failed: "} + std::strerror(errno);
         return false;
     }
 }
@@ -355,7 +355,7 @@ std::optional<pid_t> start_posix_process(const std::vector<std::string>& argumen
         posix_spawnp(&pid, arguments.front().c_str(), &fileActions, nullptr, argv.data(), environmentPointers.data());
     posix_spawn_file_actions_destroy(&fileActions);
     if (spawnResult != 0) {
-        errorText = std::string{"spawn failed: "} + std::strerror(spawnResult);
+        errorText = std::string {"spawn failed: "} + std::strerror(spawnResult);
         return std::nullopt;
     }
 
@@ -424,13 +424,13 @@ ReqpackProcessResult reqpack_run_process_capture(const std::vector<std::string>&
 #else
     int stdoutPipe[2];
     if (!create_pipe_cloexec(stdoutPipe)) {
-        result.stderrText = std::string{"pipe(stdout) failed: "} + std::strerror(errno);
+        result.stderrText = std::string {"pipe(stdout) failed: "} + std::strerror(errno);
         return result;
     }
 
     int stderrPipe[2];
     if (!create_pipe_cloexec(stderrPipe)) {
-        result.stderrText = std::string{"pipe(stderr) failed: "} + std::strerror(errno);
+        result.stderrText = std::string {"pipe(stderr) failed: "} + std::strerror(errno);
         (void)::close(stdoutPipe[0]);
         (void)::close(stdoutPipe[1]);
         return result;

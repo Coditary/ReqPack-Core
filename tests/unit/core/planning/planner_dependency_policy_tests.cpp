@@ -160,7 +160,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("planner expands reqpack.lua depends into ensure dependency packages", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-depends"};
+    TempDir tempDir {"reqpack-planner-depends"};
     ReqPackConfig config = make_planner_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
@@ -171,14 +171,14 @@ TEST_CASE("planner expands reqpack.lua depends into ensure dependency packages",
     Planner planner(&registry, registry.getDatabase(), config);
 
     std::unique_ptr<Graph> graph(
-        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+        planner.plan({Request {.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "app", "demo"));
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
 }
 
 TEST_CASE("planner filters install requests to missing packages only", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-filter-missing"};
+    TempDir tempDir {"reqpack-planner-filter-missing"};
     ReqPackConfig config = make_planner_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "filter", FILTER_PLUGIN);
@@ -187,7 +187,7 @@ TEST_CASE("planner filters install requests to missing packages only", "[unit][p
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{
+    std::unique_ptr<Graph> graph(planner.plan({Request {
         .action = ActionType::INSTALL,
         .system = "filter",
         .packages = {"present", "missing"},
@@ -198,7 +198,7 @@ TEST_CASE("planner filters install requests to missing packages only", "[unit][p
 }
 
 TEST_CASE("planner preserves local install targets during filtering", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-local-filter"};
+    TempDir tempDir {"reqpack-planner-local-filter"};
     ReqPackConfig config = make_planner_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "filter", FILTER_PLUGIN);
@@ -207,7 +207,7 @@ TEST_CASE("planner preserves local install targets during filtering", "[unit][pl
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{
+    std::unique_ptr<Graph> graph(planner.plan({Request {
         .action = ActionType::INSTALL,
         .system = "filter",
         .localPath = "/tmp/demo.rpm",
@@ -218,7 +218,7 @@ TEST_CASE("planner preserves local install targets during filtering", "[unit][pl
 }
 
 TEST_CASE("planner passes through non-install requests unchanged", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-non-install"};
+    TempDir tempDir {"reqpack-planner-non-install"};
     ReqPackConfig config = make_planner_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "filter", FILTER_PLUGIN);
@@ -227,7 +227,7 @@ TEST_CASE("planner passes through non-install requests unchanged", "[unit][plann
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{
+    std::unique_ptr<Graph> graph(planner.plan({Request {
         .action = ActionType::SEARCH,
         .system = "filter",
         .packages = {"present", "missing"},
@@ -238,7 +238,7 @@ TEST_CASE("planner passes through non-install requests unchanged", "[unit][plann
 }
 
 TEST_CASE("planner returns null graph when request resolution fails", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-resolution-fail"};
+    TempDir tempDir {"reqpack-planner-resolution-fail"};
     ReqPackConfig config = make_planner_config(tempDir.path());
     config.planner.proxies["loop"].defaultTarget = "loop";
     config.planner.proxies["loop"].targets = {"loop"};
@@ -267,11 +267,11 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    CHECK(planner.plan({Request{.action = ActionType::INSTALL, .system = "loop", .packages = {"alpha"}}}) == nullptr);
+    CHECK(planner.plan({Request {.action = ActionType::INSTALL, .system = "loop", .packages = {"alpha"}}}) == nullptr);
 }
 
 TEST_CASE("planner builds ensure-only dependency graphs", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-ensure-only"};
+    TempDir tempDir {"reqpack-planner-ensure-only"};
     ReqPackConfig config = make_planner_config(tempDir.path());
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
@@ -281,19 +281,19 @@ TEST_CASE("planner builds ensure-only dependency graphs", "[unit][planner_depend
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::ENSURE, .system = "app"}}));
+    std::unique_ptr<Graph> graph(planner.plan({Request {.action = ActionType::ENSURE, .system = "app"}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
 }
 
 TEST_CASE("planner auto-downloads missing dependency plugins when enabled", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-auto-download"};
+    TempDir tempDir {"reqpack-planner-auto-download"};
     ReqPackConfig config = make_planner_config(tempDir.path());
     config.planner.autoDownloadMissingDependencies = true;
 
     add_plugin_script(tempDir.path() / "plugins", "app", APP_PLUGIN, {"dep:runtime"});
     const std::filesystem::path depBundle = add_plugin_script(tempDir.path() / "remote", "dep", DEP_PLUGIN);
-    config.registry.sources["dep"] = RegistrySourceEntry{
+    config.registry.sources["dep"] = RegistrySourceEntry {
         .source = depBundle.parent_path().string(),
         .alias = false,
         .description = "dep plugin source",
@@ -305,14 +305,14 @@ TEST_CASE("planner auto-downloads missing dependency plugins when enabled", "[un
     Planner planner(&registry, registry.getDatabase(), config);
 
     std::unique_ptr<Graph> graph(
-        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+        planner.plan({Request {.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
     CHECK(std::filesystem::exists(tempDir.path() / "plugins" / "dep" / "run.lua"));
 }
 
 TEST_CASE("planner topologically sorts graph when configured", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-topo-sort"};
+    TempDir tempDir {"reqpack-planner-topo-sort"};
     ReqPackConfig config = make_planner_config(tempDir.path());
     config.planner.topologicallySortGraph = true;
 
@@ -324,22 +324,22 @@ TEST_CASE("planner topologically sorts graph when configured", "[unit][planner_d
     Planner planner(&registry, registry.getDatabase(), config);
 
     std::unique_ptr<Graph> graph(
-        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+        planner.plan({Request {.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "app", "demo"));
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
 }
 
 TEST_CASE("planner passes security gateway systems through install filtering", "[unit][planner_dependency]") {
-    TempDir tempDir{"reqpack-planner-gateway"};
+    TempDir tempDir {"reqpack-planner-gateway"};
     ReqPackConfig config = make_planner_config(tempDir.path());
-    config.security.gateways["snyk"] = SecurityGatewayConfig{.enabled = true, .backends = {"osv"}};
+    config.security.gateways["snyk"] = SecurityGatewayConfig {.enabled = true, .backends = {"osv"}};
 
     Registry registry(config);
     Planner planner(&registry, registry.getDatabase(), config);
 
     std::unique_ptr<Graph> graph(
-        planner.plan({Request{.action = ActionType::INSTALL, .system = "snyk", .packages = {"pkg"}}}));
+        planner.plan({Request {.action = ActionType::INSTALL, .system = "snyk", .packages = {"pkg"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "snyk", "pkg"));
 }

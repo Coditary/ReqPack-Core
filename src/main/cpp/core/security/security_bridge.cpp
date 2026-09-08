@@ -16,7 +16,7 @@ SecuritySettings security_settings_from(const ReqPackConfig& config) {
     settings.reports.enabled = config.reports.enabled;
     settings.archive.extractToTemp = [](const std::filesystem::path& path) {
         const ArchiveResolution resolution = extract_archive_to_temp_directory(path);
-        return SecurityArchiveResolution{resolution.installPath, resolution.cleanupPaths};
+        return SecurityArchiveResolution {resolution.installPath, resolution.cleanupPaths};
     };
     return settings;
 }
@@ -40,7 +40,7 @@ void wire_reqpack_security_runtime() {
             break;
         }
 
-        Logger::instance().emit(OutputAction::LOG, OutputContext{
+        Logger::instance().emit(OutputAction::LOG, OutputContext {
                                                        .level = spdLevel,
                                                        .message = message,
                                                        .category = category,

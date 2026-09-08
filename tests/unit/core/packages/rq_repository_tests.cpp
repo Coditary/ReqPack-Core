@@ -41,7 +41,7 @@ TEST_CASE("rqp repository resolver prefers highest release and revision", "[unit
         "file:///tmp/index.json");
 
     const auto resolved =
-        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string>{"linux"});
+        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string> {"linux"});
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->release == 2);
@@ -77,7 +77,7 @@ TEST_CASE("rqp repository resolver skips wrong architecture and accepts noarch",
         "file:///tmp/index.json");
 
     const auto resolved =
-        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string>{"linux"});
+        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string> {"linux"});
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->architecture == "noarch");
@@ -112,7 +112,7 @@ TEST_CASE("rqp repository resolver prefers highest version before release and re
 })",
         "file:///tmp/index.json");
 
-    const auto resolved = rq_repository_resolve_package({index}, "tool", {}, "x86_64", std::set<std::string>{"linux"});
+    const auto resolved = rq_repository_resolve_package({index}, "tool", {}, "x86_64", std::set<std::string> {"linux"});
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->version == "1.1.0");
@@ -149,7 +149,7 @@ TEST_CASE("rqp repository resolver filters by system tokens", "[unit][rq_reposit
         "file:///tmp/index.json");
 
     const auto resolved =
-        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string>{"debian", "linux"});
+        rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64", std::set<std::string> {"debian", "linux"});
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->url == "file:///tmp/tool-linux.rqp");
@@ -178,7 +178,7 @@ TEST_CASE("rqp repository resolver supports alias groups", "[unit][rq_repository
         "file:///tmp/index.json");
 
     const auto resolved = rq_repository_resolve_package({index}, "tool", "1.0.0", "x86_64",
-                                                        std::set<std::string>{"nobara", "linux"}, config);
+                                                        std::set<std::string> {"nobara", "linux"}, config);
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->url == "file:///tmp/tool-lab.rqp");
@@ -212,7 +212,7 @@ TEST_CASE("rqp repository resolver prefers highest revision at equal version and
 })",
         "file:///tmp/index.json");
 
-    const auto resolved = rq_repository_resolve_package({index}, "tool", {}, "x86_64", std::set<std::string>{"linux"});
+    const auto resolved = rq_repository_resolve_package({index}, "tool", {}, "x86_64", std::set<std::string> {"linux"});
 
     REQUIRE(resolved.has_value());
     CHECK(resolved->revision == 4);

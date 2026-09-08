@@ -81,14 +81,14 @@ LuaBridge::LuaBridge(const std::string& scriptPath, const ReqPackConfig& config)
 }
 
 PluginCallContext LuaBridge::makeContext(const std::vector<std::string>& flags) const {
-    return PluginCallContext{.pluginId = m_pluginId,
-                             .pluginDirectory = m_pluginDirectory,
-                             .scriptPath = m_scriptPath,
-                             .flags = flags,
-                             .host = const_cast<LuaBridge*>(this),
-                             .proxy = proxy_config_for_system(m_config, m_pluginId),
-                             .repositories = repositories_for_ecosystem(m_config, m_pluginId),
-                             .hostInfo = HostInfoService::currentSnapshot()};
+    return PluginCallContext {.pluginId = m_pluginId,
+                              .pluginDirectory = m_pluginDirectory,
+                              .scriptPath = m_scriptPath,
+                              .flags = flags,
+                              .host = const_cast<LuaBridge*>(this),
+                              .proxy = proxy_config_for_system(m_config, m_pluginId),
+                              .repositories = repositories_for_ecosystem(m_config, m_pluginId),
+                              .hostInfo = HostInfoService::currentSnapshot()};
 }
 
 bool LuaBridge::init() {

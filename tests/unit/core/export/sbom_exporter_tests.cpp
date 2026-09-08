@@ -108,9 +108,9 @@ class ScopedLoggerDisplay {
 Graph make_graph() {
     Graph graph;
     const auto react = boost::add_vertex(
-        Package{.action = ActionType::SBOM, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
+        Package {.action = ActionType::SBOM, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
     const auto scheduler = boost::add_vertex(
-        Package{.action = ActionType::SBOM, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
+        Package {.action = ActionType::SBOM, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
     boost::add_edge(scheduler, react, graph);
     return graph;
 }
@@ -118,33 +118,33 @@ Graph make_graph() {
 } // namespace
 
 TEST_CASE("sbom exporter renders default table output", "[unit][sbom][export]") {
-    ScopedEnvVar columns{"COLUMNS", "72"};
-    ScopedEnvVar noColor{"NO_COLOR", "1"};
-    ScopedEnvVar forceColor{"FORCE_COLOR", nullptr};
+    ScopedEnvVar columns {"COLUMNS", "72"};
+    ScopedEnvVar noColor {"NO_COLOR", "1"};
+    ScopedEnvVar forceColor {"FORCE_COLOR", nullptr};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM,
-                              .system = "maven",
-                              .name = "org.apache.logging.log4j:log4j-core",
-                              .version = "2.13.1",
-                              .sourcePath = "/tmp/source/with many path parts/example artifact.jar"},
+    boost::add_vertex(Package {.action = ActionType::SBOM,
+                               .system = "maven",
+                               .name = "org.apache.logging.log4j:log4j-core",
+                               .version = "2.13.1",
+                               .sourcePath = "/tmp/source/with many path parts/example artifact.jar"},
                       graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find('\t') == std::string::npos);
     CHECK(rendered.find("SYSTEM NAME                         VERSION SOURCE") != std::string::npos);
     CHECK(rendered.find("maven  org.apache.logging.log4j:... 2.13.1  /tmp/source/with many path") != std::string::npos);
-    CHECK(rendered.find(std::string{"\n"} + std::string(44, ' ') + "parts/example artifact.jar\n") !=
+    CHECK(rendered.find(std::string {"\n"} + std::string(44, ' ') + "parts/example artifact.jar\n") !=
           std::string::npos);
 }
 
 TEST_CASE("sbom exporter colorizes terminal table output", "[unit][sbom][export]") {
-    ScopedEnvVar columns{"COLUMNS", "72"};
-    ScopedEnvVar noColor{"NO_COLOR", nullptr};
-    ScopedEnvVar forceColor{"FORCE_COLOR", "1"};
+    ScopedEnvVar columns {"COLUMNS", "72"};
+    ScopedEnvVar noColor {"NO_COLOR", nullptr};
+    ScopedEnvVar forceColor {"FORCE_COLOR", "1"};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
@@ -155,26 +155,26 @@ TEST_CASE("sbom exporter colorizes terminal table output", "[unit][sbom][export]
 }
 
 TEST_CASE("sbom exporter supports no-wrap and wide table flags", "[unit][sbom][export]") {
-    ScopedEnvVar columns{"COLUMNS", "72"};
-    ScopedEnvVar noColor{"NO_COLOR", "1"};
-    ScopedEnvVar forceColor{"FORCE_COLOR", nullptr};
+    ScopedEnvVar columns {"COLUMNS", "72"};
+    ScopedEnvVar noColor {"NO_COLOR", "1"};
+    ScopedEnvVar forceColor {"FORCE_COLOR", nullptr};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
     request.flags = {"wide", "no-wrap"};
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM,
-                              .system = "maven",
-                              .name = "org.apache.logging.log4j:log4j-core",
-                              .version = "2.13.1",
-                              .sourcePath = "/tmp/source/with many path parts/example artifact.jar and more sections"},
+    boost::add_vertex(Package {.action = ActionType::SBOM,
+                               .system = "maven",
+                               .name = "org.apache.logging.log4j:log4j-core",
+                               .version = "2.13.1",
+                               .sourcePath = "/tmp/source/with many path parts/example artifact.jar and more sections"},
                       graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find("/tmp/source/with many path parts/example artifact.jar and more sections") !=
           std::string::npos);
-    CHECK(rendered.find(std::string{"\n"} + std::string(44, ' ') + "parts/example") == std::string::npos);
+    CHECK(rendered.find(std::string {"\n"} + std::string(44, ' ') + "parts/example") == std::string::npos);
 }
 
 TEST_CASE("sbom exporter renders raw json output", "[unit][sbom][export]") {
@@ -190,7 +190,7 @@ TEST_CASE("sbom exporter renders raw json output", "[unit][sbom][export]") {
 }
 
 TEST_CASE("sbom exporter defaults file output to cyclonedx json", "[unit][sbom][export]") {
-    TempDir tempDir{"reqpack-sbom-export"};
+    TempDir tempDir {"reqpack-sbom-export"};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
@@ -204,7 +204,7 @@ TEST_CASE("sbom exporter defaults file output to cyclonedx json", "[unit][sbom][
 }
 
 TEST_CASE("sbom exporter reports file-open failure through logger diagnostics", "[unit][sbom][export]") {
-    TempDir tempDir{"reqpack-sbom-open-failure"};
+    TempDir tempDir {"reqpack-sbom-open-failure"};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
@@ -227,10 +227,10 @@ TEST_CASE("sbom exporter reports file-open failure through logger diagnostics", 
 
 TEST_CASE("sbom exporter formats maven purls from plugin metadata", "[unit][sbom][export]") {
     StaticMetadataProvider metadataProvider;
-    metadataProvider.metadata["maven"] = PluginSecurityMetadata{
+    metadataProvider.metadata["maven"] = PluginSecurityMetadata {
         .osvEcosystem = "Maven",
         .purlType = "maven",
-        .versionComparator = VersionComparatorSpec{.profile = "maven-comparable"},
+        .versionComparator = VersionComparatorSpec {.profile = "maven-comparable"},
     };
 
     SbomExporter exporter(&metadataProvider);
@@ -240,7 +240,7 @@ TEST_CASE("sbom exporter formats maven purls from plugin metadata", "[unit][sbom
 
     Graph graph;
     boost::add_vertex(
-        Package{.action = ActionType::SBOM, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
+        Package {.action = ActionType::SBOM, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
         graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
@@ -249,10 +249,10 @@ TEST_CASE("sbom exporter formats maven purls from plugin metadata", "[unit][sbom
 
 TEST_CASE("sbom exporter skips invalid maven purls", "[unit][sbom][export]") {
     StaticMetadataProvider metadataProvider;
-    metadataProvider.metadata["maven"] = PluginSecurityMetadata{
+    metadataProvider.metadata["maven"] = PluginSecurityMetadata {
         .osvEcosystem = "Maven",
         .purlType = "maven",
-        .versionComparator = VersionComparatorSpec{.profile = "maven-comparable"},
+        .versionComparator = VersionComparatorSpec {.profile = "maven-comparable"},
     };
 
     SbomExporter exporter(&metadataProvider);
@@ -261,7 +261,7 @@ TEST_CASE("sbom exporter skips invalid maven purls", "[unit][sbom][export]") {
     request.outputFormat = "cyclonedx-json";
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "slf4j-api", .version = "2.0.16"},
+    boost::add_vertex(Package {.action = ActionType::SBOM, .system = "maven", .name = "slf4j-api", .version = "2.0.16"},
                       graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);

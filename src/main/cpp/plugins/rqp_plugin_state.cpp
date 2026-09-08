@@ -132,7 +132,7 @@ std::vector<RqpPlugin::ManifestEntry> RqpPlugin::parseManifestJson(const std::st
         return manifest;
     }
     for (const auto& [_, child] : tree.value()) {
-        manifest.push_back(ManifestEntry{
+        manifest.push_back(ManifestEntry {
             .type = child.get<std::string>("type", {}),
             .path = child.get<std::string>("path", {}),
         });
@@ -157,7 +157,7 @@ std::string RqpPlugin::manifestJson(const std::vector<ManifestEntry>& manifest) 
 }
 
 PackageInfo RqpPlugin::packageInfoFromInstalled(const RqpInstalledPackage& installed) {
-    return PackageInfo{
+    return PackageInfo {
         .system = "rqp",
         .name = installed.metadata.name,
         .packageId = installed.identity,

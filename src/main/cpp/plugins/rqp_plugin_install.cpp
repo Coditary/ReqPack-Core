@@ -21,7 +21,7 @@ bool RqpPlugin::install(const PluginCallContext& context, const std::vector<Pack
             rq_repository_resolve_package(indexes, package.name, package.version, rq_host_architecture(),
                                           rq_host_system_tokens(*HostInfoService::currentSnapshot()), config_);
         if (!resolvedPackage.has_value()) {
-            recentEvents_.push_back(PluginEventRecord{
+            recentEvents_.push_back(PluginEventRecord {
                 .name = "unavailable",
                 .payload = package.version.empty() ? package.name : package.name + "@" + package.version});
             context.emitFailure("package not found in rqp repositories: " + package.name);

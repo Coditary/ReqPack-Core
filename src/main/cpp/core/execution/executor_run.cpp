@@ -85,7 +85,7 @@ bool Executer::execute(Graph* graph) {
     this->reconcileInstalledOwnership(allTaskGroups, taskGroups, records);
     this->subtractDependencyOwnership(records);
     const std::vector<TransactionRecord> orphanRemovalRecords = this->removeOrphanedDependencies(
-        this->historyManager != nullptr ? this->historyManager->loadInstalledState() : std::vector<InstalledEntry>{},
+        this->historyManager != nullptr ? this->historyManager->loadInstalledState() : std::vector<InstalledEntry> {},
         records);
     std::vector<TransactionRecord> allRecords = records;
     allRecords.insert(allRecords.end(), orphanRemovalRecords.begin(), orphanRemovalRecords.end());

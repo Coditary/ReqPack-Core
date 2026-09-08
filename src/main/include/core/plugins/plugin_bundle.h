@@ -9,7 +9,7 @@
 #include <vector>
 
 struct PluginBundleMetadata {
-    int formatVersion{0};
+    int formatVersion {0};
     std::string name;
     std::string version;
     std::string summary;
@@ -21,7 +21,7 @@ struct PluginBundleMetadata {
 };
 
 struct PluginBundleManifest {
-    int apiVersion{0};
+    int apiVersion {0};
     std::vector<std::string> dependencySpecs;
 };
 

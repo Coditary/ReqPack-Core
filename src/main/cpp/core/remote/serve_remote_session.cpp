@@ -12,7 +12,7 @@ std::string connection_protocol_name(ConnectionProtocol protocol) {
 
 std::string format_timestamp(const std::chrono::system_clock::time_point& timePoint) {
     const std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
-    std::tm tm{};
+    std::tm tm {};
     (void)reqpack_localtime(&tm, &time);
     std::ostringstream output;
     output << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
@@ -21,7 +21,7 @@ std::string format_timestamp(const std::chrono::system_clock::time_point& timePo
 
 RemoteStateSnapshot snapshot_remote_state(RemoteServerState& state) {
     std::lock_guard<std::mutex> lock(state.mutex);
-    return RemoteStateSnapshot{.config = state.config, .options = state.options, .users = state.users};
+    return RemoteStateSnapshot {.config = state.config, .options = state.options, .users = state.users};
 }
 
 CommandOutput command_output_message(DisplayMode mode, const std::string& message, bool success) {
@@ -46,8 +46,8 @@ CommandOutput active_connection_count_output(RemoteServerState& state) {
         std::lock_guard<std::mutex> lock(state.mutex);
         count = static_cast<int>(state.sessions.size());
     }
-    output.blocks.push_back(make_command_field_value_block(std::vector<CommandOutputField>{
-        CommandOutputField{.key = "Active Connections", .value = std::to_string(count)}}));
+    output.blocks.push_back(make_command_field_value_block(std::vector<CommandOutputField> {
+        CommandOutputField {.key = "Active Connections", .value = std::to_string(count)}}));
     output.success = true;
     output.succeeded = 1;
     return output;

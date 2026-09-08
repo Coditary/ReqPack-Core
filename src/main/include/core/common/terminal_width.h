@@ -30,7 +30,7 @@ inline std::size_t reqpack_terminal_column_count(std::size_t fallback = 100) {
     DWORD consoleMode = 0;
     const HANDLE stdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (stdOut != INVALID_HANDLE_VALUE && GetConsoleMode(stdOut, &consoleMode)) {
-        CONSOLE_SCREEN_BUFFER_INFO info{};
+        CONSOLE_SCREEN_BUFFER_INFO info {};
         if (GetConsoleScreenBufferInfo(stdOut, &info)) {
             const int width = info.srWindow.Right - info.srWindow.Left + 1;
             if (width > 0) {
@@ -39,7 +39,7 @@ inline std::size_t reqpack_terminal_column_count(std::size_t fallback = 100) {
         }
     }
 #else
-    winsize size{};
+    winsize size {};
     if (isatty(STDOUT_FILENO) && ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0 && size.ws_col > 0) {
         return static_cast<std::size_t>(size.ws_col);
     }

@@ -47,30 +47,30 @@ HostInfoSnapshot sample_snapshot() {
     snapshot.os.family = "linux";
     snapshot.os.id = "fedora";
     snapshot.os.name = "Fedora Linux";
-    snapshot.os.version = std::string{"41"};
-    snapshot.os.versionId = std::string{"41"};
-    snapshot.os.prettyName = std::string{"Fedora Linux 41"};
-    snapshot.os.distroId = std::string{"fedora"};
-    snapshot.os.distroName = std::string{"Fedora Linux"};
-    snapshot.kernel.name = std::string{"Linux"};
-    snapshot.kernel.release = std::string{"6.8.0-test"};
+    snapshot.os.version = std::string {"41"};
+    snapshot.os.versionId = std::string {"41"};
+    snapshot.os.prettyName = std::string {"Fedora Linux 41"};
+    snapshot.os.distroId = std::string {"fedora"};
+    snapshot.os.distroName = std::string {"Fedora Linux"};
+    snapshot.kernel.name = std::string {"Linux"};
+    snapshot.kernel.release = std::string {"6.8.0-test"};
     snapshot.cpu.arch = "x86_64";
-    snapshot.cpu.vendor = std::string{"GenuineIntel"};
-    snapshot.cpu.model = std::string{"Test CPU"};
+    snapshot.cpu.vendor = std::string {"GenuineIntel"};
+    snapshot.cpu.model = std::string {"Test CPU"};
     snapshot.cpu.logicalCores = 16;
     snapshot.cpu.physicalCores = 8;
     snapshot.memory.totalBytes = 32000000000ULL;
     snapshot.memory.availableBytes = 16000000000ULL;
-    snapshot.gpus.push_back(HostGpuInfo{
-        .vendor = std::string{"NVIDIA"},
-        .model = std::string{"RTX Test"},
-        .driverVersion = std::string{"1.2.3"},
-        .backend = std::string{"nvidia-smi"},
+    snapshot.gpus.push_back(HostGpuInfo {
+        .vendor = std::string {"NVIDIA"},
+        .model = std::string {"RTX Test"},
+        .driverVersion = std::string {"1.2.3"},
+        .backend = std::string {"nvidia-smi"},
     });
-    snapshot.storage.mounts.push_back(HostMountInfo{
-        .device = std::string{"/dev/test0"},
+    snapshot.storage.mounts.push_back(HostMountInfo {
+        .device = std::string {"/dev/test0"},
         .mountPoint = "/",
-        .fsType = std::string{"ext4"},
+        .fsType = std::string {"ext4"},
         .totalBytes = 1000ULL,
         .usedBytes = 250ULL,
         .availableBytes = 750ULL,
@@ -115,15 +115,15 @@ PRETTY_NAME="Fedora Linux 41 (Workstation Edition)"
 }
 
 TEST_CASE("host info resolves cache path under reqpack cache root", "[unit][host_info][path]") {
-    TempDir tempDir{"reqpack-host-info-path"};
-    ScopedEnvVar cacheHome{"XDG_CACHE_HOME", (tempDir.path() / "cache-root").string()};
+    TempDir tempDir {"reqpack-host-info-path"};
+    ScopedEnvVar cacheHome {"XDG_CACHE_HOME", (tempDir.path() / "cache-root").string()};
 
     CHECK(default_reqpack_host_info_cache_path() ==
           tempDir.path() / "cache-root" / "reqpack" / "host" / "info.v1.json");
 }
 
 TEST_CASE("host info cache file roundtrips snapshot", "[unit][host_info][cache]") {
-    TempDir tempDir{"reqpack-host-info-roundtrip"};
+    TempDir tempDir {"reqpack-host-info-roundtrip"};
     const std::filesystem::path path = tempDir.path() / "host.json";
     const HostInfoSnapshot snapshot = sample_snapshot();
 
@@ -149,7 +149,7 @@ TEST_CASE("host info cache file roundtrips snapshot", "[unit][host_info][cache]"
 }
 
 TEST_CASE("host info cache parser rejects invalid json", "[unit][host_info][cache]") {
-    TempDir tempDir{"reqpack-host-info-invalid"};
+    TempDir tempDir {"reqpack-host-info-invalid"};
     const std::filesystem::path path = tempDir.path() / "host.json";
     write_file(path, "{ not json }");
 

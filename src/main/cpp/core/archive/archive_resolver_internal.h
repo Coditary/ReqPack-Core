@@ -10,13 +10,13 @@
 namespace archive_resolver_internal {
 
 struct CommandResult {
-    int exitCode{1};
+    int exitCode {1};
     std::string output;
 };
 
 struct ProcessedArchivePath {
     std::filesystem::path path;
-    bool changed{false};
+    bool changed {false};
 };
 
 std::string to_lower_copy(std::string value);

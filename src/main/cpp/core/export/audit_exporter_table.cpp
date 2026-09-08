@@ -28,7 +28,7 @@ struct TableColumn {
     std::size_t maxWidth;
 };
 
-constexpr std::array<TableColumn, 6> TABLE_COLUMNS{{
+constexpr std::array<TableColumn, 6> TABLE_COLUMNS {{
     {"SYSTEM", 6, 10},
     {"NAME", 12, 24},
     {"VERSION", 7, 12},
@@ -134,7 +134,7 @@ std::vector<std::string> wrap_table_text(const std::string& value, const std::si
 
 std::array<std::size_t, TABLE_COLUMNS.size()>
 table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows, const std::size_t width) {
-    std::array<std::size_t, TABLE_COLUMNS.size()> widths{};
+    std::array<std::size_t, TABLE_COLUMNS.size()> widths {};
     std::size_t usedWidth = 0;
     for (std::size_t index = 0; index < TABLE_COLUMNS.size(); ++index) {
         widths[index] = TABLE_COLUMNS[index].minWidth;
@@ -151,7 +151,7 @@ table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size
     }
 
     std::size_t extra = budget - usedWidth;
-    const std::array<std::size_t, TABLE_COLUMNS.size()> growthOrder{{3, 1, 2, 0, 4, 5}};
+    const std::array<std::size_t, TABLE_COLUMNS.size()> growthOrder {{3, 1, 2, 0, 4, 5}};
     for (const std::size_t index : growthOrder) {
         std::size_t desired = std::strlen(TABLE_COLUMNS[index].header);
         for (const auto& row : rows) {
@@ -322,15 +322,15 @@ std::string AuditExporter::renderTable(const Graph& graph, const std::vector<Val
     stream << std::string(std::max<std::size_t>(7, messageWidth), '-') << '\n';
 
     for (std::size_t rowIndex = 0; rowIndex < findings.size(); ++rowIndex) {
-        const auto messageLines = disableWrap ? std::vector<std::string>{normalize_table_value(messages[rowIndex])}
+        const auto messageLines = disableWrap ? std::vector<std::string> {normalize_table_value(messages[rowIndex])}
                                               : wrap_table_text(messages[rowIndex], messageWidth);
         const std::string severityColor =
-            colorizeSeverity ? severity_color_spec_for(findings[rowIndex]) : std::string{};
+            colorizeSeverity ? severity_color_spec_for(findings[rowIndex]) : std::string {};
         for (std::size_t lineIndex = 0; lineIndex < messageLines.size(); ++lineIndex) {
             for (std::size_t columnIndex = 0; columnIndex < TABLE_COLUMNS.size(); ++columnIndex) {
                 const bool colorizeColumn = lineIndex == 0 && columnIndex == 4 && !severityColor.empty();
                 append_table_cell(stream, lineIndex == 0 ? rows[rowIndex][columnIndex] : "", widths[columnIndex],
-                                  colorizeColumn ? severityColor : std::string{});
+                                  colorizeColumn ? severityColor : std::string {});
             }
             stream << messageLines[lineIndex] << '\n';
         }

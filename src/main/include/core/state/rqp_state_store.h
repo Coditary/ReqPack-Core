@@ -33,7 +33,7 @@ class RqpStateStore {
     bool removeInstalledState(const RqpInstalledPackage& installed) const;
 
   private:
-    ReqPackConfig config_{};
+    ReqPackConfig config_ {};
     static RqStateSource parseSourceJson(const std::string& content);
     static std::string readTextFile(const std::filesystem::path& path);
 };

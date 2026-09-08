@@ -133,7 +133,7 @@ Executer::createTaskGroupsFromRecords(const std::vector<TransactionItemRecord>& 
     for (const TransactionItemRecord& record : records) {
         if (groups.empty() || groups.back().action != record.package.action ||
             groups.back().system != record.package.system) {
-            groups.push_back(TaskGroup{
+            groups.push_back(TaskGroup {
                 .action = record.package.action, .system = record.package.system, .flags = record.package.flags});
         }
         groups.back().packages.push_back(record.package);

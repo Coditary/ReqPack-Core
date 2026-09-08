@@ -94,22 +94,22 @@ struct PluginTestCase {
     std::string sourcePath;
     std::string actionName;
     std::string system;
-    std::vector<std::string> flags{};
-    std::vector<Package> packages{};
+    std::vector<std::string> flags {};
+    std::vector<Package> packages {};
     std::string localPath;
     std::string prompt;
     std::filesystem::path fixtureRoot;
-    std::vector<std::string> fixtureDirs{};
-    std::vector<PluginTestFixtureFile> fixtureFiles{};
-    std::map<std::string, std::string> environment{};
-    std::vector<FakeExecResponse> fakeExec{};
+    std::vector<std::string> fixtureDirs {};
+    std::vector<PluginTestFixtureFile> fixtureFiles {};
+    std::map<std::string, std::string> environment {};
+    std::vector<FakeExecResponse> fakeExec {};
     std::optional<bool> expectSuccess;
-    std::vector<std::string> expectStdout{};
-    std::vector<std::string> expectStderr{};
-    std::vector<std::string> expectArtifacts{};
-    std::vector<std::string> expectCommands{};
-    std::vector<std::string> expectEvents{};
-    std::map<std::string, std::string> expectEventPayloads{};
+    std::vector<std::string> expectStdout {};
+    std::vector<std::string> expectStderr {};
+    std::vector<std::string> expectArtifacts {};
+    std::vector<std::string> expectCommands {};
+    std::vector<std::string> expectEvents {};
+    std::map<std::string, std::string> expectEventPayloads {};
     std::optional<int> expectResultCount;
     std::optional<std::string> expectResultName;
     std::optional<std::string> expectResultVersion;
@@ -117,7 +117,7 @@ struct PluginTestCase {
 
 struct PluginTestRuntimeCaseResult {
     PluginTestCaseSummary summary;
-    std::vector<PluginEventRecord> events{};
+    std::vector<PluginEventRecord> events {};
 };
 
 class PluginTestError : public std::runtime_error {
@@ -140,7 +140,7 @@ std::filesystem::path default_fixture_root_for_case(const std::filesystem::path&
         sanitized = "case";
     }
 
-    const std::size_t pathHash = std::hash<std::string>{}(casePath.string());
+    const std::size_t pathHash = std::hash<std::string> {}(casePath.string());
     std::ostringstream suffix;
     suffix << std::hex << pathHash;
     return (std::filesystem::temp_directory_path() / ("reqpack-plugin-test-" + sanitized + "-" + suffix.str()))
@@ -179,9 +179,9 @@ std::vector<PluginTestFixtureFile> fixture_files_from_table(const sol::object& o
             throw PluginTestError("fixtureFiles.path is required: " + path.string());
         }
         const sol::optional<std::string> content = file["content"];
-        files.push_back(PluginTestFixtureFile{
+        files.push_back(PluginTestFixtureFile {
             .path = fixturePath.value(),
-            .content = content.has_value() ? content.value() : std::string{},
+            .content = content.has_value() ? content.value() : std::string {},
         });
     }
     return files;
@@ -315,7 +315,7 @@ class PreparedCaseFixtures {
     }
 
   private:
-    std::vector<std::filesystem::path> roots_{};
+    std::vector<std::filesystem::path> roots_ {};
 };
 
 std::optional<std::string> environment_value(const std::string& name) {
@@ -323,7 +323,7 @@ std::optional<std::string> environment_value(const std::string& name) {
     if (value == nullptr) {
         return std::nullopt;
     }
-    return std::string{value};
+    return std::string {value};
 }
 
 void set_environment_value(const std::string& name, const std::optional<std::string>& value) {
@@ -355,7 +355,7 @@ class ScopedEnvironmentOverride {
     }
 
   private:
-    std::vector<std::pair<std::string, std::optional<std::string>>> previous_{};
+    std::vector<std::pair<std::string, std::optional<std::string>>> previous_ {};
 };
 
 class FakeExecHost : public LuaBridge {
@@ -390,17 +390,17 @@ class FakeExecHost : public LuaBridge {
     }
 
     void emitSuccess(const std::string& pluginId) override {
-        recentEvents_.push_back(PluginEventRecord{.name = "success", .payload = "ok"});
+        recentEvents_.push_back(PluginEventRecord {.name = "success", .payload = "ok"});
         LuaBridge::emitSuccess(pluginId);
     }
 
     void emitFailure(const std::string& pluginId, const std::string& message) override {
-        recentEvents_.push_back(PluginEventRecord{.name = "failed", .payload = message});
+        recentEvents_.push_back(PluginEventRecord {.name = "failed", .payload = message});
         LuaBridge::emitFailure(pluginId, message);
     }
 
     void emitEvent(const std::string& pluginId, const std::string& eventName, const std::string& payload) override {
-        recentEvents_.push_back(PluginEventRecord{.name = eventName, .payload = payload});
+        recentEvents_.push_back(PluginEventRecord {.name = eventName, .payload = payload});
         LuaBridge::emitEvent(pluginId, eventName, payload);
     }
 
@@ -433,7 +433,7 @@ class FakeExecHost : public LuaBridge {
             }
         }
         stderr_.push_back("no fakeExec rule matched command: " + command);
-        return ExecResult{
+        return ExecResult {
             .success = false,
             .exitCode = 127,
             .stdoutText = {},
@@ -441,12 +441,12 @@ class FakeExecHost : public LuaBridge {
         };
     }
 
-    std::vector<FakeExecResponse> responses_{};
-    std::vector<std::string> commands_{};
-    std::vector<std::string> stdout_{};
-    std::vector<std::string> stderr_{};
-    std::vector<std::string> artifacts_{};
-    std::vector<PluginEventRecord> recentEvents_{};
+    std::vector<FakeExecResponse> responses_ {};
+    std::vector<std::string> commands_ {};
+    std::vector<std::string> stdout_ {};
+    std::vector<std::string> stderr_ {};
+    std::vector<std::string> artifacts_ {};
+    std::vector<PluginEventRecord> recentEvents_ {};
 };
 
 std::vector<std::filesystem::path> builtin_case_files_for_preset(const std::string& preset,
@@ -550,9 +550,9 @@ Package package_from_case_table(const sol::table& table, const std::string& fall
     Package package;
     package.action = action_from_string(optional_string_field(table, "action").value_or(fallbackAction));
     package.system = optional_string_field(table, "system").value_or(fallbackSystem);
-    package.name = optional_string_field(table, "name").value_or(std::string{});
-    package.version = optional_string_field(table, "version").value_or(std::string{});
-    package.sourcePath = optional_string_field(table, "sourcePath").value_or(std::string{});
+    package.name = optional_string_field(table, "name").value_or(std::string {});
+    package.version = optional_string_field(table, "version").value_or(std::string {});
+    package.sourcePath = optional_string_field(table, "sourcePath").value_or(std::string {});
     if (const sol::optional<bool> localTarget = table["localTarget"]; localTarget.has_value()) {
         package.localTarget = localTarget.value();
     }
@@ -591,14 +591,14 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
         throw PluginTestError("case missing request table: " + path.string());
     }
     const sol::table request = requestObject.as<sol::table>();
-    testCase.actionName = optional_string_field(request, "action").value_or(std::string{});
+    testCase.actionName = optional_string_field(request, "action").value_or(std::string {});
     if (testCase.actionName.empty()) {
         throw PluginTestError("case request.action is required: " + path.string());
     }
-    testCase.system = optional_string_field(request, "system").value_or(std::string{});
+    testCase.system = optional_string_field(request, "system").value_or(std::string {});
     testCase.flags = string_list_from_table(request["flags"]);
-    testCase.localPath = optional_string_field(request, "localPath").value_or(std::string{});
-    testCase.prompt = optional_string_field(request, "prompt").value_or(std::string{});
+    testCase.localPath = optional_string_field(request, "localPath").value_or(std::string {});
+    testCase.prompt = optional_string_field(request, "prompt").value_or(std::string {});
 
     const sol::object packagesObject = request["packages"];
     if (packagesObject.valid() && packagesObject.get_type() == sol::type::table) {
@@ -619,7 +619,7 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
             }
             const sol::table fakeExec = entry.as<sol::table>();
             FakeExecResponse response;
-            response.match = optional_string_field(fakeExec, "match").value_or(std::string{});
+            response.match = optional_string_field(fakeExec, "match").value_or(std::string {});
             if (response.match.empty()) {
                 throw PluginTestError("fakeExec.match is required: " + path.string());
             }
@@ -629,8 +629,8 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
             if (const sol::optional<int> exitCode = fakeExec["exitCode"]; exitCode.has_value()) {
                 response.result.exitCode = exitCode.value();
             }
-            response.result.stdoutText = optional_string_field(fakeExec, "stdout").value_or(std::string{});
-            response.result.stderrText = optional_string_field(fakeExec, "stderr").value_or(std::string{});
+            response.result.stdoutText = optional_string_field(fakeExec, "stdout").value_or(std::string {});
+            response.result.stderrText = optional_string_field(fakeExec, "stderr").value_or(std::string {});
             if (!fakeExec["success"].valid()) {
                 response.result.success = response.result.exitCode == 0;
             }
@@ -681,7 +681,7 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
 }
 
 PluginCallContext make_test_context(LuaBridge& bridge, const ReqPackConfig& config, const PluginTestCase& testCase) {
-    return PluginCallContext{
+    return PluginCallContext {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
@@ -762,7 +762,7 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
     for (const PluginEventRecord& event : result.events) {
         result.summary.events.push_back(event.name);
         result.summary.eventRecords.push_back(
-            PluginTestCaseSummary::EventRecord{.name = event.name, .payload = event.payload});
+            PluginTestCaseSummary::EventRecord {.name = event.name, .payload = event.payload});
     }
 
     std::vector<std::string> failures;
@@ -822,7 +822,7 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
         const std::string actualName =
             action == ActionType::INFO
                 ? package_display_name(infoResult)
-                : (!listResult.empty() ? package_display_name(listResult.front()) : std::string{});
+                : (!listResult.empty() ? package_display_name(listResult.front()) : std::string {});
         if (actualName != testCase.expectResultName.value()) {
             failures.push_back("resultName mismatch");
         }
@@ -831,7 +831,7 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
     if (testCase.expectResultVersion.has_value()) {
         const std::string actualVersion = action == ActionType::INFO
                                               ? infoResult.version
-                                              : (!listResult.empty() ? listResult.front().version : std::string{});
+                                              : (!listResult.empty() ? listResult.front().version : std::string {});
         if (actualVersion != testCase.expectResultVersion.value()) {
             failures.push_back("resultVersion mismatch");
         }

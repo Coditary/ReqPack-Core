@@ -111,8 +111,8 @@ class StdoutCapture {
         originalFd_ = -1;
     }
 
-    FILE* file_{nullptr};
-    int originalFd_{-1};
+    FILE* file_ {nullptr};
+    int originalFd_ {-1};
 };
 
 void write_file(const std::filesystem::path& path, const std::string& content) {
@@ -154,7 +154,7 @@ std::filesystem::path write_plugin_bundle(const std::filesystem::path& pluginDir
 }
 
 PluginCallContext make_context(LuaBridge& bridge, const ReqPackConfig& config, std::vector<std::string> flags = {}) {
-    return PluginCallContext{
+    return PluginCallContext {
         .pluginId = bridge.getPluginId(),
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
@@ -433,7 +433,7 @@ function plugin.shutdown() return true end
 )";
 
 std::string make_exec_policy_plugin(const std::string& metadataBody, const std::string& installBody) {
-    return std::string{R"(
+    return std::string {R"(
 plugin = {}
 
 function plugin.getName() return "policy-bridge" end
@@ -464,7 +464,7 @@ function plugin.shutdown() return true end
 } // namespace
 
 TEST_CASE("lua bridge initializes plugin state and parses query values", "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-query"};
+    TempDir tempDir {"reqpack-lua-bridge-query"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "query";
     const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "query", QUERY_PLUGIN);
@@ -474,8 +474,8 @@ TEST_CASE("lua bridge initializes plugin state and parses query values", "[integ
     CHECK(bridge.getVersion() == "booted");
     REQUIRE(bridge.getSecurityMetadata().has_value());
     CHECK(bridge.getSecurityMetadata()->role == "security-provider");
-    CHECK(bridge.getSecurityMetadata()->capabilities == std::vector<std::string>{"network", "security-import"});
-    CHECK(bridge.getSecurityMetadata()->ecosystemScopes == std::vector<std::string>{"demo-osv", "RubyGems"});
+    CHECK(bridge.getSecurityMetadata()->capabilities == std::vector<std::string> {"network", "security-import"});
+    CHECK(bridge.getSecurityMetadata()->ecosystemScopes == std::vector<std::string> {"demo-osv", "RubyGems"});
     REQUIRE(bridge.getSecurityMetadata()->writeScopes.size() == 2);
     CHECK(bridge.getSecurityMetadata()->writeScopes[0].kind == "temp");
     CHECK(bridge.getSecurityMetadata()->writeScopes[0].value.empty());
@@ -504,9 +504,9 @@ TEST_CASE("lua bridge initializes plugin state and parses query values", "[integ
     CHECK(requirements[0].version == "8.0");
     CHECK(requirements[0].sourcePath == "/tmp/curl.rpm");
     CHECK(requirements[0].localTarget);
-    CHECK(requirements[0].flags == std::vector<std::string>{"dep-flag"});
+    CHECK(requirements[0].flags == std::vector<std::string> {"dep-flag"});
 
-    const Package requested{
+    const Package requested {
         .action = ActionType::INSTALL,
         .system = "query",
         .name = "demo",
@@ -523,7 +523,7 @@ TEST_CASE("lua bridge initializes plugin state and parses query values", "[integ
     CHECK(missing[0].version == "1.2.3");
     CHECK(missing[0].sourcePath == "/tmp/demo.pkg");
     CHECK(missing[0].localTarget);
-    CHECK(missing[0].flags == std::vector<std::string>{"flag-a"});
+    CHECK(missing[0].flags == std::vector<std::string> {"flag-a"});
 
     const PluginCallContext context = make_context(bridge, config, {"--query-flag"});
     const std::vector<PackageInfo> listed = bridge.list(context);
@@ -548,7 +548,7 @@ TEST_CASE("lua bridge initializes plugin state and parses query values", "[integ
 
 TEST_CASE("lua bridge install exposes context namespaces and runtime host services",
           "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-context"};
+    TempDir tempDir {"reqpack-lua-bridge-context"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "bridge";
     const std::filesystem::path scriptPath = pluginDirectory / "run.lua";
@@ -564,8 +564,9 @@ TEST_CASE("lua bridge install exposes context namespaces and runtime host servic
     REQUIRE(bridge.init());
 
     StdoutCapture capture;
-    const bool installed = bridge.install(make_context(bridge, config, {"--bridge-flag"}),
-                                          {Package{.action = ActionType::INSTALL, .system = "bridge", .name = "demo"}});
+    const bool installed =
+        bridge.install(make_context(bridge, config, {"--bridge-flag"}),
+                       {Package {.action = ActionType::INSTALL, .system = "bridge", .name = "demo"}});
     Logger::instance().flushSync();
     const std::string output = capture.finish();
 
@@ -616,7 +617,7 @@ TEST_CASE("lua bridge install exposes context namespaces and runtime host servic
 }
 
 TEST_CASE("lua bridge treats zero-exit stderr output as successful exec", "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-stderr-success"};
+    TempDir tempDir {"reqpack-lua-bridge-stderr-success"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "stderr-success";
     const std::filesystem::path scriptPath =
@@ -626,11 +627,11 @@ TEST_CASE("lua bridge treats zero-exit stderr output as successful exec", "[inte
     REQUIRE(bridge.init());
 
     CHECK(bridge.install(make_context(bridge, config),
-                         {Package{.action = ActionType::INSTALL, .system = "stderr-success", .name = "demo"}}));
+                         {Package {.action = ActionType::INSTALL, .system = "stderr-success", .name = "demo"}}));
 }
 
 TEST_CASE("lua bridge exposes ordered repositories for current plugin", "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-repositories"};
+    TempDir tempDir {"reqpack-lua-bridge-repositories"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "maven";
     const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "maven", REPOSITORY_PLUGIN);
@@ -652,7 +653,7 @@ TEST_CASE("lua bridge exposes ordered repositories for current plugin", "[integr
     highPriority.priority = 20;
     highPriority.type = "default";
     highPriority.scope.exclude = {"com.mycompany.legacy.*"};
-    highPriority.extras["tags"] = std::vector<std::string>{"public"};
+    highPriority.extras["tags"] = std::vector<std::string> {"public"};
 
     RepositoryEntry unrelated;
     unrelated.id = "pypi";
@@ -672,7 +673,7 @@ TEST_CASE("lua bridge exposes ordered repositories for current plugin", "[integr
 }
 
 TEST_CASE("lua bridge exposes proxy config and proxy resolution hook", "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-proxy"};
+    TempDir tempDir {"reqpack-lua-bridge-proxy"};
     ReqPackConfig config;
     config.planner.proxies["java"].defaultTarget = "gradle";
     config.planner.proxies["java"].targets = {"maven", "gradle"};
@@ -692,14 +693,14 @@ TEST_CASE("lua bridge exposes proxy config and proxy resolution hook", "[integra
     REQUIRE(resolution.has_value());
     CHECK(resolution->targetSystem == "gradle");
     REQUIRE(resolution->packages.has_value());
-    CHECK(resolution->packages.value() == std::vector<std::string>{"org.junit:junit:4.13"});
+    CHECK(resolution->packages.value() == std::vector<std::string> {"org.junit:junit:4.13"});
     REQUIRE(resolution->flags.has_value());
-    CHECK(resolution->flags.value() == std::vector<std::string>{"gradle", "maven", "gradle"});
+    CHECK(resolution->flags.value() == std::vector<std::string> {"gradle", "maven", "gradle"});
 }
 
 TEST_CASE("lua bridge allows declared exec and write scope usage under thin-layer policy",
           "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-exec-policy-allow"};
+    TempDir tempDir {"reqpack-lua-bridge-exec-policy-allow"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -737,8 +738,8 @@ TEST_CASE("lua bridge allows declared exec and write scope usage under thin-laye
     REQUIRE(bridge.init());
 
     StdoutCapture capture;
-    const bool installed = bridge.install(make_context(bridge, config),
-                                          {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}});
+    const bool installed = bridge.install(
+        make_context(bridge, config), {Package {.action = ActionType::INSTALL, .system = "policy", .name = "demo"}});
     Logger::instance().flushSync();
     const std::string output = capture.finish();
 
@@ -748,7 +749,7 @@ TEST_CASE("lua bridge allows declared exec and write scope usage under thin-laye
 }
 
 TEST_CASE("lua bridge blocks exec when plugin does not declare exec capability", "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-exec-policy-capability"};
+    TempDir tempDir {"reqpack-lua-bridge-exec-policy-capability"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -772,12 +773,12 @@ TEST_CASE("lua bridge blocks exec when plugin does not declare exec capability",
     REQUIRE(bridge.init());
 
     CHECK(bridge.install(make_context(bridge, config),
-                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
+                         {Package {.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
 }
 
 TEST_CASE("lua bridge blocks undeclared privilege escalation under thin-layer policy",
           "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-exec-policy-sudo"};
+    TempDir tempDir {"reqpack-lua-bridge-exec-policy-sudo"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -799,12 +800,12 @@ TEST_CASE("lua bridge blocks undeclared privilege escalation under thin-layer po
     REQUIRE(bridge.init());
 
     CHECK(bridge.install(make_context(bridge, config),
-                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
+                         {Package {.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
 }
 
 TEST_CASE("lua bridge blocks writes outside declared scopes under thin-layer policy",
           "[integration][lua_bridge][service]") {
-    TempDir tempDir{"reqpack-lua-bridge-exec-policy-write-scope"};
+    TempDir tempDir {"reqpack-lua-bridge-exec-policy-write-scope"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
@@ -830,7 +831,7 @@ TEST_CASE("lua bridge blocks writes outside declared scopes under thin-layer pol
     REQUIRE(bridge.init());
 
     CHECK(bridge.install(make_context(bridge, config),
-                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
+                         {Package {.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
     CHECK_FALSE(std::filesystem::exists(blockedPath));
 }
 
@@ -887,7 +888,7 @@ function plugin.shutdown() return true end
 )";
 
 TEST_CASE("lua bridge runtime exposes ffi module to plugin scripts", "[integration][lua_bridge][service][ffi]") {
-    TempDir tempDir{"reqpack-lua-bridge-ffi"};
+    TempDir tempDir {"reqpack-lua-bridge-ffi"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "ffi";
     const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "ffi", FFI_PLUGIN);

@@ -92,8 +92,8 @@ std::vector<std::pair<std::string, std::string>> extra_fields_from_lua_table(con
             continue;
         }
         const sol::table field = value.as<sol::table>();
-        const std::string fieldKey = field.get_or("key", std::string{});
-        const std::string fieldValue = field.get_or("value", std::string{});
+        const std::string fieldKey = field.get_or("key", std::string {});
+        const std::string fieldValue = field.get_or("value", std::string {});
         if (!fieldKey.empty() && !fieldValue.empty()) {
             fields.emplace_back(fieldKey, fieldValue);
         }
@@ -103,32 +103,32 @@ std::vector<std::pair<std::string, std::string>> extra_fields_from_lua_table(con
 
 PackageInfo package_info_from_lua_table(const sol::table& info) {
     PackageInfo packageInfo;
-    packageInfo.system = info.get_or("system", std::string{});
-    packageInfo.name = info.get_or("name", std::string{});
-    packageInfo.packageId = info.get_or("packageId", std::string{});
-    packageInfo.version = info.get_or("version", std::string{});
-    packageInfo.latestVersion = info.get_or("latestVersion", std::string{});
-    packageInfo.status = info.get_or("status", std::string{});
-    packageInfo.installed = info.get_or("installed", std::string{});
-    packageInfo.summary = info.get_or("summary", std::string{});
-    packageInfo.description = info.get_or("description", std::string{});
-    packageInfo.homepage = info.get_or("homepage", std::string{});
-    packageInfo.documentation = info.get_or("documentation", std::string{});
-    packageInfo.sourceUrl = info.get_or("sourceUrl", std::string{});
-    packageInfo.repository = info.get_or("repository", std::string{});
-    packageInfo.channel = info.get_or("channel", std::string{});
-    packageInfo.section = info.get_or("section", std::string{});
-    packageInfo.packageType = info.get_or("packageType", info.get_or("type", std::string{}));
-    packageInfo.architecture = info.get_or("architecture", std::string{});
-    packageInfo.targetSystems = info.get_or("targetSystems", std::string{});
-    packageInfo.license = info.get_or("license", std::string{});
-    packageInfo.author = info.get_or("author", std::string{});
-    packageInfo.maintainer = info.get_or("maintainer", std::string{});
-    packageInfo.email = info.get_or("email", std::string{});
-    packageInfo.publishedAt = info.get_or("publishedAt", std::string{});
-    packageInfo.updatedAt = info.get_or("updatedAt", std::string{});
-    packageInfo.size = info.get_or("size", std::string{});
-    packageInfo.installedSize = info.get_or("installedSize", std::string{});
+    packageInfo.system = info.get_or("system", std::string {});
+    packageInfo.name = info.get_or("name", std::string {});
+    packageInfo.packageId = info.get_or("packageId", std::string {});
+    packageInfo.version = info.get_or("version", std::string {});
+    packageInfo.latestVersion = info.get_or("latestVersion", std::string {});
+    packageInfo.status = info.get_or("status", std::string {});
+    packageInfo.installed = info.get_or("installed", std::string {});
+    packageInfo.summary = info.get_or("summary", std::string {});
+    packageInfo.description = info.get_or("description", std::string {});
+    packageInfo.homepage = info.get_or("homepage", std::string {});
+    packageInfo.documentation = info.get_or("documentation", std::string {});
+    packageInfo.sourceUrl = info.get_or("sourceUrl", std::string {});
+    packageInfo.repository = info.get_or("repository", std::string {});
+    packageInfo.channel = info.get_or("channel", std::string {});
+    packageInfo.section = info.get_or("section", std::string {});
+    packageInfo.packageType = info.get_or("packageType", info.get_or("type", std::string {}));
+    packageInfo.architecture = info.get_or("architecture", std::string {});
+    packageInfo.targetSystems = info.get_or("targetSystems", std::string {});
+    packageInfo.license = info.get_or("license", std::string {});
+    packageInfo.author = info.get_or("author", std::string {});
+    packageInfo.maintainer = info.get_or("maintainer", std::string {});
+    packageInfo.email = info.get_or("email", std::string {});
+    packageInfo.publishedAt = info.get_or("publishedAt", std::string {});
+    packageInfo.updatedAt = info.get_or("updatedAt", std::string {});
+    packageInfo.size = info.get_or("size", std::string {});
+    packageInfo.installedSize = info.get_or("installedSize", std::string {});
     if (const sol::object dependencies = info["dependencies"]; dependencies.is<sol::table>()) {
         packageInfo.dependencies = string_array_from_lua_table(dependencies.as<sol::table>());
     }

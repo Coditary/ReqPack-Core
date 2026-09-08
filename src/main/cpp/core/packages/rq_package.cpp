@@ -164,7 +164,7 @@ void validate_outer_entry_path(const std::string& rawPath) {
     }
 
     const std::string topLevel = (*path.begin()).string();
-    static const std::set<std::string> allowedTopLevels{
+    static const std::set<std::string> allowedTopLevels {
         "metadata.json", "reqpack.lua", "hashes", "scripts", "payload",
     };
 
@@ -254,7 +254,7 @@ std::set<std::string> rq_host_system_tokens(const HostInfoSnapshot& snapshot) {
     const std::string distroId =
         snapshot.os.distroId.has_value()
             ? rq_package_internal::to_lower_copy(rq_package_internal::trim_copy(snapshot.os.distroId.value()))
-            : std::string{};
+            : std::string {};
 
     if (!family.empty()) {
         tokens.insert(family);

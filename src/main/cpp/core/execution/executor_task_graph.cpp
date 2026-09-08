@@ -68,7 +68,7 @@ std::vector<Executer::TaskGroup> Executer::createTaskGroups(const Graph& graph) 
     for (const Graph::vertex_descriptor vertex : this->orderedVertices(graph)) {
         const Package& package = graph[vertex];
         if (groups.empty() || groups.back().action != package.action || groups.back().system != package.system) {
-            groups.push_back(TaskGroup{.action = package.action, .system = package.system, .flags = package.flags});
+            groups.push_back(TaskGroup {.action = package.action, .system = package.system, .flags = package.flags});
         }
 
         groups.back().packages.push_back(package);
@@ -110,7 +110,7 @@ std::vector<Executer::TaskGroupPlan> Executer::createTaskGroupPlans(const std::v
     std::vector<TaskGroupPlan> plans;
     plans.reserve(taskGroups.size());
     for (const TaskGroup& taskGroup : taskGroups) {
-        plans.push_back(TaskGroupPlan{.taskGroup = taskGroup});
+        plans.push_back(TaskGroupPlan {.taskGroup = taskGroup});
     }
     if (graph == nullptr || taskGroups.empty()) {
         return plans;
@@ -132,7 +132,7 @@ std::vector<Executer::TaskGroupPlan> Executer::createTaskGroupPlans(const std::v
         if (sourceGroup == targetGroup) {
             return;
         }
-        const std::pair<std::size_t, std::size_t> edge{sourceGroup, targetGroup};
+        const std::pair<std::size_t, std::size_t> edge {sourceGroup, targetGroup};
         if (!seenEdges.insert(edge).second) {
             return;
         }

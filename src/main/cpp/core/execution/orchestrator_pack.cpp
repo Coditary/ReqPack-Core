@@ -92,7 +92,7 @@ int run_pack_request(const Request& request, Registry* registry, const ReqPackCo
             return 1;
         }
 
-        PluginCallContext context{
+        PluginCallContext context {
             .pluginId = plugin->getPluginId(),
             .pluginDirectory = plugin->getPluginDirectory(),
             .scriptPath = plugin->getScriptPath(),

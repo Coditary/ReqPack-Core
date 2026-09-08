@@ -13,22 +13,22 @@ namespace rq_package_internal {
 
 struct TarEntry {
     std::string path;
-    char type{'0'};
-    std::uint64_t size{0};
+    char type {'0'};
+    std::uint64_t size {0};
     std::string data;
     std::string linkTarget;
 };
 
 struct TarWriteEntry {
     std::string path;
-    char type{'0'};
+    char type {'0'};
     std::string data;
     std::string linkTarget;
-    std::uint32_t mode{0644};
+    std::uint32_t mode {0644};
 };
 
 struct PayloadBuildArtifacts {
-    bool hasPayload{false};
+    bool hasPayload {false};
     std::optional<RqPayloadMetadata> metadata;
     std::string archiveBytes;
     std::string hashContent;

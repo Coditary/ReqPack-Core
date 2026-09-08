@@ -92,7 +92,7 @@ return {
 } // namespace
 
 TEST_CASE("rqp state store lists installed packages in stable order", "[unit][rqp_state_store][core]") {
-    TempDir tempDir{"reqpack-rqp-state-list"};
+    TempDir tempDir {"reqpack-rqp-state-list"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();
     write_installed_state(tempDir.path(), "zeta", "1.0.0", 1, 0);
@@ -106,7 +106,7 @@ TEST_CASE("rqp state store lists installed packages in stable order", "[unit][rq
 }
 
 TEST_CASE("rqp state store finds exact version match", "[unit][rqp_state_store][core]") {
-    TempDir tempDir{"reqpack-rqp-state-find"};
+    TempDir tempDir {"reqpack-rqp-state-find"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();
     write_installed_state(tempDir.path(), "tool", "1.0.0", 1, 0);
@@ -120,7 +120,7 @@ TEST_CASE("rqp state store finds exact version match", "[unit][rqp_state_store][
 }
 
 TEST_CASE("rqp state store finds installed package by registry request name", "[unit][rqp_state_store][core]") {
-    TempDir tempDir{"reqpack-rqp-state-alias"};
+    TempDir tempDir {"reqpack-rqp-state-alias"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();
 
@@ -179,7 +179,7 @@ return {
 }
 
 TEST_CASE("rqp state store finds installed package among cached list", "[unit][rqp_state_store][core]") {
-    TempDir tempDir{"reqpack-rqp-state-among"};
+    TempDir tempDir {"reqpack-rqp-state-among"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();
     write_installed_state(tempDir.path(), "tool", "1.0.0", 1, 0);
@@ -194,7 +194,7 @@ TEST_CASE("rqp state store finds installed package among cached list", "[unit][r
 
 TEST_CASE("rqp state store removes installed state and prunes empty package directory",
           "[unit][rqp_state_store][core]") {
-    TempDir tempDir{"reqpack-rqp-state-remove"};
+    TempDir tempDir {"reqpack-rqp-state-remove"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();
     write_installed_state(tempDir.path(), "tool", "1.0.0", 1, 0);

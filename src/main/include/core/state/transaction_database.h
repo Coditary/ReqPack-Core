@@ -22,7 +22,7 @@ struct TransactionRunRecord {
 struct TransactionItemRecord {
     std::string runId;
     std::string itemId;
-    std::size_t sequence{0};
+    std::size_t sequence {0};
     Package package;
     std::string status;
     std::string errorMessage;
@@ -31,9 +31,9 @@ struct TransactionItemRecord {
 class TransactionDatabase {
     ReqPackConfig config;
     mutable std::mutex mutex;
-    mutable MDB_env* env{nullptr};
-    mutable MDB_dbi dbi{0};
-    mutable bool initialized{false};
+    mutable MDB_env* env {nullptr};
+    mutable MDB_dbi dbi {0};
+    mutable bool initialized {false};
 
     bool initStorage() const;
     std::optional<std::string> loadString(const std::string& key) const;

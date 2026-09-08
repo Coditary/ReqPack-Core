@@ -7,11 +7,11 @@
 namespace downloader_transfer_internal {
 
 struct CurlDownloadProgressState {
-    DownloadProgressCallback callback{nullptr};
-    void* userData{nullptr};
-    int lastPercent{-1};
-    std::uint64_t lastBytes{0};
-    std::chrono::steady_clock::time_point lastTime{};
+    DownloadProgressCallback callback {nullptr};
+    void* userData {nullptr};
+    int lastPercent {-1};
+    std::uint64_t lastBytes {0};
+    std::chrono::steady_clock::time_point lastTime {};
 };
 
 int forward_download_progress(void* userp, curl_off_t downloadTotal, curl_off_t downloadNow, curl_off_t uploadTotal,

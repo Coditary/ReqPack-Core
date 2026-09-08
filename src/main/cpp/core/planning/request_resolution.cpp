@@ -35,7 +35,7 @@ PluginCallContext RequestResolutionService::buildProxyContext(IPlugin* plugin, c
         return {};
     }
 
-    return PluginCallContext{
+    return PluginCallContext {
         .pluginId = plugin->getPluginId(),
         .pluginDirectory = plugin->getPluginDirectory(),
         .scriptPath = plugin->getScriptPath(),

@@ -30,33 +30,33 @@ TEST_CASE("planner platform schedule edge policy matches compile-time host", "[u
 }
 
 TEST_CASE("planner expands configured system aliases and preserves unknown systems", "[unit][planner][alias]") {
-    const std::vector<Request> requests{
-        Request{.action = ActionType::INSTALL, .system = "brew", .packages = {"ripgrep"}},
-        Request{.action = ActionType::REMOVE, .system = "custom", .packages = {"pkg"}},
+    const std::vector<Request> requests {
+        Request {.action = ActionType::INSTALL, .system = "brew", .packages = {"ripgrep"}},
+        Request {.action = ActionType::REMOVE, .system = "custom", .packages = {"pkg"}},
     };
-    const std::map<std::string, std::string> aliases{
+    const std::map<std::string, std::string> aliases {
         {"brew", "apt"},
     };
 
     const std::vector<Request> expanded = planner_expand_proxies(requests, aliases);
     REQUIRE(expanded.size() == 2);
     CHECK(expanded[0].system == "apt");
-    CHECK(expanded[0].packages == std::vector<std::string>{"ripgrep"});
+    CHECK(expanded[0].packages == std::vector<std::string> {"ripgrep"});
     CHECK(expanded[1].system == "custom");
 }
 
 TEST_CASE("planner contains-only-action helper rejects empty and mixed requests", "[unit][planner][action]") {
     CHECK_FALSE(planner_contains_only_action({}, ActionType::ENSURE));
 
-    const std::vector<Request> ensureRequests{
-        Request{.action = ActionType::ENSURE, .system = "dnf"},
-        Request{.action = ActionType::ENSURE, .system = "maven"},
+    const std::vector<Request> ensureRequests {
+        Request {.action = ActionType::ENSURE, .system = "dnf"},
+        Request {.action = ActionType::ENSURE, .system = "maven"},
     };
     CHECK(planner_contains_only_action(ensureRequests, ActionType::ENSURE));
 
-    const std::vector<Request> mixedRequests{
-        Request{.action = ActionType::ENSURE, .system = "dnf"},
-        Request{.action = ActionType::INSTALL, .system = "dnf", .packages = {"git"}},
+    const std::vector<Request> mixedRequests {
+        Request {.action = ActionType::ENSURE, .system = "dnf"},
+        Request {.action = ActionType::INSTALL, .system = "dnf", .packages = {"git"}},
     };
     CHECK_FALSE(planner_contains_only_action(mixedRequests, ActionType::ENSURE));
 }
@@ -81,7 +81,7 @@ TEST_CASE("planner normalizes dependency defaults without overwriting explicit v
 }
 
 TEST_CASE("planner shapes requested package specifiers into package records", "[unit][planner][request]") {
-    const Request request{
+    const Request request {
         .action = ActionType::INSTALL,
         .system = "brew",
         .flags = {"dry-run"},
@@ -92,7 +92,7 @@ TEST_CASE("planner shapes requested package specifiers into package records", "[
     CHECK(plain.system == "apt");
     CHECK(plain.name == "ripgrep");
     CHECK(plain.version.empty());
-    CHECK(plain.flags == std::vector<std::string>{"dry-run"});
+    CHECK(plain.flags == std::vector<std::string> {"dry-run"});
 
     const Package versioned = planner_make_requested_package(request, "apt", "ripgrep@14.1");
     CHECK(versioned.name == "ripgrep");
@@ -118,7 +118,7 @@ TEST_CASE("planner shapes local install requests without collapsing into normal 
     CHECK(localPackage.name == "custom.rpm");
     CHECK(localPackage.sourcePath == "/tmp/packages/custom.rpm");
     CHECK(localPackage.localTarget);
-    CHECK(localPackage.flags == std::vector<std::string>{"force"});
+    CHECK(localPackage.flags == std::vector<std::string> {"force"});
 }
 
 TEST_CASE("planner missing-package filtering preserves request metadata and rewrites package list",
@@ -129,16 +129,16 @@ TEST_CASE("planner missing-package filtering preserves request metadata and rewr
     request.packages = {"git", "ripgrep"};
     request.flags = {"dry-run"};
 
-    const std::vector<Package> missingPackages{
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "git", .version = "2.0"},
-        Package{.action = ActionType::INSTALL, .system = "dnf", .name = "ripgrep"},
+    const std::vector<Package> missingPackages {
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "git", .version = "2.0"},
+        Package {.action = ActionType::INSTALL, .system = "dnf", .name = "ripgrep"},
     };
 
     const Request filtered = planner_filter_request_to_missing_packages(request, missingPackages);
     CHECK(filtered.action == ActionType::INSTALL);
     CHECK(filtered.system == "dnf");
-    CHECK(filtered.flags == std::vector<std::string>{"dry-run"});
-    CHECK(filtered.packages == std::vector<std::string>{"git@2.0", "ripgrep"});
+    CHECK(filtered.flags == std::vector<std::string> {"dry-run"});
+    CHECK(filtered.packages == std::vector<std::string> {"git@2.0", "ripgrep"});
 }
 
 TEST_CASE("planner install filtering drops request when plugin reports no missing packages",

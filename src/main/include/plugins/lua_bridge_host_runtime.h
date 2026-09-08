@@ -17,7 +17,7 @@
 #include "plugins/iplugin.h"
 
 struct LuaBridgeRuntimeBindingContext {
-    IPluginRuntimeHost* host{nullptr};
+    IPluginRuntimeHost* host {nullptr};
     std::string pluginId;
     std::string sourceId;
     std::vector<std::string> flags;
@@ -82,12 +82,12 @@ class LuaBridgeHostRuntime {
     const std::string& m_pluginId;
     const std::string& m_pluginDirectory;
     const std::optional<PluginSecurityMetadata>* m_securityMetadata;
-    mutable std::atomic<bool> m_silentRuntimeOutput{false};
+    mutable std::atomic<bool> m_silentRuntimeOutput {false};
     ExecOverride m_execOverride;
     std::vector<std::string> m_tempDirectories;
     std::vector<PluginEventRecord> m_recentEvents;
     std::vector<std::string> m_recentArtifacts;
     std::vector<std::filesystem::path> m_runtimeWriteRoots;
     std::unordered_map<std::uint64_t, LuaBridgeRuntimeBindingContext> m_runtimeBindingContexts;
-    std::uint64_t m_nextRuntimeBindingContextId{0};
+    std::uint64_t m_nextRuntimeBindingContextId {0};
 };

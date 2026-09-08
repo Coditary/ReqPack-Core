@@ -36,7 +36,7 @@ ScopedRemoteSignalHandlers::ScopedRemoteSignalHandlers(ReqpackSocket serverFd) {
     oldInt_ = std::signal(SIGINT, handle_remote_serve_signal);
     installed_ = oldTerm_ != SIG_ERR && oldInt_ != SIG_ERR;
 #else
-    struct sigaction action{};
+    struct sigaction action {};
     action.sa_handler = handle_remote_serve_signal;
     sigemptyset(&action.sa_mask);
 
@@ -150,7 +150,7 @@ std::optional<ConnectionProtocol> detect_connection_protocol(const ServeRuntimeO
 ReqpackSocket create_server_socket(const ServeRuntimeOptions& options, Logger& logger) {
     reqpack_ensure_socket_runtime();
 
-    addrinfo hints{};
+    addrinfo hints {};
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;

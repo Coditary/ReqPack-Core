@@ -102,9 +102,9 @@ class StdIoCapture {
         }
     }
 
-    FILE* file_{nullptr};
-    int oldStdout_{-1};
-    int oldStderr_{-1};
+    FILE* file_ {nullptr};
+    int oldStdout_ {-1};
+    int oldStderr_ {-1};
     std::ostringstream buffer_;
 };
 
@@ -192,54 +192,54 @@ RemoteResponse execute_command(Cli& cli, RemoteServerState& state, Logger& logge
                                std::mutex& commandMutex) {
     const std::string trimmed = trim_copy(commandLine);
     if (trimmed.empty()) {
-        return RemoteResponse{.ok = true, .output = command_output_message(DisplayMode::REMOTE, {})};
+        return RemoteResponse {.ok = true, .output = command_output_message(DisplayMode::REMOTE, {})};
     }
     if (command_requires_close(trimmed)) {
-        return RemoteResponse{
+        return RemoteResponse {
             .ok = true, .output = command_output_message(DisplayMode::REMOTE, {}), .closeConnection = true};
     }
 
     const std::vector<std::string> commandTokens = tokenize_command_line(trimmed);
     if (commandTokens.empty()) {
-        return RemoteResponse{.ok = false,
-                              .output = command_output_message(DisplayMode::REMOTE, "invalid command syntax", false)};
+        return RemoteResponse {.ok = false,
+                               .output = command_output_message(DisplayMode::REMOTE, "invalid command syntax", false)};
     }
 
     if (commandTokens[0] == "shutdown") {
         if (!identity.isAdmin) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false, .output = command_output_message(DisplayMode::SERVE, "admin privileges required", false)};
         }
         state.shutdownRequested.store(true);
-        return RemoteResponse{.ok = true,
-                              .output = command_output_message(DisplayMode::SERVE, "server shutting down"),
-                              .closeConnection = true};
+        return RemoteResponse {.ok = true,
+                               .output = command_output_message(DisplayMode::SERVE, "server shutting down"),
+                               .closeConnection = true};
     }
     if (commandTokens.size() == 2 && commandTokens[0] == "connections" && commandTokens[1] == "count") {
         if (!identity.isAdmin) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false, .output = command_output_message(DisplayMode::SERVE, "admin privileges required", false)};
         }
-        return RemoteResponse{.ok = true, .output = active_connection_count_output(state)};
+        return RemoteResponse {.ok = true, .output = active_connection_count_output(state)};
     }
     if (commandTokens.size() == 2 && commandTokens[0] == "connections" && commandTokens[1] == "list") {
         if (!identity.isAdmin) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false, .output = command_output_message(DisplayMode::SERVE, "admin privileges required", false)};
         }
-        return RemoteResponse{.ok = true, .output = active_connection_list_output(state)};
+        return RemoteResponse {.ok = true, .output = active_connection_list_output(state)};
     }
     if (commandTokens[0] == "reload-config") {
         if (!identity.isAdmin) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false, .output = command_output_message(DisplayMode::SERVE, "admin privileges required", false)};
         }
         std::string error;
         if (!reload_remote_state(state, logger, error)) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false, .output = command_output_message(DisplayMode::SERVE, "reload failed: " + error, false)};
         }
-        return RemoteResponse{.ok = true, .output = command_output_message(DisplayMode::SERVE, "config reloaded")};
+        return RemoteResponse {.ok = true, .output = command_output_message(DisplayMode::SERVE, "config reloaded")};
     }
 
     const RemoteStateSnapshot snapshot = snapshot_remote_state(state);
@@ -247,31 +247,31 @@ RemoteResponse execute_command(Cli& cli, RemoteServerState& state, Logger& logge
         merged_command_arguments(commandTokens, snapshot.options.inheritedArguments);
     const ReqPackConfigOverrides overrides = extract_cli_config_overrides(mergedTokens);
     if (overrides.errorMessage.has_value()) {
-        return RemoteResponse{
+        return RemoteResponse {
             .ok = false, .output = command_output_message(DisplayMode::REMOTE, overrides.errorMessage.value(), false)};
     }
     const ReqPackConfig effectiveConfig = apply_config_overrides(snapshot.config, overrides);
     const std::vector<Request> requests = cli.parse(mergedTokens, effectiveConfig);
     if (requests.empty()) {
         if (!cli.lastParseError().empty()) {
-            return RemoteResponse{.ok = false,
-                                  .output = command_output_message(DisplayMode::REMOTE, cli.lastParseError(), false)};
+            return RemoteResponse {.ok = false,
+                                   .output = command_output_message(DisplayMode::REMOTE, cli.lastParseError(), false)};
         }
-        return RemoteResponse{
+        return RemoteResponse {
             .ok = false,
             .output = command_output_message(DisplayMode::REMOTE, "failed to parse '" + trimmed + "'", false)};
     }
 
     for (const Request& request : requests) {
         if (request.action == ActionType::SERVE) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false,
                 .output = command_output_message(DisplayMode::REMOTE, "nested serve commands are not allowed", false)};
         }
     }
 
     if (snapshot.options.readonly && !requests_allowed_in_readonly_mode(requests)) {
-        return RemoteResponse{
+        return RemoteResponse {
             .ok = false, .output = command_output_message(DisplayMode::REMOTE, "remote server is readonly", false)};
     }
 
@@ -297,7 +297,7 @@ RemoteResponse execute_command(Cli& cli, RemoteServerState& state, Logger& logge
     output.success = result == 0;
     output.succeeded = result == 0 ? 1 : 0;
     output.failed = result == 0 ? 0 : 1;
-    return RemoteResponse{.ok = result == 0, .output = std::move(output)};
+    return RemoteResponse {.ok = result == 0, .output = std::move(output)};
 }
 
 RemoteResponse execute_upload_install_command(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state,
@@ -305,19 +305,19 @@ RemoteResponse execute_upload_install_command(ReqpackSocket clientFd, Cli& cli, 
                                               const std::vector<std::string>& commandTokens, std::mutex& commandMutex) {
     const std::optional<UploadInstallEnvelope> envelope = parse_upload_install_envelope(commandTokens);
     if (!envelope.has_value()) {
-        return RemoteResponse{.ok = false,
-                              .output = command_output_message(DisplayMode::REMOTE, "invalid upload request", false),
-                              .closeConnection = true};
+        return RemoteResponse {.ok = false,
+                               .output = command_output_message(DisplayMode::REMOTE, "invalid upload request", false),
+                               .closeConnection = true};
     }
 
     if (snapshot_remote_state(state).options.readonly) {
         if (!discard_bytes(clientFd, envelope->size)) {
-            return RemoteResponse{
+            return RemoteResponse {
                 .ok = false,
                 .output = command_output_message(DisplayMode::REMOTE, "failed to read upload payload", false),
                 .closeConnection = true};
         }
-        return RemoteResponse{
+        return RemoteResponse {
             .ok = false, .output = command_output_message(DisplayMode::REMOTE, "remote server is readonly", false)};
     }
 
@@ -326,6 +326,6 @@ RemoteResponse execute_upload_install_command(ReqpackSocket clientFd, Cli& cli, 
         const std::string commandLine = substitute_upload_path(envelope->commandTemplate, uploadedFile.path());
         return execute_command(cli, state, logger, display, identity, commandLine, commandMutex);
     } catch (const std::exception& e) {
-        return RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, e.what(), false)};
+        return RemoteResponse {.ok = false, .output = command_output_message(DisplayMode::REMOTE, e.what(), false)};
     }
 }

@@ -7,12 +7,12 @@
 struct ArchiveResolution {
     std::filesystem::path installPath;
     std::vector<std::filesystem::path> cleanupPaths;
-    bool changed{false};
+    bool changed {false};
 };
 
 struct ArchiveExtractionOptions {
-    std::string password{};
-    bool interactive{false};
+    std::string password {};
+    bool interactive {false};
 };
 
 std::string generic_archive_suffix(const std::filesystem::path& path);

@@ -16,14 +16,14 @@
 #define REQPACK_API_VERSION 5
 
 struct ExecResult {
-    bool success{false};
-    int exitCode{1};
+    bool success {false};
+    int exitCode {1};
     std::string stdoutText;
     std::string stderrText;
 };
 
 struct DownloadResult {
-    bool success{false};
+    bool success {false};
     std::string resolvedPath;
 };
 
@@ -59,25 +59,25 @@ struct PluginCallContext {
     std::string pluginDirectory;
     std::string scriptPath;
     std::vector<std::string> flags;
-    IPluginRuntimeHost* host{nullptr};
+    IPluginRuntimeHost* host {nullptr};
     std::optional<ProxyConfig> proxy;
     /// Item id used by the display layer (e.g. "dnf:python").
     /// When non-empty, passed as the first arg to IPluginRuntimeHost callbacks
     /// so the display can correlate events to the right item row.
-    std::string currentItemId{};
-    std::vector<RepositoryEntry> repositories{};
-    std::shared_ptr<const HostInfoSnapshot> hostInfo{};
+    std::string currentItemId {};
+    std::vector<RepositoryEntry> repositories {};
+    std::shared_ptr<const HostInfoSnapshot> hostInfo {};
 
     ExecResult execute(const std::string& command) const {
-        return host != nullptr ? host->execute(pluginId, command) : ExecResult{};
+        return host != nullptr ? host->execute(pluginId, command) : ExecResult {};
     }
 
     std::string createTempDirectory() const {
-        return host != nullptr ? host->createTempDirectory(pluginId) : std::string{};
+        return host != nullptr ? host->createTempDirectory(pluginId) : std::string {};
     }
 
     DownloadResult downloadFile(const std::string& url, const std::string& destinationPath) const {
-        return host != nullptr ? host->download(pluginId, url, destinationPath) : DownloadResult{};
+        return host != nullptr ? host->download(pluginId, url, destinationPath) : DownloadResult {};
     }
 
     void logDebug(const std::string& message) const {

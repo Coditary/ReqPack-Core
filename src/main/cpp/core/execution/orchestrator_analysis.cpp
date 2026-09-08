@@ -124,7 +124,7 @@ std::vector<Request> expand_system_only_audit_requests(Executer* executor, const
 
 SbomResolutionResult resolve_sbom_requests(Executer* executor, const ReqPackConfig& config,
                                            const std::vector<Request>& requests) {
-    SbomResolutionResult result{.requests = requests};
+    SbomResolutionResult result {.requests = requests};
     if (executor == nullptr) {
         return result;
     }

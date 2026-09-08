@@ -69,16 +69,16 @@ PluginCallContext plugin_context_for_packages(IPlugin* plugin, const ReqPackConf
         itemId = packages.front().system + ":" + packages.front().name;
     }
 
-    return PluginCallContext{
-        .pluginId = plugin != nullptr ? plugin->getPluginId() : std::string{},
-        .pluginDirectory = plugin != nullptr ? plugin->getPluginDirectory() : std::string{},
-        .scriptPath = plugin != nullptr ? plugin->getScriptPath() : std::string{},
+    return PluginCallContext {
+        .pluginId = plugin != nullptr ? plugin->getPluginId() : std::string {},
+        .pluginDirectory = plugin != nullptr ? plugin->getPluginDirectory() : std::string {},
+        .scriptPath = plugin != nullptr ? plugin->getScriptPath() : std::string {},
         .flags = flags,
         .host = plugin != nullptr ? plugin->getRuntimeHost() : nullptr,
         .proxy = plugin != nullptr ? proxy_config_for_system(config, plugin->getPluginId()) : std::nullopt,
         .currentItemId = itemId,
         .repositories = plugin != nullptr ? repositories_for_ecosystem(config, plugin->getPluginId())
-                                          : std::vector<RepositoryEntry>{},
+                                          : std::vector<RepositoryEntry> {},
         .hostInfo = HostInfoService::currentSnapshot(),
     };
 }

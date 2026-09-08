@@ -82,7 +82,7 @@ std::optional<std::string> exec_read_first_line(const std::string& command) {
     }
 
     std::string output;
-    std::array<char, 512> buffer{};
+    std::array<char, 512> buffer {};
     while (std::fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
         output.append(buffer.data());
     }
@@ -124,13 +124,13 @@ HostPlatformInfo detect_platform_info() {
     platform.arch = "unknown";
 #endif
 #else
-    struct utsname uts{};
+    struct utsname uts {};
     if (::uname(&uts) == 0) {
         platform.arch = normalize_host_architecture(uts.machine);
     }
     if (platform.arch.empty()) {
         platform.arch =
-            normalize_host_architecture(exec_read_first_line("uname -m 2>/dev/null").value_or(std::string{}));
+            normalize_host_architecture(exec_read_first_line("uname -m 2>/dev/null").value_or(std::string {}));
     }
 #endif
     if (platform.arch.empty()) {
@@ -147,7 +147,7 @@ HostPlatformInfo detect_platform_info() {
 
 #if defined(_WIN32)
     platform.supportLevel = "stub";
-    platform.supportReason = std::string{"windows host collection not implemented yet"};
+    platform.supportReason = std::string {"windows host collection not implemented yet"};
 #else
     platform.supportLevel = "native";
 #endif
@@ -160,7 +160,7 @@ void fill_uname_fields(HostKernelInfo& kernel, HostCpuInfo& cpu) {
     (void)cpu;
     return;
 #else
-    struct utsname uts{};
+    struct utsname uts {};
     if (::uname(&uts) != 0) {
         return;
     }
@@ -180,8 +180,8 @@ void fill_linux_os_info(HostInfoSnapshot& snapshot) {
         snapshot.os.family = "linux";
         snapshot.os.id = "linux";
         snapshot.os.name = "Linux";
-        snapshot.os.distroId = std::string{"linux"};
-        snapshot.os.distroName = std::string{"Linux"};
+        snapshot.os.distroId = std::string {"linux"};
+        snapshot.os.distroName = std::string {"Linux"};
         return;
     }
     snapshot.os = parse_linux_os_release_content(content);
@@ -191,7 +191,7 @@ void fill_macos_os_info(HostInfoSnapshot& snapshot) {
     snapshot.os.family = "macos";
     snapshot.os.id = "macos";
     snapshot.os.name = "macOS";
-    snapshot.os.distroName = std::string{"macOS"};
+    snapshot.os.distroName = std::string {"macOS"};
 
     if (const std::optional<std::string> name = exec_read_first_line("sw_vers -productName 2>/dev/null");
         name.has_value()) {
@@ -214,7 +214,7 @@ void fill_windows_os_info(HostInfoSnapshot& snapshot) {
     snapshot.os.family = "windows";
     snapshot.os.id = "windows";
     snapshot.os.name = "Windows";
-    snapshot.os.prettyName = std::string{"Windows"};
+    snapshot.os.prettyName = std::string {"Windows"};
 }
 
 void fill_os_info(HostInfoSnapshot& snapshot) {
@@ -312,7 +312,7 @@ std::optional<std::string> sysctl_string(const char* name) {
 }
 
 template <typename T> std::optional<T> sysctl_scalar(const char* name) {
-    T value{};
+    T value {};
     size_t size = sizeof(value);
     if (::sysctlbyname(name, &value, &size, nullptr, 0) != 0 || size != sizeof(value)) {
         return std::nullopt;
@@ -391,9 +391,9 @@ void fill_memory_info(HostMemoryInfo& memory) {
 }
 
 bool should_skip_mount_type(const std::string& fsType) {
-    static const std::array<const char*, 15> ignored{"proc",    "sysfs",   "tmpfs",   "devtmpfs", "devfs",
-                                                     "cgroup",  "cgroup2", "overlay", "squashfs", "autofs",
-                                                     "debugfs", "tracefs", "nsfs",    "mqueue",   "fusectl"};
+    static const std::array<const char*, 15> ignored {"proc",    "sysfs",   "tmpfs",   "devtmpfs", "devfs",
+                                                      "cgroup",  "cgroup2", "overlay", "squashfs", "autofs",
+                                                      "debugfs", "tracefs", "nsfs",    "mqueue",   "fusectl"};
     return std::find(ignored.begin(), ignored.end(), fsType) != ignored.end();
 }
 
@@ -403,7 +403,7 @@ void fill_mount_capacity(const std::string& mountPoint, HostMountInfo& mount) {
     (void)mount;
     return;
 #else
-    struct statvfs info{};
+    struct statvfs info {};
     if (::statvfs(mountPoint.c_str(), &info) != 0) {
         return;
     }
@@ -488,7 +488,7 @@ void try_add_linux_gpu_from_lspci(std::vector<HostGpuInfo>& gpus) {
         return;
     }
 
-    std::array<char, 1024> buffer{};
+    std::array<char, 1024> buffer {};
     while (std::fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
         const std::string line = trim_copy(buffer.data());
         const std::string lower = to_lower_copy(line);
@@ -498,15 +498,15 @@ void try_add_linux_gpu_from_lspci(std::vector<HostGpuInfo>& gpus) {
         }
 
         HostGpuInfo gpu;
-        gpu.backend = std::string{"lspci"};
+        gpu.backend = std::string {"lspci"};
         if (lower.find("nvidia") != std::string::npos) {
-            gpu.vendor = std::string{"NVIDIA"};
+            gpu.vendor = std::string {"NVIDIA"};
         } else if (lower.find("amd") != std::string::npos ||
                    lower.find("advanced micro devices") != std::string::npos ||
                    lower.find("ati") != std::string::npos) {
-            gpu.vendor = std::string{"AMD"};
+            gpu.vendor = std::string {"AMD"};
         } else if (lower.find("intel") != std::string::npos) {
-            gpu.vendor = std::string{"Intel"};
+            gpu.vendor = std::string {"Intel"};
         }
         gpu.model = line;
         gpus.push_back(std::move(gpu));
@@ -520,15 +520,15 @@ void try_add_linux_gpu_from_nvidia_smi(std::vector<HostGpuInfo>& gpus) {
         return;
     }
 
-    std::array<char, 512> buffer{};
+    std::array<char, 512> buffer {};
     while (std::fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
         const std::string line = trim_copy(buffer.data());
         if (line.empty()) {
             continue;
         }
         HostGpuInfo gpu;
-        gpu.vendor = std::string{"NVIDIA"};
-        gpu.backend = std::string{"nvidia-smi"};
+        gpu.vendor = std::string {"NVIDIA"};
+        gpu.backend = std::string {"nvidia-smi"};
         const std::size_t comma = line.find(',');
         if (comma == std::string::npos) {
             gpu.model = line;
@@ -554,21 +554,21 @@ void fill_gpu_info(std::vector<HostGpuInfo>& gpus) {
     }
 
     HostGpuInfo current;
-    current.backend = std::string{"system_profiler"};
+    current.backend = std::string {"system_profiler"};
     bool hasCurrent = false;
-    std::array<char, 1024> buffer{};
+    std::array<char, 1024> buffer {};
     while (std::fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
         const std::string line = trim_copy(buffer.data());
         if (line.rfind("Chipset Model:", 0) == 0) {
             if (hasCurrent && current.model.has_value()) {
                 gpus.push_back(current);
             }
-            current = HostGpuInfo{};
-            current.backend = std::string{"system_profiler"};
-            current.model = optional_trimmed(line.substr(std::string{"Chipset Model:"}.size()));
+            current = HostGpuInfo {};
+            current.backend = std::string {"system_profiler"};
+            current.model = optional_trimmed(line.substr(std::string {"Chipset Model:"}.size()));
             hasCurrent = true;
         } else if (line.rfind("Vendor:", 0) == 0) {
-            current.vendor = optional_trimmed(line.substr(std::string{"Vendor:"}.size()));
+            current.vendor = optional_trimmed(line.substr(std::string {"Vendor:"}.size()));
         }
     }
     if (hasCurrent && current.model.has_value()) {

@@ -36,14 +36,14 @@ read_plugin_payload_files(const std::filesystem::path& scriptPath, const std::fi
     }
 
     return std::make_pair(script,
-                          std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{});
+                          std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string {});
 }
 
 std::optional<std::pair<std::string, std::string>> read_plugin_directory(const std::filesystem::path& directory,
                                                                          const std::string& pluginName) {
     if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(directory, pluginName);
         layout.has_value()) {
-        return std::make_pair(read_text_file(layout->runScriptPath), std::string{});
+        return std::make_pair(read_text_file(layout->runScriptPath), std::string {});
     }
     return read_plugin_payload_files(directory / (pluginName + ".lua"), directory / "bootstrap.lua");
 }
@@ -163,7 +163,7 @@ fetch_plugin_payload(const ReqPackConfig& config, const std::string& source, con
 
         const std::filesystem::path bootstrapPath = sourcePath.parent_path() / "bootstrap.lua";
         return std::make_pair(script,
-                              std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{});
+                              std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string {});
     }
 
     const std::optional<std::string> script = fetch_text(config, source);
@@ -171,7 +171,7 @@ fetch_plugin_payload(const ReqPackConfig& config, const std::string& source, con
         return std::nullopt;
     }
 
-    return std::make_pair(script.value(), std::string{});
+    return std::make_pair(script.value(), std::string {});
 }
 
 std::optional<RegistryRecord> refreshed_record_payload(const ReqPackConfig& config, RegistryRecord record,

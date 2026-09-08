@@ -16,40 +16,40 @@ enum class ExecRuleRunnerMode { Plain, Line, Pty };
 enum class ExecRuleActionType { Send, State, Log, Status, Progress, BeginStep, Success, Failed, Event, Artifact };
 
 struct ExecRuleAction {
-    ExecRuleActionType type{ExecRuleActionType::Log};
-    std::unordered_map<std::string, std::string> fields{};
+    ExecRuleActionType type {ExecRuleActionType::Log};
+    std::unordered_map<std::string, std::string> fields {};
 };
 
 struct ExecRule {
-    std::optional<std::string> state{};
-    ExecRuleSource source{ExecRuleSource::Line};
-    std::string regexText{};
-    std::regex regex{};
-    std::vector<ExecRuleAction> actions{};
-    bool repeat{true};
-    bool stop{false};
+    std::optional<std::string> state {};
+    ExecRuleSource source {ExecRuleSource::Line};
+    std::string regexText {};
+    std::regex regex {};
+    std::vector<ExecRuleAction> actions {};
+    bool repeat {true};
+    bool stop {false};
 };
 
 struct ExecRuleset {
-    std::string initialState{"default"};
-    std::vector<ExecRule> rules{};
-    bool requiresPty{false};
+    std::string initialState {"default"};
+    std::vector<ExecRule> rules {};
+    bool requiresPty {false};
 };
 
 struct ExecRuleRuntimeState {
-    std::string currentState{};
-    std::vector<bool> disabled{};
-    std::vector<std::size_t> screenCursor{};
+    std::string currentState {};
+    std::vector<bool> disabled {};
+    std::vector<std::size_t> screenCursor {};
 };
 
 struct ResolvedExecRuleAction {
-    ExecRuleActionType type{ExecRuleActionType::Log};
-    std::unordered_map<std::string, std::string> fields{};
+    ExecRuleActionType type {ExecRuleActionType::Log};
+    std::unordered_map<std::string, std::string> fields {};
 };
 
 struct ExecRuleEvaluationResult {
-    std::vector<ResolvedExecRuleAction> actions{};
-    bool stopTriggered{false};
+    std::vector<ResolvedExecRuleAction> actions {};
+    bool stopTriggered {false};
 };
 
 ExecRuleset parse_exec_rules(const sol::object& rulesObject);

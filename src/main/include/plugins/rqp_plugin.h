@@ -55,10 +55,10 @@ class RqpPlugin final : public IPlugin {
         std::string path;
     };
 
-    ReqPackConfig config_{};
-    std::vector<PluginEventRecord> recentEvents_{};
-    std::vector<std::string> recentArtifacts_{};
-    mutable std::vector<ManifestEntry> pendingManifest_{};
+    ReqPackConfig config_ {};
+    std::vector<PluginEventRecord> recentEvents_ {};
+    std::vector<std::string> recentArtifacts_ {};
+    mutable std::vector<ManifestEntry> pendingManifest_ {};
     bool persistInstalledState(const RqPackageLayout& layout, const std::string& sourceType,
                                const std::string& sourceValue, const std::string& repository = {},
                                const std::string& requestName = {}) const;
@@ -83,5 +83,5 @@ class RqpPlugin final : public IPlugin {
     static std::string sha256Hex(const std::string& bytes);
     static std::filesystem::path localPathForUrl(const std::string& url);
     static std::filesystem::path downloadPackageArtifact(const PluginCallContext& context, const std::string& url);
-    bool initialized_{false};
+    bool initialized_ {false};
 };

@@ -10,7 +10,7 @@
 namespace {
 
 struct ShellCommandInspection {
-    bool requestsPrivilege{false};
+    bool requestsPrivilege {false};
     std::vector<std::string> writeTargets;
 };
 
@@ -316,7 +316,7 @@ bool write_scope_allows_path(const PluginWriteScope& scope, const std::filesyste
     }
 
     if (kind == "system-package-paths") {
-        static const std::array<std::filesystem::path, 6> bases{
+        static const std::array<std::filesystem::path, 6> bases {
             std::filesystem::path("/usr"), std::filesystem::path("/usr/local"), std::filesystem::path("/opt"),
             std::filesystem::path("/etc"), std::filesystem::path("/var/lib"),   std::filesystem::path("/var/cache"),
         };

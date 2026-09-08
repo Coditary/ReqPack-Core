@@ -18,7 +18,7 @@ class Executer {
     struct TransactionRecord {
         std::string runId;
         std::string system;
-        ActionType action{ActionType::UNKNOWN};
+        ActionType action {ActionType::UNKNOWN};
         std::string packageName;
         std::string packageVersion;
         std::string status;
@@ -26,14 +26,14 @@ class Executer {
     };
 
     struct TaskGroup {
-        ActionType action{ActionType::UNKNOWN};
+        ActionType action {ActionType::UNKNOWN};
         std::string system;
         std::vector<Package> packages;
         std::vector<std::string> flags;
         std::string localPath;
-        bool usesLocalTarget{false};
-        IPlugin* plugin{nullptr};
-        bool pluginLoadFailed{false};
+        bool usesLocalTarget {false};
+        IPlugin* plugin {nullptr};
+        bool pluginLoadFailed {false};
         // Non-nix systems that originally depended on this nix group (Windows soft-skip consumers).
         std::vector<std::string> nixSoftSkipConsumers;
     };
@@ -41,7 +41,7 @@ class Executer {
     struct TaskGroupPlan {
         TaskGroup taskGroup;
         std::vector<std::size_t> successors;
-        std::size_t pendingDependencies{0};
+        std::size_t pendingDependencies {0};
     };
 
     Registry* registry;
@@ -49,8 +49,8 @@ class Executer {
     std::unique_ptr<TransactionDatabase> transactionDatabase;
     std::unique_ptr<HistoryManager> historyManager;
     mutable std::string activeRunId;
-    mutable int requestedItemCount{0};
-    mutable bool inputAlreadyFiltered{false};
+    mutable int requestedItemCount {0};
+    mutable bool inputAlreadyFiltered {false};
 
     void startTransactionDb() const;
     bool canWriteToVirtualFileSystem() const;

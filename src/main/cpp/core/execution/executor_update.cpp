@@ -25,8 +25,8 @@ struct ParallelUpdateState {
     std::vector<bool> started;
     std::vector<bool> completed;
     std::vector<bool> failed;
-    bool stopLaunching{false};
-    std::size_t runningWorkers{0};
+    bool stopLaunching {false};
+    std::size_t runningWorkers {0};
 };
 
 } // namespace
@@ -43,7 +43,7 @@ std::vector<bool> Executer::updateSystems(const std::vector<Request>& requests) 
     }
 
     struct UpdateTask {
-        std::size_t requestIndex{0};
+        std::size_t requestIndex {0};
         TaskGroup taskGroup;
     };
 
@@ -64,12 +64,12 @@ std::vector<bool> Executer::updateSystems(const std::vector<Request>& requests) 
             continue;
         }
 
-        updateTasks.push_back(UpdateTask{.requestIndex = index,
-                                         .taskGroup = TaskGroup{
-                                             .action = ActionType::UPDATE,
-                                             .system = resolvedRequest->system,
-                                             .flags = resolvedRequest->flags,
-                                         }});
+        updateTasks.push_back(UpdateTask {.requestIndex = index,
+                                          .taskGroup = TaskGroup {
+                                              .action = ActionType::UPDATE,
+                                              .system = resolvedRequest->system,
+                                              .flags = resolvedRequest->flags,
+                                          }});
     }
 
     if (updateTasks.empty()) {

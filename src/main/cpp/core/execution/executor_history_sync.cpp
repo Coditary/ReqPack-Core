@@ -95,7 +95,7 @@ void Executer::reconcileInstalledOwnership(const std::vector<TaskGroup>& allTask
                 }
             }
         }
-        ownerIds.erase(std::remove(ownerIds.begin(), ownerIds.end(), std::string{}), ownerIds.end());
+        ownerIds.erase(std::remove(ownerIds.begin(), ownerIds.end(), std::string {}), ownerIds.end());
         std::sort(ownerIds.begin(), ownerIds.end());
         ownerIds.erase(std::unique(ownerIds.begin(), ownerIds.end()), ownerIds.end());
         if (!ownerIds.empty()) {
@@ -103,7 +103,7 @@ void Executer::reconcileInstalledOwnership(const std::vector<TaskGroup>& allTask
         }
 
         for (Package dependency : this->normalizedRequirements(package)) {
-            const std::vector<std::string> dependencyOwners{installed_package_owner_id(package)};
+            const std::vector<std::string> dependencyOwners {installed_package_owner_id(package)};
             (void)this->historyManager->mergeInstalledOwnership(dependency, dependencyOwners, false);
         }
     };
@@ -142,14 +142,14 @@ void Executer::subtractDependencyOwnership(const std::vector<TransactionRecord>&
             continue;
         }
 
-        Package removedPackage{
+        Package removedPackage {
             .action = record.action,
             .system = record.system,
             .name = record.packageName,
             .version = record.packageVersion,
         };
         for (Package dependency : this->normalizedRequirements(removedPackage)) {
-            const std::vector<std::string> dependencyOwners{installed_package_owner_id(removedPackage)};
+            const std::vector<std::string> dependencyOwners {installed_package_owner_id(removedPackage)};
             (void)this->historyManager->subtractInstalledOwnership(dependency, dependencyOwners);
         }
     }
@@ -189,7 +189,7 @@ Executer::removeOrphanedDependencies(const std::vector<InstalledEntry>& installe
             continue;
         }
 
-        Package removedPackage{
+        Package removedPackage {
             .action = record.action,
             .system = record.system,
             .name = record.packageName,
@@ -224,7 +224,7 @@ Executer::removeOrphanedDependencies(const std::vector<InstalledEntry>& installe
 
     std::vector<TransactionRecord> orphanRecords;
     for (const auto& [system, packages] : packagesBySystem) {
-        TaskGroup taskGroup{.action = ActionType::REMOVE, .system = system, .packages = packages};
+        TaskGroup taskGroup {.action = ActionType::REMOVE, .system = system, .packages = packages};
         std::vector<TransactionRecord> batchRecords = this->executeTaskGroup(taskGroup, {});
         orphanRecords.insert(orphanRecords.end(), batchRecords.begin(), batchRecords.end());
     }
@@ -254,7 +254,7 @@ bool Executer::syncInstalledStateForSystem(const std::string& system, const bool
         return false;
     }
 
-    TaskGroup taskGroup{.action = ActionType::LIST, .system = system};
+    TaskGroup taskGroup {.action = ActionType::LIST, .system = system};
     taskGroup.flags = {INTERNAL_SILENT_RUNTIME_FLAG};
     const std::vector<PackageInfo> installedPackages = plugin->list(this->buildPluginContext(plugin, taskGroup));
 
@@ -264,7 +264,7 @@ bool Executer::syncInstalledStateForSystem(const std::string& system, const bool
         if (item.name.empty()) {
             continue;
         }
-        entries.push_back(InstalledEntry{
+        entries.push_back(InstalledEntry {
             .name = item.name,
             .version = item.version,
             .system = system,

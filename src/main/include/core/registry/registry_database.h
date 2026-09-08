@@ -13,7 +13,7 @@
 struct RegistryRecord {
     std::string name;
     std::string source;
-    bool alias{false};
+    bool alias {false};
     std::string originPath;
     std::string description;
     std::string role;
@@ -28,17 +28,17 @@ struct RegistryRecord {
     std::string script;
     std::string bootstrapScript;
     std::string bundlePath;
-    bool bundleSource{false};
+    bool bundleSource {false};
 };
 
 class RegistryDatabase {
     ReqPackConfig config;
     mutable std::mutex mutex;
-    mutable MDB_env* env{nullptr};
-    mutable MDB_dbi dbi{0};
-    mutable MDB_dbi metaDbi{0};
-    mutable bool initialized{false};
-    mutable bool bootstrapped{false};
+    mutable MDB_env* env {nullptr};
+    mutable MDB_dbi dbi {0};
+    mutable MDB_dbi metaDbi {0};
+    mutable bool initialized {false};
+    mutable bool bootstrapped {false};
 
   public:
     RegistryDatabase(const ReqPackConfig& config = default_reqpack_config());

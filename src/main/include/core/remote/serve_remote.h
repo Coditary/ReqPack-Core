@@ -14,18 +14,18 @@
 enum class ServeRemoteProtocol { TEXT, JSON, HTTP, HTTPS };
 
 struct ServeRuntimeOptions {
-    bool useStdin{false};
-    bool remote{false};
-    ServeRemoteProtocol remoteProtocol{ServeRemoteProtocol::TEXT};
-    std::string bind{"127.0.0.1"};
-    int port{4545};
+    bool useStdin {false};
+    bool remote {false};
+    ServeRemoteProtocol remoteProtocol {ServeRemoteProtocol::TEXT};
+    std::string bind {"127.0.0.1"};
+    int port {4545};
     std::optional<std::string> token;
     std::optional<std::string> username;
     std::optional<std::string> password;
-    bool readonly{false};
-    bool readonlyExplicit{false};
-    int maxConnections{16};
-    bool maxConnectionsExplicit{false};
+    bool readonly {false};
+    bool readonlyExplicit {false};
+    int maxConnections {16};
+    bool maxConnectionsExplicit {false};
     std::vector<std::string> inheritedArguments;
 };
 

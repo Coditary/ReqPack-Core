@@ -133,7 +133,7 @@ ReqPackConfig make_plugin_flow_config(const TempDir& tempDir, const std::filesys
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
     config.registry.autoLoadPlugins = true;
     config.registry.shutDownPluginsOnExit = true;
-    config.registry.sources["pip"] = RegistrySourceEntry{
+    config.registry.sources["pip"] = RegistrySourceEntry {
         .source = "git+" + pipRepoPath.string(),
         .alias = false,
         .description = "pip plugin",
@@ -148,7 +148,7 @@ ReqPackConfig make_plugin_flow_config(const TempDir& tempDir, const std::filesys
 } // namespace
 
 TEST_CASE("orchestrator install plugin wrapper succeeds in-process", "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-install-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-install-in-process"};
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     init_git_repository(pipRepoPath);
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
@@ -158,13 +158,13 @@ TEST_CASE("orchestrator install plugin wrapper succeeds in-process", "[integrati
     const std::filesystem::path pluginDirectory = config.registry.pluginDirectory;
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
 
-    Orchestrator orchestrator({Request{.action = ActionType::INSTALL, .system = "pip"}}, config);
+    Orchestrator orchestrator({Request {.action = ActionType::INSTALL, .system = "pip"}}, config);
     REQUIRE(orchestrator.run() == 0);
     REQUIRE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
 }
 
 TEST_CASE("orchestrator remove plugin wrapper succeeds in-process", "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-remove-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-remove-in-process"};
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     init_git_repository(pipRepoPath);
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
@@ -179,25 +179,25 @@ TEST_CASE("orchestrator remove plugin wrapper succeeds in-process", "[integratio
         REQUIRE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
     }
 
-    Orchestrator orchestrator({Request{.action = ActionType::REMOVE, .system = "pip"}}, config);
+    Orchestrator orchestrator({Request {.action = ActionType::REMOVE, .system = "pip"}}, config);
     REQUIRE(orchestrator.run() == 0);
     CHECK_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
 }
 
 TEST_CASE("orchestrator remove missing plugin wrapper fails in-process", "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-remove-missing-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-remove-missing-in-process"};
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     init_git_repository(pipRepoPath);
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
 
     const ReqPackConfig config = make_plugin_flow_config(tempDir, pipRepoPath);
-    Orchestrator orchestrator({Request{.action = ActionType::REMOVE, .system = "pip"}}, config);
+    Orchestrator orchestrator({Request {.action = ActionType::REMOVE, .system = "pip"}}, config);
     CHECK(orchestrator.run() != 0);
 }
 
 TEST_CASE("orchestrator update all expand refreshes git registry plugins in-process",
           "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-update-all-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-update-all-in-process"};
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     init_git_repository(remoteRegistry);
@@ -205,16 +205,16 @@ TEST_CASE("orchestrator update all expand refreshes git registry plugins in-proc
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
     commit_plugin_source_version(pipRepoPath, "pip", "v2", "1.2.0", "v1.2.0");
 
-    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{"{\n"
-                                                                           "  \"schemaVersion\": 1,\n"
-                                                                           "  \"name\": \"pip\",\n"
-                                                                           "  \"source\": \"git+" +
-                                                                           pipRepoPath.string() +
-                                                                           "\",\n"
-                                                                           "  \"description\": \"pip plugin\",\n"
-                                                                           "  \"role\": \"package-manager\",\n"
-                                                                           "  \"privilegeLevel\": \"none\"\n"
-                                                                           "}\n"});
+    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string {"{\n"
+                                                                            "  \"schemaVersion\": 1,\n"
+                                                                            "  \"name\": \"pip\",\n"
+                                                                            "  \"source\": \"git+" +
+                                                                            pipRepoPath.string() +
+                                                                            "\",\n"
+                                                                            "  \"description\": \"pip plugin\",\n"
+                                                                            "  \"role\": \"package-manager\",\n"
+                                                                            "  \"privilegeLevel\": \"none\"\n"
+                                                                            "}\n"});
     commit_all_git_repository(remoteRegistry, "initial");
 
     ReqPackConfig config = default_reqpack_config();
@@ -238,7 +238,7 @@ TEST_CASE("orchestrator update all expand refreshes git registry plugins in-proc
 }
 
 TEST_CASE("orchestrator install unknown plugin wrapper fails in-process", "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-install-missing-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-install-missing-in-process"};
     ReqPackConfig config = default_reqpack_config();
     config.registry.remoteUrl.clear();
     config.registry.pluginDirectory = (tempDir.path() / "plugins").string();
@@ -246,12 +246,12 @@ TEST_CASE("orchestrator install unknown plugin wrapper fails in-process", "[inte
     config.registry.autoLoadPlugins = true;
     config.interaction.interactive = false;
 
-    Orchestrator orchestrator({Request{.action = ActionType::INSTALL, .system = "missing-plugin"}}, config);
+    Orchestrator orchestrator({Request {.action = ActionType::INSTALL, .system = "missing-plugin"}}, config);
     CHECK(orchestrator.run() != 0);
 }
 
 TEST_CASE("orchestrator plugin wrapper refresh succeeds in-process", "[integration][orchestrator][plugin-flow]") {
-    TempDir tempDir{"reqpack-orchestrator-plugin-refresh-in-process"};
+    TempDir tempDir {"reqpack-orchestrator-plugin-refresh-in-process"};
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
     init_git_repository(pipRepoPath);
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");

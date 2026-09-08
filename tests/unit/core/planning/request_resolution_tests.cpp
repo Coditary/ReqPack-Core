@@ -120,14 +120,14 @@ function plugin.shutdown() return true end
 
 TEST_CASE("request resolution returns request unchanged when proxy expansion is disabled",
           "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-disabled"};
+    TempDir tempDir {"reqpack-request-resolution-disabled"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.enableProxyExpansion = false;
 
     Registry registry(config);
     RequestResolutionService service(&registry, config);
 
-    const Request request{
+    const Request request {
         .action = ActionType::INSTALL,
         .system = "proxy",
         .packages = {"alpha"},
@@ -136,17 +136,17 @@ TEST_CASE("request resolution returns request unchanged when proxy expansion is 
     const std::optional<Request> resolved = service.resolveRequest(request);
     REQUIRE(resolved.has_value());
     CHECK(resolved->system == "proxy");
-    CHECK(resolved->packages == std::vector<std::string>{"alpha"});
+    CHECK(resolved->packages == std::vector<std::string> {"alpha"});
 }
 
 TEST_CASE("request resolution returns request unchanged when system is empty", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-empty-system"};
+    TempDir tempDir {"reqpack-request-resolution-empty-system"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
 
     Registry registry(config);
     RequestResolutionService service(&registry, config);
 
-    const Request request{
+    const Request request {
         .action = ActionType::INSTALL,
         .packages = {"alpha"},
     };
@@ -154,11 +154,11 @@ TEST_CASE("request resolution returns request unchanged when system is empty", "
     const std::optional<Request> resolved = service.resolveRequest(request);
     REQUIRE(resolved.has_value());
     CHECK(resolved->system.empty());
-    CHECK(resolved->packages == std::vector<std::string>{"alpha"});
+    CHECK(resolved->packages == std::vector<std::string> {"alpha"});
 }
 
 TEST_CASE("request resolution resolves configured system aliases through registry", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-alias"};
+    TempDir tempDir {"reqpack-request-resolution-alias"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.systemAliases["lookup"] = "target";
 
@@ -168,7 +168,7 @@ TEST_CASE("request resolution resolves configured system aliases through registr
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{
+    const Request request {
         .action = ActionType::INSTALL,
         .system = "lookup",
         .packages = {"alpha"},
@@ -177,11 +177,11 @@ TEST_CASE("request resolution resolves configured system aliases through registr
     const std::optional<Request> resolved = service.resolveRequest(request);
     REQUIRE(resolved.has_value());
     CHECK(resolved->system == "target");
-    CHECK(resolved->packages == std::vector<std::string>{"alpha"});
+    CHECK(resolved->packages == std::vector<std::string> {"alpha"});
 }
 
 TEST_CASE("request resolution expands proxy plugin into target system", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-proxy"};
+    TempDir tempDir {"reqpack-request-resolution-proxy"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["proxy"].defaultTarget = "target";
     config.planner.proxies["proxy"].targets = {"target"};
@@ -193,7 +193,7 @@ TEST_CASE("request resolution expands proxy plugin into target system", "[unit][
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{
+    const Request request {
         .action = ActionType::SEARCH,
         .system = "proxy",
         .packages = {"alpha", "beta"},
@@ -202,12 +202,12 @@ TEST_CASE("request resolution expands proxy plugin into target system", "[unit][
     const std::optional<Request> resolved = service.resolveRequest(request);
     REQUIRE(resolved.has_value());
     CHECK(resolved->system == "target");
-    CHECK(resolved->packages == std::vector<std::string>{"alpha", "beta"});
-    CHECK(resolved->flags == std::vector<std::string>{"--proxied"});
+    CHECK(resolved->packages == std::vector<std::string> {"alpha", "beta"});
+    CHECK(resolved->flags == std::vector<std::string> {"--proxied"});
 }
 
 TEST_CASE("request resolution reports cycle when proxy resolves to itself", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-cycle"};
+    TempDir tempDir {"reqpack-request-resolution-cycle"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["loop"].defaultTarget = "loop";
     config.planner.proxies["loop"].targets = {"loop"};
@@ -239,7 +239,7 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{
+    const Request request {
         .action = ActionType::INSTALL,
         .system = "loop",
         .packages = {"alpha"},
@@ -252,7 +252,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("request resolution resolves multiple requests and stops on first failure", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-batch"};
+    TempDir tempDir {"reqpack-request-resolution-batch"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["loop"].defaultTarget = "loop";
     config.planner.proxies["loop"].targets = {"loop"};
@@ -285,9 +285,9 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const std::vector<Request> requests{
-        Request{.action = ActionType::INSTALL, .system = "target", .packages = {"ok"}},
-        Request{.action = ActionType::INSTALL, .system = "loop", .packages = {"fail"}},
+    const std::vector<Request> requests {
+        Request {.action = ActionType::INSTALL, .system = "target", .packages = {"ok"}},
+        Request {.action = ActionType::INSTALL, .system = "loop", .packages = {"fail"}},
     };
 
     std::string errorMessage;
@@ -297,7 +297,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("request resolution resolves successful request batches", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-batch-success"};
+    TempDir tempDir {"reqpack-request-resolution-batch-success"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.systemAliases["lookup"] = "target";
 
@@ -307,21 +307,21 @@ TEST_CASE("request resolution resolves successful request batches", "[unit][requ
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const std::vector<Request> requests{
-        Request{.action = ActionType::INSTALL, .system = "lookup", .packages = {"alpha"}},
-        Request{.action = ActionType::SEARCH, .system = "target", .packages = {"beta"}},
+    const std::vector<Request> requests {
+        Request {.action = ActionType::INSTALL, .system = "lookup", .packages = {"alpha"}},
+        Request {.action = ActionType::SEARCH, .system = "target", .packages = {"beta"}},
     };
 
     const std::optional<std::vector<Request>> resolved = service.resolveRequests(requests);
     REQUIRE(resolved.has_value());
     REQUIRE(resolved->size() == 2);
     CHECK(resolved->at(0).system == "target");
-    CHECK(resolved->at(0).packages == std::vector<std::string>{"alpha"});
+    CHECK(resolved->at(0).packages == std::vector<std::string> {"alpha"});
     CHECK(resolved->at(1).system == "target");
 }
 
 TEST_CASE("request resolution rejects proxy resolving to unknown target", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-unknown-target"};
+    TempDir tempDir {"reqpack-request-resolution-unknown-target"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["proxy"].defaultTarget = "target";
     config.planner.proxies["proxy"].targets = {"target"};
@@ -354,7 +354,7 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{.action = ActionType::INSTALL, .system = "proxy", .packages = {"alpha"}};
+    const Request request {.action = ActionType::INSTALL, .system = "proxy", .packages = {"alpha"}};
     std::string errorMessage;
     const std::optional<Request> resolved = service.resolveRequest(request, &errorMessage);
     CHECK_FALSE(resolved.has_value());
@@ -362,7 +362,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("request resolution rejects proxy returning packages and localPath", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-conflict"};
+    TempDir tempDir {"reqpack-request-resolution-conflict"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["proxy"].defaultTarget = "target";
     config.planner.proxies["proxy"].targets = {"target"};
@@ -395,7 +395,7 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{.action = ActionType::INSTALL, .system = "proxy", .packages = {"alpha"}};
+    const Request request {.action = ActionType::INSTALL, .system = "proxy", .packages = {"alpha"}};
     std::string errorMessage;
     const std::optional<Request> resolved = service.resolveRequest(request, &errorMessage);
     CHECK_FALSE(resolved.has_value());
@@ -403,7 +403,7 @@ function plugin.shutdown() return true end
 }
 
 TEST_CASE("request resolution rejects excessive proxy depth", "[unit][request_resolution]") {
-    TempDir tempDir{"reqpack-request-resolution-depth"};
+    TempDir tempDir {"reqpack-request-resolution-depth"};
     ReqPackConfig config = make_resolution_test_config(tempDir.path());
     config.planner.proxies["hop1"].defaultTarget = "hop2";
     config.planner.proxies["hop1"].targets = {"hop2"};
@@ -449,7 +449,7 @@ function plugin.shutdown() return true end
     registry.scanDirectory(config.registry.pluginDirectory);
     RequestResolutionService service(&registry, config);
 
-    const Request request{.action = ActionType::INSTALL, .system = "hop1", .packages = {"alpha"}};
+    const Request request {.action = ActionType::INSTALL, .system = "hop1", .packages = {"alpha"}};
     std::string errorMessage;
     const std::optional<Request> resolved = service.resolveRequest(request, &errorMessage);
     CHECK_FALSE(resolved.has_value());
