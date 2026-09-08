@@ -349,6 +349,7 @@ if(REQPACK_CORE_BUILD_TESTS)
     target_include_directories(reqpack_core_unit_tests PRIVATE
         BEFORE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+        ${SOL2_INCLUDE_DIR}
         tests/cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/plugins
     )
@@ -383,6 +384,7 @@ if(REQPACK_CORE_BUILD_TESTS)
     target_include_directories(reqpack_core_integration_tests PRIVATE
         BEFORE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+        ${SOL2_INCLUDE_DIR}
         tests/cpp
     )
 
