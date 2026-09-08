@@ -10,6 +10,11 @@
 
 namespace {
 
+template <typename Class, typename Member> auto lua_member(Member Class::* member) {
+    return sol::property([member](const Class& object) { return object.*member; },
+                         [member](Class& object, Member value) { object.*member = std::move(value); });
+}
+
 sol::table make_string_array_table(sol::state& lua, const std::vector<std::string>& values) {
     sol::table table = lua.create_table(static_cast<int>(values.size()), 0);
     for (std::size_t index = 0; index < values.size(); ++index) {
@@ -190,35 +195,43 @@ void LuaBridgeBindings::registerBuiltinTypes() {
         "Package", sol::constructors<Package()>(), "action",
         sol::property([](const Package& package) { return static_cast<int>(package.action); },
                       [](Package& package, int action) { package.action = static_cast<ActionType>(action); }),
-        "system", &Package::system, "name", &Package::name, "version", &Package::version, "sourcePath",
-        &Package::sourcePath, "localTarget", &Package::localTarget, "flags", &Package::flags);
+        "system", lua_member(&Package::system), "name", lua_member(&Package::name), "version",
+        lua_member(&Package::version), "sourcePath", lua_member(&Package::sourcePath), "localTarget",
+        lua_member(&Package::localTarget), "flags", lua_member(&Package::flags));
 
     lua.new_usertype<Request>(
         "Request", sol::constructors<Request()>(), "action",
         sol::property([](const Request& request) { return static_cast<int>(request.action); },
                       [](Request& request, int action) { request.action = static_cast<ActionType>(action); }),
-        "system", &Request::system, "packages", &Request::packages, "flags", &Request::flags, "outputFormat",
-        &Request::outputFormat, "outputPath", &Request::outputPath, "localPath", &Request::localPath, "usesLocalTarget",
-        &Request::usesLocalTarget);
+        "system", lua_member(&Request::system), "packages", lua_member(&Request::packages), "flags",
+        lua_member(&Request::flags), "outputFormat", lua_member(&Request::outputFormat), "outputPath",
+        lua_member(&Request::outputPath), "localPath", lua_member(&Request::localPath), "usesLocalTarget",
+        lua_member(&Request::usesLocalTarget));
 
     lua.new_usertype<PackageInfo>(
-        "PackageInfo", sol::constructors<PackageInfo()>(), "system", &PackageInfo::system, "name", &PackageInfo::name,
-        "packageId", &PackageInfo::packageId, "version", &PackageInfo::version, "latestVersion",
-        &PackageInfo::latestVersion, "status", &PackageInfo::status, "installed", &PackageInfo::installed, "summary",
-        &PackageInfo::summary, "description", &PackageInfo::description, "homepage", &PackageInfo::homepage,
-        "documentation", &PackageInfo::documentation, "sourceUrl", &PackageInfo::sourceUrl, "repository",
-        &PackageInfo::repository, "channel", &PackageInfo::channel, "section", &PackageInfo::section, "packageType",
-        &PackageInfo::packageType, "type", &PackageInfo::packageType, "architecture", &PackageInfo::architecture,
-        "targetSystems", &PackageInfo::targetSystems, "license", &PackageInfo::license, "author", &PackageInfo::author,
-        "maintainer", &PackageInfo::maintainer, "email", &PackageInfo::email, "publishedAt", &PackageInfo::publishedAt,
-        "updatedAt", &PackageInfo::updatedAt, "size", &PackageInfo::size, "installedSize", &PackageInfo::installedSize,
-        "dependencies", &PackageInfo::dependencies, "optionalDependencies", &PackageInfo::optionalDependencies,
-        "provides", &PackageInfo::provides, "conflicts", &PackageInfo::conflicts, "replaces", &PackageInfo::replaces,
-        "binaries", &PackageInfo::binaries, "tags", &PackageInfo::tags);
+        "PackageInfo", sol::constructors<PackageInfo()>(), "system", lua_member(&PackageInfo::system), "name",
+        lua_member(&PackageInfo::name), "packageId", lua_member(&PackageInfo::packageId), "version",
+        lua_member(&PackageInfo::version), "latestVersion", lua_member(&PackageInfo::latestVersion), "status",
+        lua_member(&PackageInfo::status), "installed", lua_member(&PackageInfo::installed), "summary",
+        lua_member(&PackageInfo::summary), "description", lua_member(&PackageInfo::description), "homepage",
+        lua_member(&PackageInfo::homepage), "documentation", lua_member(&PackageInfo::documentation), "sourceUrl",
+        lua_member(&PackageInfo::sourceUrl), "repository", lua_member(&PackageInfo::repository), "channel",
+        lua_member(&PackageInfo::channel), "section", lua_member(&PackageInfo::section), "packageType",
+        lua_member(&PackageInfo::packageType), "type", lua_member(&PackageInfo::packageType), "architecture",
+        lua_member(&PackageInfo::architecture), "targetSystems", lua_member(&PackageInfo::targetSystems), "license",
+        lua_member(&PackageInfo::license), "author", lua_member(&PackageInfo::author), "maintainer",
+        lua_member(&PackageInfo::maintainer), "email", lua_member(&PackageInfo::email), "publishedAt",
+        lua_member(&PackageInfo::publishedAt), "updatedAt", lua_member(&PackageInfo::updatedAt), "size",
+        lua_member(&PackageInfo::size), "installedSize", lua_member(&PackageInfo::installedSize), "dependencies",
+        lua_member(&PackageInfo::dependencies), "optionalDependencies", lua_member(&PackageInfo::optionalDependencies),
+        "provides", lua_member(&PackageInfo::provides), "conflicts", lua_member(&PackageInfo::conflicts), "replaces",
+        lua_member(&PackageInfo::replaces), "binaries", lua_member(&PackageInfo::binaries), "tags",
+        lua_member(&PackageInfo::tags));
 
-    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
-                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
-                                 &ExecResult::stderrText);
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success",
+                                 lua_member(&ExecResult::success), "exitCode", lua_member(&ExecResult::exitCode),
+                                 "stdout", lua_member(&ExecResult::stdoutText), "stderr",
+                                 lua_member(&ExecResult::stderrText));
 }
 
 void LuaBridgeBindings::registerContextTypes() {
