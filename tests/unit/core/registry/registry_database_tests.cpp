@@ -242,21 +242,21 @@ TEST_CASE("registry database deserializer rejects bad payload shapes", "[unit][r
                            "plugin.lua\nalias=0\ndescription=x\nbundleSource=0\nbundlePath=\nbootstrap=\nreturn {}")
                     .has_value());
 
-    CHECK_FALSE(
-        registry_database_deserialize_record(
-            "dnf", "source=https://example.test/"
-                   "plugin.lua\nalias=maybe\ndescription=x\nbundleSource=0\nbundlePath=\nbootstrap=\n---\nreturn {}")
-            .has_value());
+    CHECK_FALSE(registry_database_deserialize_record(
+                    "dnf",
+                    "source=https://example.test/"
+                    "plugin.lua\nalias=maybe\ndescription=x\nbundleSource=0\nbundlePath=\nbootstrap=\n---\nreturn {}")
+                    .has_value());
 
     CHECK_FALSE(registry_database_deserialize_record(
                     "dnf", "source=\nalias=0\ndescription=x\nbundleSource=0\nbundlePath=\nbootstrap=\n---\nreturn {}")
                     .has_value());
 
-    CHECK_FALSE(
-        registry_database_deserialize_record("dnf", "source=https://example.test/"
-                                                    "plugin.lua\nalias=0\ndescription=x\nbundleSource=0\nbundlePath="
-                                                    "\nbootstrap=\n---\n<!DOCTYPE html><html></html>")
-            .has_value());
+    CHECK_FALSE(registry_database_deserialize_record("dnf",
+                                                     "source=https://example.test/"
+                                                     "plugin.lua\nalias=0\ndescription=x\nbundleSource=0\nbundlePath="
+                                                     "\nbootstrap=\n---\n<!DOCTYPE html><html></html>")
+                    .has_value());
 }
 
 TEST_CASE("registry database alias records may omit script payload", "[unit][registry_database][serialization]") {

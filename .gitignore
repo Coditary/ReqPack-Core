@@ -6,3 +6,5 @@ crash-*
 leak-*
 timeout-*
 slow-unit-*
+# libFuzzer discovered corpus entries (seed files stay tracked)
+tests/fuzz/corpus/**/[0-9a-f][0-9a-f]*

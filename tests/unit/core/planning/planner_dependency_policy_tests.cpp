@@ -333,7 +333,7 @@ TEST_CASE("planner topologically sorts graph when configured", "[unit][planner_d
 TEST_CASE("planner passes security gateway systems through install filtering", "[unit][planner_dependency]") {
     TempDir tempDir{"reqpack-planner-gateway"};
     ReqPackConfig config = make_planner_config(tempDir.path());
-    config.security.gateways["snyk"] = {"osv"};
+    config.security.gateways["snyk"] = SecurityGatewayConfig{.enabled = true, .backends = {"osv"}};
 
     Registry registry(config);
     Planner planner(&registry, registry.getDatabase(), config);

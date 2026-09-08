@@ -112,10 +112,10 @@ TEST_CASE("transaction database item deserializer rejects malformed numeric and 
 
 TEST_CASE("transaction database item deserializer rejects malformed key and missing required fields",
           "[unit][transaction_database][serialization]") {
-    CHECK_FALSE(
-        transaction_database_deserialize_item("broken-key", "sequence=0\naction=1\nsystem=dnf\nname=git\nversion="
-                                                            "\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n")
-            .has_value());
+    CHECK_FALSE(transaction_database_deserialize_item("broken-key",
+                                                      "sequence=0\naction=1\nsystem=dnf\nname=git\nversion="
+                                                      "\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n")
+                    .has_value());
 
     CHECK_FALSE(transaction_database_deserialize_item(
                     "item:run-1:item-1",

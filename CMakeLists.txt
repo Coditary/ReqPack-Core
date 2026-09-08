@@ -449,7 +449,8 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_FLAGS})
         target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_FLAGS})
 
-        set(corpus_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests/fuzz/corpus/${fuzzer%_fuzzer})
+        string(REPLACE "_fuzzer" "" fuzzer_corpus_name ${fuzzer})
+        set(corpus_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests/fuzz/corpus/${fuzzer_corpus_name})
         if(EXISTS ${corpus_dir})
             add_test(
                 NAME core_fuzz_${fuzzer}
