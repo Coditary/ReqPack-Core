@@ -17,10 +17,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -33,12 +33,12 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class StaticMetadataProvider final : public PluginMetadataProvider {
-public:
+  public:
     std::map<std::string, PluginSecurityMetadata> metadata;
 
     std::optional<PluginSecurityMetadata> getPluginSecurityMetadata(const std::string& name) override {
@@ -68,28 +68,28 @@ std::string read_file(const std::filesystem::path& path) {
 
 Graph make_graph() {
     Graph graph;
-    const auto react = boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
-    const auto scheduler = boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
+    const auto react = boost::add_vertex(
+        Package{.action = ActionType::AUDIT, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
+    const auto scheduler = boost::add_vertex(
+        Package{.action = ActionType::AUDIT, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
     boost::add_edge(scheduler, react, graph);
     return graph;
 }
 
 std::vector<ValidationFinding> make_findings() {
-    return {
-        ValidationFinding{
-            .id = "CVE-2026-1234",
-            .kind = "vulnerability",
-            .package = Package{.action = ActionType::AUDIT, .system = "npm", .name = "react", .version = "18.3.1"},
-            .source = "osv",
-            .severity = "high",
-            .score = 8.8,
-            .message = "react issue",
-        }
-    };
+    return {ValidationFinding{
+        .id = "CVE-2026-1234",
+        .kind = "vulnerability",
+        .package = Package{.action = ActionType::AUDIT, .system = "npm", .name = "react", .version = "18.3.1"},
+        .source = "osv",
+        .severity = "high",
+        .score = 8.8,
+        .message = "react issue",
+    }};
 }
 
 class RecordingDisplay final : public IDisplay {
-public:
+  public:
     void onSessionBegin(DisplayMode, const std::vector<std::string>&) override {}
     void onSessionEnd(bool, int, int, int) override {}
     void onItemBegin(const std::string&, const std::string&) override {}
@@ -111,9 +111,8 @@ public:
 };
 
 class ScopedLoggerDisplay {
-public:
-    explicit ScopedLoggerDisplay(IDisplay* display)
-        : logger_(Logger::instance()) {
+  public:
+    explicit ScopedLoggerDisplay(IDisplay* display) : logger_(Logger::instance()) {
         logger_.flushSync();
         logger_.setDisplay(display);
     }
@@ -124,11 +123,11 @@ public:
         logger_.flushSync();
     }
 
-private:
+  private:
     Logger& logger_;
 };
 
-}  // namespace
+} // namespace
 
 TEST_CASE("audit exporter renders default table output", "[unit][audit][export]") {
     ScopedEnvVar columns{"COLUMNS", "72"};
@@ -139,23 +138,29 @@ TEST_CASE("audit exporter renders default table output", "[unit][audit][export]"
     request.action = ActionType::AUDIT;
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1"}, graph);
-    const std::vector<ValidationFinding> findings{
-        ValidationFinding{
-            .id = "GHSA-3pxv-7cmr-fjr4",
-            .kind = "vulnerability",
-            .package = Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1"},
-            .source = "osv",
-            .severity = "medium",
-            .score = 4.0,
-            .message = "alpha beta gamma delta epsilon",
-        }
-    };
+    boost::add_vertex(Package{.action = ActionType::AUDIT,
+                              .system = "maven",
+                              .name = "org.apache.logging.log4j:log4j-core",
+                              .version = "2.13.1"},
+                      graph);
+    const std::vector<ValidationFinding> findings{ValidationFinding{
+        .id = "GHSA-3pxv-7cmr-fjr4",
+        .kind = "vulnerability",
+        .package = Package{.action = ActionType::AUDIT,
+                           .system = "maven",
+                           .name = "org.apache.logging.log4j:log4j-core",
+                           .version = "2.13.1"},
+        .source = "osv",
+        .severity = "medium",
+        .score = 4.0,
+        .message = "alpha beta gamma delta epsilon",
+    }};
 
     const std::string rendered = exporter.renderGraph(graph, findings, request);
     CHECK(rendered.find('\t') == std::string::npos);
     CHECK(rendered.find("SYSTEM NAME         VERSION FINDING      SEVERITY SCORE MESSAGE") != std::string::npos);
-    CHECK(rendered.find("maven  org.apach... 2.13.1  GHSA-3pxv... medium   4     alpha beta gamma") != std::string::npos);
+    CHECK(rendered.find("maven  org.apach... 2.13.1  GHSA-3pxv... medium   4     alpha beta gamma") !=
+          std::string::npos);
     CHECK(rendered.find(std::string{"\n"} + std::string(56, ' ') + "delta epsilon\n") != std::string::npos);
 }
 
@@ -181,18 +186,23 @@ TEST_CASE("audit exporter supports no-wrap and wide table flags", "[unit][audit]
     request.flags = {"wide", "no-wrap"};
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1"}, graph);
-    const std::vector<ValidationFinding> findings{
-        ValidationFinding{
-            .id = "GHSA-3pxv-7cmr-fjr4",
-            .kind = "vulnerability",
-            .package = Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1"},
-            .source = "osv",
-            .severity = "medium",
-            .score = 4.0,
-            .message = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu",
-        }
-    };
+    boost::add_vertex(Package{.action = ActionType::AUDIT,
+                              .system = "maven",
+                              .name = "org.apache.logging.log4j:log4j-core",
+                              .version = "2.13.1"},
+                      graph);
+    const std::vector<ValidationFinding> findings{ValidationFinding{
+        .id = "GHSA-3pxv-7cmr-fjr4",
+        .kind = "vulnerability",
+        .package = Package{.action = ActionType::AUDIT,
+                           .system = "maven",
+                           .name = "org.apache.logging.log4j:log4j-core",
+                           .version = "2.13.1"},
+        .source = "osv",
+        .severity = "medium",
+        .score = 4.0,
+        .message = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu",
+    }};
 
     const std::string rendered = exporter.renderGraph(graph, findings, request);
     CHECK(rendered.find("alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu") != std::string::npos);
@@ -245,8 +255,11 @@ TEST_CASE("audit exporter defaults json file output to cyclonedx vex json", "[un
     const std::string rendered = read_file(request.outputPath);
     CHECK(rendered.find("\"bomFormat\": \"CycloneDX\"") != std::string::npos);
     CHECK(rendered.find("\"vulnerabilities\"") != std::string::npos);
-    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"Matched by ReqPack audit from local vulnerability data. Reachability and exploitability were not analyzed.\"}") != std::string::npos);
-    CHECK(rendered.find("\"ratings\": [{\"source\": {\"name\": \"osv\"}, \"severity\": \"high\", \"score\": 8.8}]") != std::string::npos);
+    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"Matched by ReqPack audit from local "
+                        "vulnerability data. Reachability and exploitability were not analyzed.\"}") !=
+          std::string::npos);
+    CHECK(rendered.find("\"ratings\": [{\"source\": {\"name\": \"osv\"}, \"severity\": \"high\", \"score\": 8.8}]") !=
+          std::string::npos);
 }
 
 TEST_CASE("audit exporter keeps unresolved findings in triage state", "[unit][audit][export]") {
@@ -257,18 +270,17 @@ TEST_CASE("audit exporter keeps unresolved findings in triage state", "[unit][au
 
     Graph graph;
     boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "npm", .name = "left-pad"}, graph);
-    const std::vector<ValidationFinding> findings{
-        ValidationFinding{
-            .kind = "unresolved_version",
-            .package = Package{.action = ActionType::AUDIT, .system = "npm", .name = "left-pad"},
-            .source = "osv",
-            .severity = "low",
-            .message = "package version unavailable for vulnerability matching",
-        }
-    };
+    const std::vector<ValidationFinding> findings{ValidationFinding{
+        .kind = "unresolved_version",
+        .package = Package{.action = ActionType::AUDIT, .system = "npm", .name = "left-pad"},
+        .source = "osv",
+        .severity = "low",
+        .message = "package version unavailable for vulnerability matching",
+    }};
 
     const std::string rendered = exporter.renderGraph(graph, findings, request);
-    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"ReqPack could not resolve package version. Vulnerability matching may be incomplete.\"}") != std::string::npos);
+    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"ReqPack could not resolve package "
+                        "version. Vulnerability matching may be incomplete.\"}") != std::string::npos);
 }
 
 TEST_CASE("audit exporter infers sarif from file extension", "[unit][audit][export]") {
@@ -302,7 +314,8 @@ TEST_CASE("audit exporter reports file-open failure through logger diagnostics",
         return message.find("failed to open audit output path: " + tempDir.path().string()) != std::string::npos;
     }));
     CHECK(std::any_of(display.messages.begin(), display.messages.end(), [](const std::string& message) {
-        return message.find("Cause: ReqPack could not open requested audit output file for writing.") != std::string::npos;
+        return message.find("Cause: ReqPack could not open requested audit output file for writing.") !=
+               std::string::npos;
     }));
 }
 
@@ -344,18 +357,19 @@ TEST_CASE("audit exporter formats maven purls in cyclonedx vex output", "[unit][
     request.outputFormat = "cyclonedx-vex-json";
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"}, graph);
-    const std::vector<ValidationFinding> findings{
-        ValidationFinding{
-            .id = "GHSA-demo",
-            .kind = "vulnerability",
-            .package = Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
-            .source = "osv",
-            .severity = "medium",
-            .score = 5.0,
-            .message = "demo",
-        }
-    };
+    boost::add_vertex(
+        Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
+        graph);
+    const std::vector<ValidationFinding> findings{ValidationFinding{
+        .id = "GHSA-demo",
+        .kind = "vulnerability",
+        .package =
+            Package{.action = ActionType::AUDIT, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
+        .source = "osv",
+        .severity = "medium",
+        .score = 5.0,
+        .message = "demo",
+    }};
 
     const std::string rendered = exporter.renderGraph(graph, findings, request);
     CHECK(rendered.find("\"purl\": \"pkg:maven/org.slf4j/slf4j-api@2.0.16\"") != std::string::npos);

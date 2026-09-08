@@ -5,7 +5,7 @@
 namespace planner_platform {
 
 inline bool isNixInstallSystem(const std::string& system) {
-	return system == "nix";
+    return system == "nix";
 }
 
 #if defined(_WIN32)
@@ -18,28 +18,28 @@ inline constexpr bool reorderNonNixBeforeNix = false;
 // without creating a cycle with the Non-nix-before-nix barrier.
 inline bool shouldIgnoreScheduleEdge(const std::string& sourceSystem, const std::string& targetSystem) {
 #if defined(_WIN32)
-	return isNixInstallSystem(sourceSystem) && !isNixInstallSystem(targetSystem);
+    return isNixInstallSystem(sourceSystem) && !isNixInstallSystem(targetSystem);
 #else
-	(void)sourceSystem;
-	(void)targetSystem;
-	return false;
+    (void)sourceSystem;
+    (void)targetSystem;
+    return false;
 #endif
 }
 
 inline bool needsNonNixBeforeNixBarrier() {
 #if defined(_WIN32)
-	return true;
+    return true;
 #else
-	return false;
+    return false;
 #endif
 }
 
 inline bool softSkipNixInstalls() {
 #if defined(_WIN32)
-	return true;
+    return true;
 #else
-	return false;
+    return false;
 #endif
 }
 
-}  // namespace planner_platform
+} // namespace planner_platform

@@ -11,12 +11,9 @@ std::string run_reqpack_case(const std::string& prompt) {
     const std::filesystem::path binary = build_root() / "rqp";
     const std::filesystem::path pluginDir = repo_root() / "tests" / "plugins";
 
-    const std::string inner =
-        escape_shell_arg(binary.string()) +
-        hermetic_config_cli_arg() +
-        " search smoke " + escape_shell_arg(prompt) +
-        " --plugin-dir " + escape_shell_arg(pluginDir.string()) +
-        " 2>&1";
+    const std::string inner = escape_shell_arg(binary.string()) + hermetic_config_cli_arg() + " search smoke " +
+                              escape_shell_arg(prompt) + " --plugin-dir " + escape_shell_arg(pluginDir.string()) +
+                              " 2>&1";
 
     const std::string command = "sh -lc " + escape_shell_arg(inner);
 
@@ -27,20 +24,16 @@ std::string run_reqpack_case_verbose(const std::string& prompt) {
     const std::filesystem::path binary = build_root() / "rqp";
     const std::filesystem::path pluginDir = repo_root() / "tests" / "plugins";
 
-    const std::string inner =
-        escape_shell_arg(binary.string()) +
-        hermetic_config_cli_arg() +
-        " search smoke " + escape_shell_arg(prompt) +
-        " --verbose" +
-        " --plugin-dir " + escape_shell_arg(pluginDir.string()) +
-        " 2>&1";
+    const std::string inner = escape_shell_arg(binary.string()) + hermetic_config_cli_arg() + " search smoke " +
+                              escape_shell_arg(prompt) + " --verbose" + " --plugin-dir " +
+                              escape_shell_arg(pluginDir.string()) + " 2>&1";
 
     const std::string command = "sh -lc " + escape_shell_arg(inner);
 
     return run_command_capture(command);
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("plain exec path remains available", "[integration][exec_rules][smoke]") {
     const std::string output = run_reqpack_case("plain");

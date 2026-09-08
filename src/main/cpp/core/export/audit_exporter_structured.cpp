@@ -13,9 +13,8 @@
 namespace audit_exporter_internal {
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -38,7 +37,7 @@ std::string package_display_name(const Package& package) {
     return package.name;
 }
 
-}  // namespace audit_exporter_internal
+} // namespace audit_exporter_internal
 
 namespace {
 
@@ -47,14 +46,24 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size() + 8);
     for (unsigned char c : value) {
         switch (c) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default:
-                escaped.push_back(static_cast<char>(c));
-                break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(static_cast<char>(c));
+            break;
         }
     }
     return escaped;
@@ -150,7 +159,8 @@ std::string message_for(const ValidationFinding& finding) {
 
 std::string vex_analysis_detail_for(const ValidationFinding& finding) {
     if (finding.kind == "vulnerability") {
-        return "Matched by ReqPack audit from local vulnerability data. Reachability and exploitability were not analyzed.";
+        return "Matched by ReqPack audit from local vulnerability data. Reachability and exploitability were not "
+               "analyzed.";
     }
     if (finding.kind == "unresolved_version") {
         return "ReqPack could not resolve package version. Vulnerability matching may be incomplete.";
@@ -164,7 +174,7 @@ std::string vex_analysis_detail_for(const ValidationFinding& finding) {
     return message_for(finding);
 }
 
-}  // namespace
+} // namespace
 
 std::string AuditExporter::renderJson(const Graph& graph, const std::vector<ValidationFinding>& findings) const {
     const std::vector<Graph::vertex_descriptor> vertices = ordered_vertices(graph);
@@ -182,7 +192,8 @@ std::string AuditExporter::renderJson(const Graph& graph, const std::vector<Vali
         stream << "    {\n";
         stream << "      \"system\": \"" << json_escape(package.system) << "\",\n";
         stream << "      \"name\": \"" << json_escape(package.name) << "\",\n";
-        stream << "      \"displayName\": \"" << json_escape(audit_exporter_internal::package_display_name(package)) << "\",\n";
+        stream << "      \"displayName\": \"" << json_escape(audit_exporter_internal::package_display_name(package))
+               << "\",\n";
         stream << "      \"version\": \"" << json_escape(package.version) << "\",\n";
         stream << "      \"sourcePath\": \"" << json_escape(package.sourcePath) << "\",\n";
         stream << "      \"localTarget\": " << (package.localTarget ? "true" : "false") << ",\n";
@@ -220,7 +231,8 @@ std::string AuditExporter::renderJson(const Graph& graph, const std::vector<Vali
     return stream.str();
 }
 
-std::string AuditExporter::renderCycloneDxVex(const Graph& graph, const std::vector<ValidationFinding>& findings) const {
+std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
+                                              const std::vector<ValidationFinding>& findings) const {
     std::ostringstream stream;
     stream << "{\n";
     stream << "  \"bomFormat\": \"CycloneDX\",\n";
@@ -233,7 +245,8 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph, const std::vec
         const Package& package = graph[vertices[index]];
         stream << "    {\n";
         stream << "      \"type\": \"library\",\n";
-        stream << "      \"bom-ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package)) << "\",\n";
+        stream << "      \"bom-ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package))
+               << "\",\n";
         stream << "      \"name\": \"" << json_escape(audit_exporter_internal::package_display_name(package)) << "\"";
         if (!package.version.empty()) {
             stream << ",\n      \"version\": \"" << json_escape(package.version) << "\"";
@@ -245,7 +258,8 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph, const std::vec
         stream << ",\n      \"properties\": [\n";
         stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << json_escape(package.system) << "\"}";
         if (!package.sourcePath.empty()) {
-            stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << json_escape(package.sourcePath) << "\"}";
+            stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << json_escape(package.sourcePath)
+                   << "\"}";
         }
         stream << "\n      ]\n";
         stream << "    }";
@@ -267,7 +281,8 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph, const std::vec
             }
             firstDependency = false;
             stream << "    {\n";
-            stream << "      \"ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package)) << "\",\n";
+            stream << "      \"ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package))
+                   << "\",\n";
             stream << "      \"dependsOn\": [";
             auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
             bool firstEdge = true;
@@ -287,16 +302,21 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph, const std::vec
     stream << ",\n  \"vulnerabilities\": [\n";
     for (std::size_t index = 0; index < findings.size(); ++index) {
         const ValidationFinding& finding = findings[index];
-        const std::string findingId = finding.id.empty() ? ("reqpack-" + finding.kind + "-" + std::to_string(index + 1)) : finding.id;
+        const std::string findingId =
+            finding.id.empty() ? ("reqpack-" + finding.kind + "-" + std::to_string(index + 1)) : finding.id;
         stream << "    {\n";
         stream << "      \"id\": \"" << json_escape(findingId) << "\",\n";
-        stream << "      \"source\": {\"name\": \"" << json_escape(finding.source.empty() ? "reqpack" : finding.source) << "\"},\n";
-        stream << "      \"ratings\": [{\"source\": {\"name\": \"" << json_escape(finding.source.empty() ? "reqpack" : finding.source)
-               << "\"}, \"severity\": \"" << json_escape(finding.severity.empty() ? "unassigned" : finding.severity)
+        stream << "      \"source\": {\"name\": \"" << json_escape(finding.source.empty() ? "reqpack" : finding.source)
+               << "\"},\n";
+        stream << "      \"ratings\": [{\"source\": {\"name\": \""
+               << json_escape(finding.source.empty() ? "reqpack" : finding.source) << "\"}, \"severity\": \""
+               << json_escape(finding.severity.empty() ? "unassigned" : finding.severity)
                << "\", \"score\": " << finding.score << "}],\n";
-        stream << "      \"analysis\": {\"state\": \"in_triage\", \"detail\": \"" << json_escape(vex_analysis_detail_for(finding)) << "\"},\n";
+        stream << "      \"analysis\": {\"state\": \"in_triage\", \"detail\": \""
+               << json_escape(vex_analysis_detail_for(finding)) << "\"},\n";
         stream << "      \"description\": \"" << json_escape(message_for(finding)) << "\",\n";
-        stream << "      \"affects\": [{\"ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}]\n";
+        stream << "      \"affects\": [{\"ref\": \""
+               << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}]\n";
         stream << "    }";
         if (index + 1 < findings.size()) {
             stream << ',';
@@ -355,7 +375,8 @@ std::string AuditExporter::renderSarif(const Graph& graph, const std::vector<Val
         stream << "          \"message\": {\"text\": \"" << json_escape(message_for(finding)) << "\"},\n";
         stream << "          \"locations\": [{\n";
         stream << "            \"physicalLocation\": {\n";
-        stream << "              \"artifactLocation\": {\"uri\": \"pkg:" << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}\n";
+        stream << "              \"artifactLocation\": {\"uri\": \"pkg:"
+               << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}\n";
         stream << "            }\n";
         stream << "          }],\n";
         stream << "          \"properties\": {\n";

@@ -11,7 +11,7 @@ namespace {
 std::mutex g_host_info_mutex;
 std::shared_ptr<const HostInfoSnapshot> g_cached_snapshot;
 
-}  // namespace
+} // namespace
 
 std::filesystem::path default_reqpack_host_info_cache_path() {
     return reqpack_cache_directory() / "host" / "info.v1.json";
@@ -34,7 +34,8 @@ std::shared_ptr<const HostInfoSnapshot> HostInfoService::currentSnapshot() {
 
     std::string refreshReason = "missing-cache";
     if (std::filesystem::exists(cachePath)) {
-        if (const std::optional<HostInfoSnapshot> cached = read_host_info_snapshot_file(cachePath); cached.has_value()) {
+        if (const std::optional<HostInfoSnapshot> cached = read_host_info_snapshot_file(cachePath);
+            cached.has_value()) {
             refreshReason = is_host_info_snapshot_expired(cached.value(), now) ? "expired-ttl" : "manual-live-probe";
         } else {
             refreshReason = "parse-failure";

@@ -24,10 +24,8 @@ std::string read_text_file(const std::filesystem::path& path) {
     return buffer.str();
 }
 
-std::optional<std::pair<std::string, std::string>> read_plugin_payload_files(
-    const std::filesystem::path& scriptPath,
-    const std::filesystem::path& bootstrapPath
-) {
+std::optional<std::pair<std::string, std::string>>
+read_plugin_payload_files(const std::filesystem::path& scriptPath, const std::filesystem::path& bootstrapPath) {
     if (!std::filesystem::exists(scriptPath)) {
         return std::nullopt;
     }
@@ -37,48 +35,43 @@ std::optional<std::pair<std::string, std::string>> read_plugin_payload_files(
         return std::nullopt;
     }
 
-    return std::make_pair(
-        script,
-        std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{}
-    );
+    return std::make_pair(script,
+                          std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{});
 }
 
-std::optional<std::pair<std::string, std::string>> read_plugin_directory(const std::filesystem::path& directory, const std::string& pluginName) {
-    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(directory, pluginName); layout.has_value()) {
+std::optional<std::pair<std::string, std::string>> read_plugin_directory(const std::filesystem::path& directory,
+                                                                         const std::string& pluginName) {
+    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(directory, pluginName);
+        layout.has_value()) {
         return std::make_pair(read_text_file(layout->runScriptPath), std::string{});
     }
     return read_plugin_payload_files(directory / (pluginName + ".lua"), directory / "bootstrap.lua");
 }
 
-std::optional<std::filesystem::path> plugin_bundle_root(const std::filesystem::path& basePath, const std::string& pluginName) {
-    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(basePath, pluginName); layout.has_value()) {
+std::optional<std::filesystem::path> plugin_bundle_root(const std::filesystem::path& basePath,
+                                                        const std::string& pluginName) {
+    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(basePath, pluginName);
+        layout.has_value()) {
         return layout->rootDir;
     }
 
     return std::nullopt;
 }
 
-std::optional<std::pair<std::string, std::string>> read_plugin_repository(const std::filesystem::path& repositoryPath, const std::string& pluginName) {
+std::optional<std::pair<std::string, std::string>> read_plugin_repository(const std::filesystem::path& repositoryPath,
+                                                                          const std::string& pluginName) {
     return read_plugin_directory(repositoryPath, pluginName);
 }
 
-std::optional<std::pair<std::string, std::string>> fetch_git_plugin_payload(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-) {
+std::optional<std::pair<std::string, std::string>>
+fetch_git_plugin_payload(const ReqPackConfig& config, const std::string& source, const std::string& pluginName) {
     std::string errorDetails;
     if (!sync_git_repository(config, source, pluginName, &errorDetails)) {
         if (!errorDetails.empty()) {
             Logger::instance().diagnostic(make_error_diagnostic(
-                "registry",
-                "Plugin source sync failed for '" + pluginName + "'",
+                "registry", "Plugin source sync failed for '" + pluginName + "'",
                 "ReqPack could not clone, fetch, or checkout plugin source repository.",
-                "Check plugin source URL and ref in registry, then retry.",
-                errorDetails,
-                pluginName,
-                "plugin-source"
-            ));
+                "Check plugin source URL and ref in registry, then retry.", errorDetails, pluginName, "plugin-source"));
         }
         return std::nullopt;
     }
@@ -125,9 +118,10 @@ std::optional<std::string> fetch_text(const ReqPackConfig& config, const std::st
     return buffer;
 }
 
-}  // namespace
+} // namespace
 
-std::optional<std::filesystem::path> resolve_bundle_path(const ReqPackConfig& config, const std::string& source, const std::string& pluginName) {
+std::optional<std::filesystem::path> resolve_bundle_path(const ReqPackConfig& config, const std::string& source,
+                                                         const std::string& pluginName) {
     const std::filesystem::path sourcePath(source);
     if (std::filesystem::exists(sourcePath) && std::filesystem::is_directory(sourcePath)) {
         if (const auto bundleRoot = plugin_bundle_root(sourcePath, pluginName)) {
@@ -136,7 +130,8 @@ std::optional<std::filesystem::path> resolve_bundle_path(const ReqPackConfig& co
     }
 
     if (registry_database_is_git_source(source)) {
-        const std::filesystem::path repositoryPath = registry_database_git_repository_cache_path(config, source, pluginName);
+        const std::filesystem::path repositoryPath =
+            registry_database_git_repository_cache_path(config, source, pluginName);
         if (const auto bundleRoot = plugin_bundle_root(repositoryPath, pluginName)) {
             return bundleRoot;
         }
@@ -145,11 +140,8 @@ std::optional<std::filesystem::path> resolve_bundle_path(const ReqPackConfig& co
     return std::nullopt;
 }
 
-std::optional<std::pair<std::string, std::string>> fetch_plugin_payload(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-) {
+std::optional<std::pair<std::string, std::string>>
+fetch_plugin_payload(const ReqPackConfig& config, const std::string& source, const std::string& pluginName) {
     if (source.empty()) {
         return std::nullopt;
     }
@@ -170,10 +162,8 @@ std::optional<std::pair<std::string, std::string>> fetch_plugin_payload(
         }
 
         const std::filesystem::path bootstrapPath = sourcePath.parent_path() / "bootstrap.lua";
-        return std::make_pair(
-            script,
-            std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{}
-        );
+        return std::make_pair(script,
+                              std::filesystem::exists(bootstrapPath) ? read_text_file(bootstrapPath) : std::string{});
     }
 
     const std::optional<std::string> script = fetch_text(config, source);
@@ -184,11 +174,8 @@ std::optional<std::pair<std::string, std::string>> fetch_plugin_payload(
     return std::make_pair(script.value(), std::string{});
 }
 
-std::optional<RegistryRecord> refreshed_record_payload(
-    const ReqPackConfig& config,
-    RegistryRecord record,
-    bool preferLatestTag
-) {
+std::optional<RegistryRecord> refreshed_record_payload(const ReqPackConfig& config, RegistryRecord record,
+                                                       bool preferLatestTag) {
     if (record.alias) {
         return record;
     }

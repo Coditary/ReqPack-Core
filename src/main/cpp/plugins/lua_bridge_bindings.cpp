@@ -1,10 +1,10 @@
 #include "plugins/lua_bridge_bindings.h"
 
-#include <array>
 #include "core/config/configuration.h"
 #include "core/host/host_info.h"
 #include "output/progress_metrics_lua.h"
 #include "plugins/lua_bridge_value_mapper.h"
+#include <array>
 
 #include <type_traits>
 
@@ -24,19 +24,23 @@ void set_string_field_if_present(sol::table& table, const std::string& key, cons
     }
 }
 
-void set_optional_string_field(sol::state& lua, sol::table& table, const std::string& key, const std::optional<std::string>& value) {
+void set_optional_string_field(sol::state& lua, sol::table& table, const std::string& key,
+                               const std::optional<std::string>& value) {
     table[key] = value.has_value() ? sol::make_object(lua, value.value()) : sol::make_object(lua, sol::lua_nil);
 }
 
-void set_optional_uint32_field(sol::state& lua, sol::table& table, const std::string& key, const std::optional<std::uint32_t>& value) {
+void set_optional_uint32_field(sol::state& lua, sol::table& table, const std::string& key,
+                               const std::optional<std::uint32_t>& value) {
     table[key] = value.has_value() ? sol::make_object(lua, value.value()) : sol::make_object(lua, sol::lua_nil);
 }
 
-void set_optional_uint64_field(sol::state& lua, sol::table& table, const std::string& key, const std::optional<std::uint64_t>& value) {
+void set_optional_uint64_field(sol::state& lua, sol::table& table, const std::string& key,
+                               const std::optional<std::uint64_t>& value) {
     table[key] = value.has_value() ? sol::make_object(lua, value.value()) : sol::make_object(lua, sol::lua_nil);
 }
 
-void set_optional_bool_field(sol::state& lua, sol::table& table, const std::string& key, const std::optional<bool>& value) {
+void set_optional_bool_field(sol::state& lua, sol::table& table, const std::string& key,
+                             const std::optional<bool>& value) {
     table[key] = value.has_value() ? sol::make_object(lua, value.value()) : sol::make_object(lua, sol::lua_nil);
 }
 
@@ -159,20 +163,22 @@ sol::table make_repository_entry_table(sol::state& lua, const RepositoryEntry& r
 
     for (const auto& [key, value] : repository.extras) {
         const std::string extraKey = key;
-        std::visit([&](const auto& item) {
-            using ValueType = std::decay_t<decltype(item)>;
-            if constexpr (std::is_same_v<ValueType, std::vector<std::string>>) {
-                entry[extraKey] = make_string_array_table(lua, item);
-            } else {
-                entry[extraKey] = item;
-            }
-        }, value);
+        std::visit(
+            [&](const auto& item) {
+                using ValueType = std::decay_t<decltype(item)>;
+                if constexpr (std::is_same_v<ValueType, std::vector<std::string>>) {
+                    entry[extraKey] = make_string_array_table(lua, item);
+                } else {
+                    entry[extraKey] = item;
+                }
+            },
+            value);
     }
 
     return entry;
 }
 
-}  // namespace
+} // namespace
 
 LuaBridgeBindings::LuaBridgeBindings(LuaBridgeScriptRuntime& runtime, LuaBridgeHostRuntime& hostRuntime)
     : m_runtime(runtime), m_hostRuntime(hostRuntime) {}
@@ -181,102 +187,47 @@ void LuaBridgeBindings::registerBuiltinTypes() {
     sol::state& lua = m_runtime.state();
 
     lua.new_usertype<Package>(
-        "Package",
-        sol::constructors<Package()>(),
-        "action", sol::property(
-            [](const Package& package) {
-                return static_cast<int>(package.action);
-            },
-            [](Package& package, int action) {
-                package.action = static_cast<ActionType>(action);
-            }
-        ),
-        "system", &Package::system,
-        "name", &Package::name,
-        "version", &Package::version,
-        "sourcePath", &Package::sourcePath,
-        "localTarget", &Package::localTarget,
-        "flags", &Package::flags
-    );
+        "Package", sol::constructors<Package()>(), "action",
+        sol::property([](const Package& package) { return static_cast<int>(package.action); },
+                      [](Package& package, int action) { package.action = static_cast<ActionType>(action); }),
+        "system", &Package::system, "name", &Package::name, "version", &Package::version, "sourcePath",
+        &Package::sourcePath, "localTarget", &Package::localTarget, "flags", &Package::flags);
 
     lua.new_usertype<Request>(
-        "Request",
-        sol::constructors<Request()>(),
-        "action", sol::property(
-            [](const Request& request) {
-                return static_cast<int>(request.action);
-            },
-            [](Request& request, int action) {
-                request.action = static_cast<ActionType>(action);
-            }
-        ),
-        "system", &Request::system,
-        "packages", &Request::packages,
-        "flags", &Request::flags,
-        "outputFormat", &Request::outputFormat,
-        "outputPath", &Request::outputPath,
-        "localPath", &Request::localPath,
-        "usesLocalTarget", &Request::usesLocalTarget
-    );
+        "Request", sol::constructors<Request()>(), "action",
+        sol::property([](const Request& request) { return static_cast<int>(request.action); },
+                      [](Request& request, int action) { request.action = static_cast<ActionType>(action); }),
+        "system", &Request::system, "packages", &Request::packages, "flags", &Request::flags, "outputFormat",
+        &Request::outputFormat, "outputPath", &Request::outputPath, "localPath", &Request::localPath, "usesLocalTarget",
+        &Request::usesLocalTarget);
 
     lua.new_usertype<PackageInfo>(
-        "PackageInfo",
-        sol::constructors<PackageInfo()>(),
-        "system", &PackageInfo::system,
-        "name", &PackageInfo::name,
-        "packageId", &PackageInfo::packageId,
-        "version", &PackageInfo::version,
-        "latestVersion", &PackageInfo::latestVersion,
-        "status", &PackageInfo::status,
-        "installed", &PackageInfo::installed,
-        "summary", &PackageInfo::summary,
-        "description", &PackageInfo::description,
-        "homepage", &PackageInfo::homepage,
-        "documentation", &PackageInfo::documentation,
-        "sourceUrl", &PackageInfo::sourceUrl,
-        "repository", &PackageInfo::repository,
-        "channel", &PackageInfo::channel,
-        "section", &PackageInfo::section,
-        "packageType", &PackageInfo::packageType,
-        "type", &PackageInfo::packageType,
-        "architecture", &PackageInfo::architecture,
-        "targetSystems", &PackageInfo::targetSystems,
-        "license", &PackageInfo::license,
-        "author", &PackageInfo::author,
-        "maintainer", &PackageInfo::maintainer,
-        "email", &PackageInfo::email,
-        "publishedAt", &PackageInfo::publishedAt,
-        "updatedAt", &PackageInfo::updatedAt,
-        "size", &PackageInfo::size,
-        "installedSize", &PackageInfo::installedSize,
-        "dependencies", &PackageInfo::dependencies,
-        "optionalDependencies", &PackageInfo::optionalDependencies,
-        "provides", &PackageInfo::provides,
-        "conflicts", &PackageInfo::conflicts,
-        "replaces", &PackageInfo::replaces,
-        "binaries", &PackageInfo::binaries,
-        "tags", &PackageInfo::tags
-    );
+        "PackageInfo", sol::constructors<PackageInfo()>(), "system", &PackageInfo::system, "name", &PackageInfo::name,
+        "packageId", &PackageInfo::packageId, "version", &PackageInfo::version, "latestVersion",
+        &PackageInfo::latestVersion, "status", &PackageInfo::status, "installed", &PackageInfo::installed, "summary",
+        &PackageInfo::summary, "description", &PackageInfo::description, "homepage", &PackageInfo::homepage,
+        "documentation", &PackageInfo::documentation, "sourceUrl", &PackageInfo::sourceUrl, "repository",
+        &PackageInfo::repository, "channel", &PackageInfo::channel, "section", &PackageInfo::section, "packageType",
+        &PackageInfo::packageType, "type", &PackageInfo::packageType, "architecture", &PackageInfo::architecture,
+        "targetSystems", &PackageInfo::targetSystems, "license", &PackageInfo::license, "author", &PackageInfo::author,
+        "maintainer", &PackageInfo::maintainer, "email", &PackageInfo::email, "publishedAt", &PackageInfo::publishedAt,
+        "updatedAt", &PackageInfo::updatedAt, "size", &PackageInfo::size, "installedSize", &PackageInfo::installedSize,
+        "dependencies", &PackageInfo::dependencies, "optionalDependencies", &PackageInfo::optionalDependencies,
+        "provides", &PackageInfo::provides, "conflicts", &PackageInfo::conflicts, "replaces", &PackageInfo::replaces,
+        "binaries", &PackageInfo::binaries, "tags", &PackageInfo::tags);
 
-    lua.new_usertype<ExecResult>(
-        "ExecResult",
-        sol::constructors<ExecResult()>(),
-        "success", &ExecResult::success,
-        "exitCode", &ExecResult::exitCode,
-        "stdout", &ExecResult::stdoutText,
-        "stderr", &ExecResult::stderrText
-    );
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
+                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
+                                 &ExecResult::stderrText);
 }
 
 void LuaBridgeBindings::registerContextTypes() {
     sol::state& lua = m_runtime.state();
 
     lua.new_usertype<PluginCallContext>(
-        "PluginCallContext",
-        "flags", sol::readonly_property([](const PluginCallContext& context) {
-            return context.flags;
-        }),
-        "plugin", sol::readonly_property([&lua](const PluginCallContext& context) {
+        "PluginCallContext", "flags",
+        sol::readonly_property([](const PluginCallContext& context) { return context.flags; }), "plugin",
+        sol::readonly_property([&lua](const PluginCallContext& context) {
             sol::table plugin = lua.create_table();
             plugin["id"] = context.pluginId;
             plugin["dir"] = context.pluginDirectory;
@@ -286,12 +237,14 @@ void LuaBridgeBindings::registerContextTypes() {
         "repositories", sol::readonly_property([&lua](const PluginCallContext& context) {
             sol::table repositories = lua.create_table(static_cast<int>(context.repositories.size()), 0);
             for (std::size_t index = 0; index < context.repositories.size(); ++index) {
-                repositories[static_cast<int>(index + 1)] = make_repository_entry_table(lua, context.repositories[index]);
+                repositories[static_cast<int>(index + 1)] =
+                    make_repository_entry_table(lua, context.repositories[index]);
             }
             return repositories;
         }),
         "host", sol::readonly_property([&lua](const PluginCallContext& context) {
-            const std::shared_ptr<const HostInfoSnapshot> snapshot = context.hostInfo != nullptr ? context.hostInfo : HostInfoService::currentSnapshot();
+            const std::shared_ptr<const HostInfoSnapshot> snapshot =
+                context.hostInfo != nullptr ? context.hostInfo : HostInfoService::currentSnapshot();
             return make_host_info_table(lua, *snapshot);
         }),
         "proxy", sol::readonly_property([&lua](const PluginCallContext& context) {
@@ -317,22 +270,26 @@ void LuaBridgeBindings::registerContextTypes() {
             sol::table log = lua.create_table();
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             log.set_function("debug", [this, contextId](const std::string& message) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->logDebug(binding->pluginId, message);
                 }
             });
             log.set_function("info", [this, contextId](const std::string& message) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->logInfo(binding->pluginId, message);
                 }
             });
             log.set_function("warn", [this, contextId](const std::string& message) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->logWarn(binding->pluginId, message);
                 }
             });
             log.set_function("error", [this, contextId](const std::string& message) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->logError(binding->pluginId, message);
                 }
             });
@@ -342,34 +299,41 @@ void LuaBridgeBindings::registerContextTypes() {
             sol::table tx = lua.create_table();
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             tx.set_function("status", [this, contextId](int code) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->emitStatus(binding->sourceId, code);
                 }
             });
             tx.set_function("progress", [this, contextId](sol::object payload) {
-                if (const std::optional<DisplayProgressMetrics> metrics = progress_metrics_from_lua_object(payload); metrics.has_value()) {
-                    if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const std::optional<DisplayProgressMetrics> metrics = progress_metrics_from_lua_object(payload);
+                    metrics.has_value()) {
+                    if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                        binding != nullptr && binding->host != nullptr) {
                         binding->host->emitProgress(binding->sourceId, metrics.value());
                     }
                 }
             });
             tx.set_function("begin_step", [this, contextId](const std::string& label) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->emitBeginStep(binding->sourceId, label);
                 }
             });
             tx.set_function("commit", [this, contextId]() {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->emitCommit(binding->sourceId);
                 }
             });
             tx.set_function("success", [this, contextId]() {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->emitSuccess(binding->sourceId);
                 }
             });
             tx.set_function("failed", [this, contextId](const std::string& message) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     binding->host->emitFailure(binding->sourceId, message);
                 }
             });
@@ -377,12 +341,15 @@ void LuaBridgeBindings::registerContextTypes() {
         }),
         "events", sol::readonly_property([this, &lua](const PluginCallContext& context) {
             sol::table events = lua.create_table();
-            const std::array<const char*, 8> names{"installed", "deleted", "updated", "listed", "searched", "informed", "outdated", "unavailable"};
+            const std::array<const char*, 8> names{"installed", "deleted",  "updated",  "listed",
+                                                   "searched",  "informed", "outdated", "unavailable"};
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             for (const char* name : names) {
                 events.set_function(name, [this, contextId, name](sol::object payload) {
-                    if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
-                        binding->host->emitEvent(binding->sourceId, name, LuaBridgeValueMapper::serializeLuaPayload(payload));
+                    if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                        binding != nullptr && binding->host != nullptr) {
+                        binding->host->emitEvent(binding->sourceId, name,
+                                                 LuaBridgeValueMapper::serializeLuaPayload(payload));
                     }
                 });
             }
@@ -392,8 +359,10 @@ void LuaBridgeBindings::registerContextTypes() {
             sol::table artifacts = lua.create_table();
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             artifacts.set_function("register", [this, contextId](sol::object payload) {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
-                    binding->host->registerArtifact(binding->pluginId, LuaBridgeValueMapper::serializeLuaPayload(payload));
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
+                    binding->host->registerArtifact(binding->pluginId,
+                                                    LuaBridgeValueMapper::serializeLuaPayload(payload));
                 }
             });
             return artifacts;
@@ -402,32 +371,32 @@ void LuaBridgeBindings::registerContextTypes() {
             sol::table exec = lua.create_table();
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             exec.set_function("run", sol::overload(
-                [this, contextId](const std::string& command) {
-                    if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
-                        return binding->host->execute(binding->sourceId, command);
-                    }
-                    return ExecResult{};
-                },
-                [this, contextId](const std::string& command, const sol::object& rules) {
-                    const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
-                    if (binding == nullptr) {
-                        return ExecResult{};
-                    }
-                    return m_hostRuntime.executeCommandWithPolicy(
-                        binding->sourceId,
-                        command,
-                        rules,
-                        m_hostRuntime.shouldUseSilentRuntime(binding->flags)
-                    );
-                }
-            ));
+                                         [this, contextId](const std::string& command) {
+                                             if (const LuaBridgeRuntimeBindingContext* binding =
+                                                     m_hostRuntime.runtimeBindingContext(contextId);
+                                                 binding != nullptr && binding->host != nullptr) {
+                                                 return binding->host->execute(binding->sourceId, command);
+                                             }
+                                             return ExecResult{};
+                                         },
+                                         [this, contextId](const std::string& command, const sol::object& rules) {
+                                             const LuaBridgeRuntimeBindingContext* binding =
+                                                 m_hostRuntime.runtimeBindingContext(contextId);
+                                             if (binding == nullptr) {
+                                                 return ExecResult{};
+                                             }
+                                             return m_hostRuntime.executeCommandWithPolicy(
+                                                 binding->sourceId, command, rules,
+                                                 m_hostRuntime.shouldUseSilentRuntime(binding->flags));
+                                         }));
             return exec;
         }),
         "fs", sol::readonly_property([this, &lua](const PluginCallContext& context) {
             sol::table fs = lua.create_table();
             const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
             fs.set_function("get_tmp_dir", [this, contextId]() {
-                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId); binding != nullptr && binding->host != nullptr) {
+                if (const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                    binding != nullptr && binding->host != nullptr) {
                     return binding->host->createTempDirectory(binding->pluginId);
                 }
                 return std::string{};
@@ -440,22 +409,19 @@ void LuaBridgeBindings::registerContextTypes() {
             net.set_function("download", [this, contextId](const std::string& url, const std::string& destinationPath) {
                 const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
                 const DownloadResult result = binding != nullptr && binding->host != nullptr
-                    ? binding->host->download(binding->pluginId, url, destinationPath)
-                    : DownloadResult{};
+                                                  ? binding->host->download(binding->pluginId, url, destinationPath)
+                                                  : DownloadResult{};
                 return result.success;
             });
             return net;
-        })
-    );
+        }));
 }
 
 void LuaBridgeBindings::registerReqpackNamespace() {
     sol::state& lua = m_runtime.state();
     sol::table reqpack = lua.create_named_table("reqpack");
     sol::table exec = lua.create_table();
-    exec.set_function("run", [this](const std::string& command) {
-        return m_hostRuntime.runCommand(command);
-    });
+    exec.set_function("run", [this](const std::string& command) { return m_hostRuntime.runCommand(command); });
     reqpack["exec"] = exec;
     reqpack["host"] = make_host_info_table(lua, *HostInfoService::currentSnapshot());
 }

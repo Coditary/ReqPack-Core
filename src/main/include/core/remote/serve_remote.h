@@ -2,8 +2,8 @@
 
 #include "cli/cli.h"
 #include "core/config/configuration.h"
-#include "output/idisplay.h"
 #include "output/command_output.h"
+#include "output/idisplay.h"
 #include "output/logger.h"
 
 #include <filesystem>
@@ -11,12 +11,7 @@
 #include <string>
 #include <vector>
 
-enum class ServeRemoteProtocol {
-    TEXT,
-    JSON,
-    HTTP,
-    HTTPS
-};
+enum class ServeRemoteProtocol { TEXT, JSON, HTTP, HTTPS };
 
 struct ServeRuntimeOptions {
     bool useStdin{false};
@@ -34,14 +29,8 @@ struct ServeRuntimeOptions {
     std::vector<std::string> inheritedArguments;
 };
 
-int run_remote_serve(
-    Cli& cli,
-    const ReqPackConfig& config,
-    const std::filesystem::path& configPath,
-    const ReqPackConfigOverrides& configOverrides,
-    Logger& logger,
-    IDisplay* display,
-    const ServeRuntimeOptions& options
-);
+int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesystem::path& configPath,
+                     const ReqPackConfigOverrides& configOverrides, Logger& logger, IDisplay* display,
+                     const ServeRuntimeOptions& options);
 
 bool remote_protocol_requires_explicit_mode(ServeRemoteProtocol protocol);

@@ -13,10 +13,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -29,7 +29,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -40,20 +40,22 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-std::filesystem::path write_plugin_bundle(
-    const std::filesystem::path& pluginDirectory,
-    const std::string& pluginId,
-    const std::string& runScript
-) {
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginId + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginId + " plugin\",\n"
-        "  \"description\": \"" + pluginId + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+std::filesystem::path write_plugin_bundle(const std::filesystem::path& pluginDirectory, const std::string& pluginId,
+                                          const std::string& runScript) {
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginId +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginId +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginId +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", runScript);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -184,12 +186,13 @@ function plugin.shutdown() return true end
 plugin.fileExtensions = { ".demo", ".pkg" }
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("lua bridge initializes plugin metadata and security fields", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-init"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
 
     LuaBridge bridge(scriptPath.string(), config);
     CHECK(bridge.getName() == "query-bridge");
@@ -208,7 +211,8 @@ TEST_CASE("lua bridge initializes plugin metadata and security fields", "[unit][
 TEST_CASE("lua bridge parses requirements and missing package names", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-requirements"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
@@ -240,7 +244,8 @@ TEST_CASE("lua bridge parses requirements and missing package names", "[unit][lu
 TEST_CASE("lua bridge list search and info parse query results", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-query"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
@@ -268,7 +273,8 @@ TEST_CASE("lua bridge list search and info parse query results", "[unit][lua_bri
 TEST_CASE("lua bridge installLocal accepts non-empty paths", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-install-local"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "query", "query", QUERY_PLUGIN);
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
@@ -290,15 +296,12 @@ TEST_CASE("lua bridge reads fileExtensions from plugin table", "[unit][lua_bridg
 TEST_CASE("lua bridge init fails for invalid plugin contract", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-bad-init"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "broken",
-        "broken",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "broken", "broken",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "broken" end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     CHECK_FALSE(bridge.init());
@@ -307,10 +310,8 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge shutdown succeeds for valid plugin", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-shutdown"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "shutdown",
-        "shutdown",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "shutdown", "shutdown",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "shutdown" end
 function plugin.getVersion() return "1.0.0" end
@@ -325,8 +326,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -336,10 +336,8 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge exposes context bindings to plugin scripts", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-context"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "context",
-        "context",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "context", "context",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "context" end
 function plugin.getVersion() return "1.0.0" end
@@ -369,8 +367,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -380,24 +377,26 @@ function plugin.shutdown() return true end
         .pluginDirectory = bridge.getPluginDirectory(),
         .scriptPath = bridge.getScriptPath(),
         .host = bridge.getRuntimeHost(),
-        .proxy = ProxyConfig{
-            .defaultTarget = "dnf",
-            .targets = {"dnf", "apt"},
-            .options = {{"arch", "x86_64"}},
-        },
-        .repositories = {
-            RepositoryEntry{
-                .id = "main",
-                .url = "https://example.test/repo",
-                .priority = 1,
-                .enabled = true,
-                .type = "rpm",
-                .auth = {},
-                .validation = {.checksum = RepositoryChecksumPolicy::WARN, .tlsVerify = true},
-                .scope = {.include = {"*"}, .exclude = {}},
-                .extras = {{"tags", std::vector<std::string>{"stable"}}},
+        .proxy =
+            ProxyConfig{
+                .defaultTarget = "dnf",
+                .targets = {"dnf", "apt"},
+                .options = {{"arch", "x86_64"}},
             },
-        },
+        .repositories =
+            {
+                RepositoryEntry{
+                    .id = "main",
+                    .url = "https://example.test/repo",
+                    .priority = 1,
+                    .enabled = true,
+                    .type = "rpm",
+                    .auth = {},
+                    .validation = {.checksum = RepositoryChecksumPolicy::WARN, .tlsVerify = true},
+                    .scope = {.include = {"*"}, .exclude = {}},
+                    .extras = {{"tags", std::vector<std::string>{"stable"}}},
+                },
+            },
         .hostInfo = HostInfoService::currentSnapshot(),
     };
 
@@ -406,9 +405,8 @@ function plugin.shutdown() return true end
     CHECK(bridge.install(context, {request}));
 
     const std::vector<PluginEventRecord> events = bridge.takeRecentEvents();
-    const auto installed = std::find_if(events.begin(), events.end(), [](const PluginEventRecord& event) {
-        return event.name == "installed";
-    });
+    const auto installed = std::find_if(events.begin(), events.end(),
+                                        [](const PluginEventRecord& event) { return event.name == "installed"; });
     REQUIRE(installed != events.end());
     CHECK(bridge.takeRecentArtifacts().size() == 1);
     CHECK(bridge.shutdown());
@@ -417,10 +415,8 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge reads security metadata from plugin scripts", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-security"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "secured",
-        "secured",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "secured", "secured",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "secured" end
 function plugin.getVersion() return "1.0.0" end
@@ -444,8 +440,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     CHECK(bridge.getName() == "secured");
@@ -457,10 +452,8 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge init returns false when init hook fails", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-init-fail"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "init-fail",
-        "init-fail",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "init-fail", "init-fail",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "init-fail" end
 function plugin.getVersion() return "1.0.0" end
@@ -476,8 +469,7 @@ function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.init() return false end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     CHECK_FALSE(bridge.init());
@@ -496,10 +488,8 @@ TEST_CASE("lua bridge tolerates missing script files during construction", "[uni
 TEST_CASE("lua bridge routes print output through logger", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-print"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "printer",
-        "printer",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "printer", "printer",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "printer" end
 function plugin.getVersion() return "1.0.0" end
@@ -517,8 +507,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -529,10 +518,9 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge shutdown propagates plugin failure", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-shutdown-fail"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "shutdown-fail",
-        "shutdown-fail",
-        R"(
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "shutdown-fail", "shutdown-fail",
+                            R"(
 plugin = {}
 function plugin.getName() return "shutdown-fail" end
 function plugin.getVersion() return "1.0.0" end
@@ -547,8 +535,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return false end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -558,10 +545,9 @@ function plugin.shutdown() return false end
 TEST_CASE("lua bridge init reports lua errors from init hook", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-init-lua-error"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "init-error",
-        "init-error",
-        R"(
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "init-error", "init-error",
+                            R"(
 plugin = {}
 function plugin.getName() return "init-error" end
 function plugin.getVersion() return "1.0.0" end
@@ -577,8 +563,7 @@ function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.init() error("init failed") end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     CHECK_FALSE(bridge.init());
@@ -587,10 +572,9 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge shutdown reports lua errors from shutdown hook", "[unit][lua_bridge_core]") {
     TempDir tempDir{"reqpack-lua-bridge-core-shutdown-lua-error"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "shutdown-error",
-        "shutdown-error",
-        R"(
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(tempDir.path() / "plugins" / "shutdown-error", "shutdown-error",
+                            R"(
 plugin = {}
 function plugin.getName() return "shutdown-error" end
 function plugin.getVersion() return "1.0.0" end
@@ -605,8 +589,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() error("shutdown failed") end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());

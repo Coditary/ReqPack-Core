@@ -6,7 +6,8 @@ std::vector<Request> Planner::expandProxies(const std::vector<Request>& requests
     return planner_expand_proxies(requests, this->config.planner.systemAliases);
 }
 
-std::optional<std::vector<Request>> Planner::resolveRequests(const std::vector<Request>& requests, std::string* errorMessage) const {
+std::optional<std::vector<Request>> Planner::resolveRequests(const std::vector<Request>& requests,
+                                                             std::string* errorMessage) const {
     RequestResolutionService resolver(this->registry, this->config);
     return resolver.resolveRequests(requests, errorMessage);
 }

@@ -11,9 +11,8 @@
 namespace {
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -90,7 +89,8 @@ void apply_remote_endpoint(RemoteProfile& profile, const std::string& value) {
         if (bracketEnd != std::string::npos) {
             profile.host = endpoint.substr(1, bracketEnd - 1);
             if (bracketEnd + 2 < endpoint.size() && endpoint[bracketEnd + 1] == ':') {
-                if (const std::optional<int> port = parse_remote_port(endpoint.substr(bracketEnd + 2)); port.has_value()) {
+                if (const std::optional<int> port = parse_remote_port(endpoint.substr(bracketEnd + 2));
+                    port.has_value()) {
                     profile.port = port.value();
                 }
             }
@@ -246,7 +246,7 @@ std::optional<sol::table> load_named_table(sol::state& lua, const std::filesyste
     return std::nullopt;
 }
 
-}  // namespace
+} // namespace
 
 std::filesystem::path default_remote_profiles_path() {
     return reqpack_config_directory() / REMOTE_PROFILES_FILENAME;
@@ -294,10 +294,8 @@ std::vector<RemoteUser> load_remote_users(const std::filesystem::path& profilePa
     return users;
 }
 
-std::optional<RemoteProfile> find_remote_profile(
-    const std::filesystem::path& profilePath,
-    const std::string& profileName
-) {
+std::optional<RemoteProfile> find_remote_profile(const std::filesystem::path& profilePath,
+                                                 const std::string& profileName) {
     const std::string normalizedName = to_lower_copy(profileName);
     for (const RemoteProfile& profile : load_remote_profiles(profilePath)) {
         if (to_lower_copy(profile.name) == normalizedName) {

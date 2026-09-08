@@ -23,7 +23,7 @@ void handle_remote_serve_signal(int) {
 #endif
 }
 
-}  // namespace
+} // namespace
 
 ScopedRemoteSignalHandlers::ScopedRemoteSignalHandlers(ReqpackSocket serverFd) {
     g_remote_signal_shutdown_requested = 0;
@@ -36,7 +36,7 @@ ScopedRemoteSignalHandlers::ScopedRemoteSignalHandlers(ReqpackSocket serverFd) {
     oldInt_ = std::signal(SIGINT, handle_remote_serve_signal);
     installed_ = oldTerm_ != SIG_ERR && oldInt_ != SIG_ERR;
 #else
-    struct sigaction action {};
+    struct sigaction action{};
     action.sa_handler = handle_remote_serve_signal;
     sigemptyset(&action.sa_mask);
 
@@ -132,10 +132,8 @@ std::optional<std::string> read_line_from_socket(ReqpackSocket fd) {
     return line;
 }
 
-std::optional<ConnectionProtocol> detect_connection_protocol(
-    const ServeRuntimeOptions& options,
-    const std::string& firstLine
-) {
+std::optional<ConnectionProtocol> detect_connection_protocol(const ServeRuntimeOptions& options,
+                                                             const std::string& firstLine) {
     if (options.remoteProtocol == ServeRemoteProtocol::JSON) {
         return ConnectionProtocol::JSON;
     }

@@ -9,9 +9,8 @@
 namespace {
 
 std::string to_lower(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -19,7 +18,8 @@ bool path_matches_extension(const std::filesystem::path& path, const std::string
     const std::string normalizedExtension = to_lower(extension);
     const std::string filename = to_lower(path.filename().string());
     return !normalizedExtension.empty() && filename.size() >= normalizedExtension.size() &&
-        filename.compare(filename.size() - normalizedExtension.size(), normalizedExtension.size(), normalizedExtension) == 0;
+           filename.compare(filename.size() - normalizedExtension.size(), normalizedExtension.size(),
+                            normalizedExtension) == 0;
 }
 
 std::string resolve_system_for_file_path(const Registry& registry, const std::filesystem::path& path) {
@@ -38,7 +38,7 @@ std::string resolve_system_for_file_path(const Registry& registry, const std::fi
     return {};
 }
 
-}  // namespace
+} // namespace
 
 std::vector<std::string> Registry::findByCategory(const std::string& category) const {
     std::vector<std::string> found;
@@ -91,8 +91,7 @@ std::string Registry::resolveSystemForLocalTarget(const std::filesystem::path& p
 
         std::string resolvedSystem;
         for (auto it = std::filesystem::recursive_directory_iterator(path, error);
-             it != std::filesystem::recursive_directory_iterator();
-             it.increment(error)) {
+             it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
             if (error || !it->is_regular_file()) {
                 continue;
             }

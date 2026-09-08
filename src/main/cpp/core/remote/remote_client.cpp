@@ -19,16 +19,9 @@ namespace {
 constexpr const char* REMOTE_UPLOAD_INSTALL_COMMAND = "__reqpack_upload_install__";
 constexpr const char* REMOTE_UPLOAD_PATH_PLACEHOLDER = "__REQPACK_REMOTE_UPLOAD_PATH__";
 
-DiagnosticMessage remote_client_input_diagnostic(const std::string& summary, const std::string& cause, const std::string& recommendation, const std::string& details = {}) {
-    return make_error_diagnostic(
-        "remote",
-        summary,
-        cause,
-        recommendation,
-        details,
-        "remote",
-        "client"
-    );
+DiagnosticMessage remote_client_input_diagnostic(const std::string& summary, const std::string& cause,
+                                                 const std::string& recommendation, const std::string& details = {}) {
+    return make_error_diagnostic("remote", summary, cause, recommendation, details, "remote", "client");
 }
 
 struct UploadInstallRequest {
@@ -115,10 +108,8 @@ std::string join_arguments(const std::vector<std::string>& arguments) {
     return command;
 }
 
-std::optional<UploadInstallRequest> detect_upload_install_request(
-    const std::vector<std::string>& arguments,
-    std::string& error
-) {
+std::optional<UploadInstallRequest> detect_upload_install_request(const std::vector<std::string>& arguments,
+                                                                  std::string& error) {
     error.clear();
     if (arguments.empty() || parse_action_token(arguments.front()) != ActionType::INSTALL) {
         return std::nullopt;
@@ -239,12 +230,24 @@ std::string escape_json(const std::string& value) {
     out.reserve(value.size());
     for (char c : value) {
         switch (c) {
-            case '"': out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\n': out += "\\n"; break;
-            case '\r': out += "\\r"; break;
-            case '\t': out += "\\t"; break;
-            default: out += c; break;
+        case '"':
+            out += "\\\"";
+            break;
+        case '\\':
+            out += "\\\\";
+            break;
+        case '\n':
+            out += "\\n";
+            break;
+        case '\r':
+            out += "\\r";
+            break;
+        case '\t':
+            out += "\\t";
+            break;
+        default:
+            out += c;
+            break;
         }
     }
     return out;
@@ -267,12 +270,24 @@ std::optional<std::string> extract_json_string_field(const std::string& json, co
         const char c = json[i];
         if (escaped) {
             switch (c) {
-                case '"': value += '"'; break;
-                case '\\': value += '\\'; break;
-                case 'n': value += '\n'; break;
-                case 'r': value += '\r'; break;
-                case 't': value += '\t'; break;
-                default: value += c; break;
+            case '"':
+                value += '"';
+                break;
+            case '\\':
+                value += '\\';
+                break;
+            case 'n':
+                value += '\n';
+                break;
+            case 'r':
+                value += '\r';
+                break;
+            case 't':
+                value += '\t';
+                break;
+            default:
+                value += c;
+                break;
             }
             escaped = false;
             continue;
@@ -323,17 +338,17 @@ ReqpackSocket connect_remote(const RemoteProfile& profile) {
 }
 
 int send_text_command_and_render_response(ReqpackSocket fd, const std::string& command, IDisplay* display) {
-	(void)display;
+    (void)display;
     if (!send_all(fd, command + "\n")) {
         throw std::runtime_error("failed to send remote command");
     }
     const auto response = read_text_response(fd);
-	std::cout << response.second;
+    std::cout << response.second;
     return response.first == "OK" ? 0 : 1;
 }
 
 int send_upload_install_request(ReqpackSocket fd, const UploadInstallRequest& request, IDisplay* display) {
-	(void)display;
+    (void)display;
     const std::string header = join_arguments({
         REMOTE_UPLOAD_INSTALL_COMMAND,
         std::to_string(request.size),
@@ -364,12 +379,13 @@ int send_upload_install_request(ReqpackSocket fd, const UploadInstallRequest& re
         throw std::runtime_error("failed while reading local upload file");
     }
 
-	const auto response = read_text_response(fd);
-	std::cout << response.second;
+    const auto response = read_text_response(fd);
+    std::cout << response.second;
     return response.first == "OK" ? 0 : 1;
 }
 
-int run_text_client_session(const RemoteProfile& profile, const std::vector<std::string>& forwardedArguments, IDisplay* display) {
+int run_text_client_session(const RemoteProfile& profile, const std::vector<std::string>& forwardedArguments,
+                            IDisplay* display) {
     std::optional<UploadInstallRequest> forwardedUpload;
     if (!forwardedArguments.empty()) {
         std::string uploadError;
@@ -406,8 +422,8 @@ int run_text_client_session(const RemoteProfile& profile, const std::vector<std:
 
     if (!forwardedArguments.empty()) {
         const int result = forwardedUpload.has_value()
-			? send_upload_install_request(fd, forwardedUpload.value(), display)
-			: send_text_command_and_render_response(fd, join_arguments(forwardedArguments), display);
+                               ? send_upload_install_request(fd, forwardedUpload.value(), display)
+                               : send_text_command_and_render_response(fd, join_arguments(forwardedArguments), display);
         closeGuard();
         return result;
     }
@@ -420,32 +436,25 @@ int run_text_client_session(const RemoteProfile& profile, const std::vector<std:
         }
         const std::vector<std::string> tokens = tokenize_command_line(trimmed);
         if (tokens.empty()) {
-			Logger::instance().diagnostic(remote_client_input_diagnostic(
-				"invalid command syntax",
-				"Interactive remote command could not be tokenized.",
-				"Check shell quoting and command structure, then retry.",
-				trimmed
-			));
-			Logger::instance().flushSync();
+            Logger::instance().diagnostic(remote_client_input_diagnostic(
+                "invalid command syntax", "Interactive remote command could not be tokenized.",
+                "Check shell quoting and command structure, then retry.", trimmed));
+            Logger::instance().flushSync();
             continue;
         }
 
         std::string uploadError;
         const std::optional<UploadInstallRequest> upload = detect_upload_install_request(tokens, uploadError);
         if (!uploadError.empty()) {
-			Logger::instance().diagnostic(remote_client_input_diagnostic(
-				uploadError,
-				"Interactive remote upload request is invalid.",
-				"Adjust local upload arguments and retry command.",
-				trimmed
-			));
-			Logger::instance().flushSync();
+            Logger::instance().diagnostic(
+                remote_client_input_diagnostic(uploadError, "Interactive remote upload request is invalid.",
+                                               "Adjust local upload arguments and retry command.", trimmed));
+            Logger::instance().flushSync();
             continue;
         }
 
-        const int result = upload.has_value()
-			? send_upload_install_request(fd, upload.value(), display)
-			: send_text_command_and_render_response(fd, trimmed, display);
+        const int result = upload.has_value() ? send_upload_install_request(fd, upload.value(), display)
+                                              : send_text_command_and_render_response(fd, trimmed, display);
         if (trimmed == "quit" || trimmed == "exit") {
             break;
         }
@@ -456,7 +465,8 @@ int run_text_client_session(const RemoteProfile& profile, const std::vector<std:
     return 0;
 }
 
-int run_json_client_session(const RemoteProfile& profile, const std::vector<std::string>& forwardedArguments, IDisplay* display) {
+int run_json_client_session(const RemoteProfile& profile, const std::vector<std::string>& forwardedArguments,
+                            IDisplay* display) {
     if (forwardedArguments.empty()) {
         throw std::runtime_error("json remote profiles require a forwarded command");
     }
@@ -467,9 +477,9 @@ int run_json_client_session(const RemoteProfile& profile, const std::vector<std:
             uploadError = "file upload requires text protocol";
         }
         throw std::runtime_error(uploadError == "remote upload only supports regular files" ||
-                uploadError == "remote upload supports one local file per install command"
-            ? uploadError
-            : "file upload requires text protocol");
+                                         uploadError == "remote upload supports one local file per install command"
+                                     ? uploadError
+                                     : "file upload requires text protocol");
     }
 
     const ReqpackSocket fd = connect_remote(profile);
@@ -500,8 +510,8 @@ int run_json_client_session(const RemoteProfile& profile, const std::vector<std:
     const std::optional<std::string> output = extract_json_string_field(responseLine.value(), "output");
     const std::optional<std::string> error = extract_json_string_field(responseLine.value(), "error");
     if (output.has_value()) {
-		(void)display;
-		std::cout << output.value();
+        (void)display;
+        std::cout << output.value();
         closeGuard();
         return 0;
     }
@@ -509,15 +519,11 @@ int run_json_client_session(const RemoteProfile& profile, const std::vector<std:
     throw std::runtime_error(error.value_or("remote json request failed"));
 }
 
-}  // namespace
+} // namespace
 
-int run_remote_client(
-    const ReqPackConfig& config,
-    const std::filesystem::path& profilePath,
-    const std::string& profileName,
-	const std::vector<std::string>& forwardedArguments,
-	IDisplay* display
-) {
+int run_remote_client(const ReqPackConfig& config, const std::filesystem::path& profilePath,
+                      const std::string& profileName, const std::vector<std::string>& forwardedArguments,
+                      IDisplay* display) {
     (void)config;
     const std::optional<RemoteProfile> profile = find_remote_profile(profilePath, profileName);
     if (!profile.has_value()) {
@@ -525,15 +531,15 @@ int run_remote_client(
     }
 
     switch (profile->protocol) {
-        case RemoteProfileProtocol::JSON:
-			return run_json_client_session(profile.value(), forwardedArguments, display);
-        case RemoteProfileProtocol::HTTP:
-            throw std::runtime_error("http remote profiles are not implemented yet");
-        case RemoteProfileProtocol::HTTPS:
-            throw std::runtime_error("https remote profiles are not implemented yet");
-        case RemoteProfileProtocol::AUTO:
-        case RemoteProfileProtocol::TEXT:
-        default:
-			return run_text_client_session(profile.value(), forwardedArguments, display);
+    case RemoteProfileProtocol::JSON:
+        return run_json_client_session(profile.value(), forwardedArguments, display);
+    case RemoteProfileProtocol::HTTP:
+        throw std::runtime_error("http remote profiles are not implemented yet");
+    case RemoteProfileProtocol::HTTPS:
+        throw std::runtime_error("https remote profiles are not implemented yet");
+    case RemoteProfileProtocol::AUTO:
+    case RemoteProfileProtocol::TEXT:
+    default:
+        return run_text_client_session(profile.value(), forwardedArguments, display);
     }
 }

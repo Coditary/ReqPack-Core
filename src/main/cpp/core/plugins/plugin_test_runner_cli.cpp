@@ -6,7 +6,7 @@ bool starts_with(const std::string& value, const std::string& prefix) {
     return value.rfind(prefix, 0) == 0;
 }
 
-}  // namespace
+} // namespace
 
 PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::string>& arguments) {
     PluginTestCliParseResult result;
@@ -118,7 +118,8 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
             result.error = "test-plugin requires --plugin";
             return result;
         }
-        if (result.invocation.presets.empty() && result.invocation.caseFiles.empty() && result.invocation.caseDirectories.empty()) {
+        if (result.invocation.presets.empty() && result.invocation.caseFiles.empty() &&
+            result.invocation.caseDirectories.empty()) {
             result.error = "test-plugin requires at least one --preset, --case, or --cases";
             return result;
         }
@@ -128,22 +129,21 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
 }
 
 void print_plugin_test_help(std::ostream& output) {
-    output
-        << "rqp test-plugin - Run hermetic plugin conformance cases\n"
-        << "\n"
-        << "Usage:\n"
-        << "  rqp test-plugin --plugin <path-or-id> --preset core [--report <file.json>]\n"
-        << "  rqp test-plugin --plugin <path-or-id> --case <file.lua> [--case <file.lua> ...]\n"
-        << "  rqp test-plugin --plugin <path-or-id> --cases <directory> [--report <file.json>]\n"
-        << "\n"
-        << "Options:\n"
-        << "  --plugin <value>        Plugin script path, plugin directory, or plugin id\n"
-        << "  --preset <name>         Adds built-in preset cases from <plugin>/.reqpack-test/<name>/\n"
-        << "  --case <file.lua>       Adds one Lua test case file\n"
-        << "  --cases <directory>     Adds all *.lua test case files from directory\n"
-        << "  --report <file.json>    Writes JSON summary report\n"
-        << "  -h,--help               Shows this help\n"
-        << "\n"
-        << "Known presets: core\n"
-        << "Case file must return Lua table with request, fakeExec, and expect sections.\n";
+    output << "rqp test-plugin - Run hermetic plugin conformance cases\n"
+           << "\n"
+           << "Usage:\n"
+           << "  rqp test-plugin --plugin <path-or-id> --preset core [--report <file.json>]\n"
+           << "  rqp test-plugin --plugin <path-or-id> --case <file.lua> [--case <file.lua> ...]\n"
+           << "  rqp test-plugin --plugin <path-or-id> --cases <directory> [--report <file.json>]\n"
+           << "\n"
+           << "Options:\n"
+           << "  --plugin <value>        Plugin script path, plugin directory, or plugin id\n"
+           << "  --preset <name>         Adds built-in preset cases from <plugin>/.reqpack-test/<name>/\n"
+           << "  --case <file.lua>       Adds one Lua test case file\n"
+           << "  --cases <directory>     Adds all *.lua test case files from directory\n"
+           << "  --report <file.json>    Writes JSON summary report\n"
+           << "  -h,--help               Shows this help\n"
+           << "\n"
+           << "Known presets: core\n"
+           << "Case file must return Lua table with request, fakeExec, and expect sections.\n";
 }

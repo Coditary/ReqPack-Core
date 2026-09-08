@@ -17,4 +17,4 @@ Package resolve_dependency_system(Package dependency, const Registry* registry);
 IPlugin* load_plugin_for_use(Registry* registry, const std::string& system);
 Graph::vertex_descriptor find_or_add_package_vertex(Graph& graph, const Package& package);
 
-}  // namespace planner_internal
+} // namespace planner_internal

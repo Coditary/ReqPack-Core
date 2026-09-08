@@ -103,7 +103,8 @@ TEST_CASE("planner shapes requested package specifiers into package records", "[
     CHECK(trailingAt.version.empty());
 }
 
-TEST_CASE("planner shapes local install requests without collapsing into normal package names", "[unit][planner][request]") {
+TEST_CASE("planner shapes local install requests without collapsing into normal package names",
+          "[unit][planner][request]") {
     Request request;
     request.action = ActionType::INSTALL;
     request.system = "dnf";
@@ -120,7 +121,8 @@ TEST_CASE("planner shapes local install requests without collapsing into normal 
     CHECK(localPackage.flags == std::vector<std::string>{"force"});
 }
 
-TEST_CASE("planner missing-package filtering preserves request metadata and rewrites package list", "[unit][planner][filter]") {
+TEST_CASE("planner missing-package filtering preserves request metadata and rewrites package list",
+          "[unit][planner][filter]") {
     Request request;
     request.action = ActionType::INSTALL;
     request.system = "dnf";
@@ -139,7 +141,8 @@ TEST_CASE("planner missing-package filtering preserves request metadata and rewr
     CHECK(filtered.packages == std::vector<std::string>{"git@2.0", "ripgrep"});
 }
 
-TEST_CASE("planner install filtering drops request when plugin reports no missing packages", "[unit][planner][filter]") {
+TEST_CASE("planner install filtering drops request when plugin reports no missing packages",
+          "[unit][planner][filter]") {
     Request request;
     request.action = ActionType::INSTALL;
     request.system = "dnf";

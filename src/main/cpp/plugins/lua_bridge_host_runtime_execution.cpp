@@ -19,7 +19,7 @@ ArchiveExtractionOptions archive_options_from_config(const ReqPackConfig& config
     };
 }
 
-}  // namespace
+} // namespace
 
 bool LuaBridgeHostRuntime::shouldEnforceExecutionPolicy() const {
     return m_config.security.requireThinLayer && m_config.execution.checkVirtualFileSystemWrite;
@@ -28,11 +28,11 @@ bool LuaBridgeHostRuntime::shouldEnforceExecutionPolicy() const {
 ExecResult LuaBridgeHostRuntime::denyExecution(const std::string& message) const {
     if (!m_silentRuntimeOutput.load()) {
         m_logger.emit(OutputAction::LOG, OutputContext{
-            .level = spdlog::level::err,
-            .message = message,
-            .source = "plugin",
-            .scope = m_pluginId,
-        });
+                                             .level = spdlog::level::err,
+                                             .message = message,
+                                             .source = "plugin",
+                                             .scope = m_pluginId,
+                                         });
     }
     return ExecResult{.success = false, .exitCode = 126, .stdoutText = {}, .stderrText = message};
 }
@@ -41,7 +41,8 @@ ExecResult LuaBridgeHostRuntime::runCommand(const std::string& command) const {
     return executeCommandWithPolicy(m_pluginId, command, m_silentRuntimeOutput.load());
 }
 
-ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sourceId, const std::string& command, const bool silent) const {
+ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sourceId, const std::string& command,
+                                                          const bool silent) const {
     if (m_execOverride) {
         return m_execOverride(sourceId, command);
     }
@@ -50,17 +51,17 @@ ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sou
     }
 
     const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata{});
-    if (const std::optional<std::string> error = LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots); error.has_value()) {
+    if (const std::optional<std::string> error =
+            LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots);
+        error.has_value()) {
         return denyExecution(error.value());
     }
 
     return run_plugin_command(m_logger, sourceId, m_pluginId, command, silent);
 }
 
-ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sourceId,
-                                                          const std::string& command,
-                                                          const sol::object& rules,
-                                                          const bool silent) const {
+ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sourceId, const std::string& command,
+                                                          const sol::object& rules, const bool silent) const {
     if (m_execOverride) {
         return m_execOverride(sourceId, command);
     }
@@ -69,7 +70,9 @@ ExecResult LuaBridgeHostRuntime::executeCommandWithPolicy(const std::string& sou
     }
 
     const PluginSecurityMetadata metadata = m_securityMetadata->value_or(PluginSecurityMetadata{});
-    if (const std::optional<std::string> error = LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots); error.has_value()) {
+    if (const std::optional<std::string> error =
+            LuaBridgeExecutionPolicy::validate(metadata, m_pluginId, m_pluginDirectory, command, m_runtimeWriteRoots);
+        error.has_value()) {
         return denyExecution(error.value());
     }
 
@@ -94,8 +97,8 @@ DownloadResult LuaBridgeHostRuntime::downloadToPath(const std::string& url, cons
     } else {
         extension = suffix;
     }
-    const std::filesystem::path targetPath = extension.empty() ? std::filesystem::path(destinationPath)
-                                                                : std::filesystem::path(destinationPath + extension);
+    const std::filesystem::path targetPath =
+        extension.empty() ? std::filesystem::path(destinationPath) : std::filesystem::path(destinationPath + extension);
     if (!downloader.download(url, targetPath.string())) {
         return {};
     }
@@ -133,7 +136,8 @@ ExecResult LuaBridgeHostRuntime::execute(const std::string& pluginId, const std:
     return executeCommandWithPolicy(pluginId, command, m_silentRuntimeOutput.load());
 }
 
-DownloadResult LuaBridgeHostRuntime::download(const std::string& pluginId, const std::string& url, const std::string& destinationPath) {
+DownloadResult LuaBridgeHostRuntime::download(const std::string& pluginId, const std::string& url,
+                                              const std::string& destinationPath) {
     (void)pluginId;
     return downloadToPath(url, destinationPath);
 }

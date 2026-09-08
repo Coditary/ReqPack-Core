@@ -1,7 +1,7 @@
 #pragma once
 
-#include <filesystem>
 #include <cstdint>
+#include <filesystem>
 #include <map>
 #include <optional>
 #include <set>
@@ -98,24 +98,19 @@ std::vector<std::string> rq_normalize_systems(const std::vector<std::string>& sy
 std::map<std::string, std::vector<std::string>> rq_builtin_system_aliases();
 std::map<std::string, std::vector<std::string>> rq_merged_system_aliases(const ReqPackConfig& config);
 std::set<std::string> rq_host_system_tokens(const HostInfoSnapshot& snapshot);
-bool rq_system_matches(
-    const std::vector<std::string>& packageSystems,
-    const std::set<std::string>& hostSystems,
-    const std::map<std::string, std::vector<std::string>>& aliases
-);
+bool rq_system_matches(const std::vector<std::string>& packageSystems, const std::set<std::string>& hostSystems,
+                       const std::map<std::string, std::vector<std::string>>& aliases);
 std::string rq_join_systems(const std::vector<std::string>& systems);
 RqMetadata rq_parse_metadata_json(const std::string& content);
 std::string rq_metadata_json(const RqMetadata& metadata);
 std::map<std::string, std::string> rq_parse_reqpack_hooks(const std::filesystem::path& reqpackLuaPath);
-RqPackageBuildResult rq_build_package(const RqPackageBuildRequest& request, const ReqPackConfig& config = default_reqpack_config());
+RqPackageBuildResult rq_build_package(const RqPackageBuildRequest& request,
+                                      const ReqPackConfig& config = default_reqpack_config());
 
 class RqPackageReader {
-public:
-    static RqPackageLayout load(
-        const std::filesystem::path& packagePath,
-        const std::filesystem::path& workRoot,
-        const std::filesystem::path& stateRoot,
-        const ReqPackConfig& config = default_reqpack_config(),
-        bool validateHostCompatibility = true
-    );
+  public:
+    static RqPackageLayout load(const std::filesystem::path& packagePath, const std::filesystem::path& workRoot,
+                                const std::filesystem::path& stateRoot,
+                                const ReqPackConfig& config = default_reqpack_config(),
+                                bool validateHostCompatibility = true);
 };

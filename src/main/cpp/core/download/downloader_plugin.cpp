@@ -46,7 +46,8 @@ bool Downloader::downloadPlugin(const std::string& system) const {
             return false;
         }
 
-        return downloader_plugin_internal::materialize_script_record_bundle(targetPath.parent_path(), resolvedSystem, record.value());
+        return downloader_plugin_internal::materialize_script_record_bundle(targetPath.parent_path(), resolvedSystem,
+                                                                            record.value());
     }
 
     if (!this->download_to_path(record->source, targetPath)) {
@@ -72,7 +73,8 @@ bool Downloader::downloadPlugin(const std::string& system) const {
         return false;
     }
 
-    if (!downloader_plugin_internal::write_script_bundle(downloadedPath.parent_path(), resolvedSystem, record->description, script)) {
+    if (!downloader_plugin_internal::write_script_bundle(downloadedPath.parent_path(), resolvedSystem,
+                                                         record->description, script)) {
         std::error_code removeError;
         std::filesystem::remove_all(downloadedPath.parent_path(), removeError);
         return false;

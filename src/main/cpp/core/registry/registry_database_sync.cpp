@@ -6,35 +6,21 @@
 namespace {
 
 bool registry_records_equal(const RegistryRecord& left, const RegistryRecord& right) {
-    return left.name == right.name &&
-           left.source == right.source &&
-           left.alias == right.alias &&
-           left.originPath == right.originPath &&
-           left.description == right.description &&
-           left.role == right.role &&
-           left.targetSystem == right.targetSystem &&
-           left.capabilities == right.capabilities &&
-           left.ecosystemScopes == right.ecosystemScopes &&
-           left.writeScopes == right.writeScopes &&
-           left.networkScopes == right.networkScopes &&
-           left.privilegeLevel == right.privilegeLevel &&
-           left.scriptSha256 == right.scriptSha256 &&
-           left.bootstrapSha256 == right.bootstrapSha256 &&
-           left.script == right.script &&
-           left.bootstrapScript == right.bootstrapScript &&
-           left.bundlePath == right.bundlePath &&
-           left.bundleSource == right.bundleSource;
+    return left.name == right.name && left.source == right.source && left.alias == right.alias &&
+           left.originPath == right.originPath && left.description == right.description && left.role == right.role &&
+           left.targetSystem == right.targetSystem && left.capabilities == right.capabilities &&
+           left.ecosystemScopes == right.ecosystemScopes && left.writeScopes == right.writeScopes &&
+           left.networkScopes == right.networkScopes && left.privilegeLevel == right.privilegeLevel &&
+           left.scriptSha256 == right.scriptSha256 && left.bootstrapSha256 == right.bootstrapSha256 &&
+           left.script == right.script && left.bootstrapScript == right.bootstrapScript &&
+           left.bundlePath == right.bundlePath && left.bundleSource == right.bundleSource;
 }
 
-}  // namespace
+} // namespace
 
-bool RegistryDatabase::sync_records(
-    const std::vector<RegistryRecord>& records,
-    const bool fetchPayloads,
-    const bool replaceMissing,
-    const std::map<std::string, std::string>& metaValues,
-    const std::vector<std::string>& originPathsToDelete
-) const {
+bool RegistryDatabase::sync_records(const std::vector<RegistryRecord>& records, const bool fetchPayloads,
+                                    const bool replaceMissing, const std::map<std::string, std::string>& metaValues,
+                                    const std::vector<std::string>& originPathsToDelete) const {
     if (!this->initialized) {
         return false;
     }
@@ -94,7 +80,8 @@ bool RegistryDatabase::sync_records(
             }
         }
 
-        if (registry_record_can_materialize_plugin(record) && !registry_record_passes_thin_layer_trust(this->config, record)) {
+        if (registry_record_can_materialize_plugin(record) &&
+            !registry_record_passes_thin_layer_trust(this->config, record)) {
             record.script.clear();
             record.bootstrapScript.clear();
             record.bundleSource = false;
@@ -102,7 +89,7 @@ bool RegistryDatabase::sync_records(
         }
 
         const bool needsPayloadRefresh = fetchPayloads && registry_record_can_materialize_plugin(record) &&
-            (record.script.empty() || !registry_record_matches_expected_hashes(record));
+                                         (record.script.empty() || !registry_record_matches_expected_hashes(record));
         if (needsPayloadRefresh) {
             if (const auto fetchedPayload = fetch_plugin_payload(this->config, record.source, record.name)) {
                 record.script = fetchedPayload->first;
@@ -117,7 +104,8 @@ bool RegistryDatabase::sync_records(
             }
         }
 
-        if (registry_record_can_materialize_plugin(record) && !record.script.empty() && !registry_record_matches_expected_hashes(record)) {
+        if (registry_record_can_materialize_plugin(record) && !record.script.empty() &&
+            !registry_record_matches_expected_hashes(record)) {
             record.script.clear();
             record.bootstrapScript.clear();
             record.bundleSource = false;
@@ -129,7 +117,8 @@ bool RegistryDatabase::sync_records(
 
     std::set<std::string> namesToDelete;
     const bool needExistingRecords = replaceMissing || !originPathsToDelete.empty();
-    const std::vector<RegistryRecord> existingRecords = needExistingRecords ? this->load_all_records() : std::vector<RegistryRecord>{};
+    const std::vector<RegistryRecord> existingRecords =
+        needExistingRecords ? this->load_all_records() : std::vector<RegistryRecord>{};
     if (replaceMissing) {
         for (const RegistryRecord& existing : existingRecords) {
             if (!desiredRecords.contains(existing.name)) {

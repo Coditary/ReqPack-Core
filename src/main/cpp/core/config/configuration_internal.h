@@ -16,20 +16,18 @@
 namespace configuration_internal {
 
 inline std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
 inline std::optional<unsigned int> unsigned_int_from_string(const std::string& value) {
     std::string trimmed = value;
-    trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), [](unsigned char c) {
-        return !std::isspace(c);
-    }));
-    trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), [](unsigned char c) {
-        return !std::isspace(c);
-    }).base(), trimmed.end());
+    trimmed.erase(trimmed.begin(),
+                  std::find_if(trimmed.begin(), trimmed.end(), [](unsigned char c) { return !std::isspace(c); }));
+    trimmed.erase(
+        std::find_if(trimmed.rbegin(), trimmed.rend(), [](unsigned char c) { return !std::isspace(c); }).base(),
+        trimmed.end());
     if (trimmed.empty()) {
         return std::nullopt;
     }
@@ -75,9 +73,8 @@ inline std::vector<std::string> normalize_string_list(std::vector<std::string> v
     for (std::string& value : values) {
         value = to_lower_copy(value);
     }
-    values.erase(std::remove_if(values.begin(), values.end(), [](const std::string& value) {
-        return value.empty();
-    }), values.end());
+    values.erase(std::remove_if(values.begin(), values.end(), [](const std::string& value) { return value.empty(); }),
+                 values.end());
     std::sort(values.begin(), values.end());
     values.erase(std::unique(values.begin(), values.end()), values.end());
     return values;
@@ -101,7 +98,8 @@ std::map<std::string, std::vector<RepositoryEntry>> load_repository_map(const so
 void merge_registry_sources(RegistrySourceMap& target, const RegistrySourceMap& source);
 
 template <typename Enum>
-void assign_if_present(const sol::table& table, const char* key, std::optional<Enum> (*converter)(const std::string&), Enum& target) {
+void assign_if_present(const sol::table& table, const char* key, std::optional<Enum> (*converter)(const std::string&),
+                       Enum& target) {
     const sol::optional<std::string> value = table[key];
     if (!value.has_value()) {
         return;
@@ -113,12 +111,11 @@ void assign_if_present(const sol::table& table, const char* key, std::optional<E
     }
 }
 
-template <typename T>
-void assign_if_present(const sol::table& table, const char* key, T& target) {
+template <typename T> void assign_if_present(const sol::table& table, const char* key, T& target) {
     const sol::optional<T> value = table[key];
     if (value.has_value()) {
         target = value.value();
     }
 }
 
-}  // namespace configuration_internal
+} // namespace configuration_internal

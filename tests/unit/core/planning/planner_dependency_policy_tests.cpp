@@ -7,15 +7,14 @@
 
 #include "core/planning/planner.h"
 #include "core/registry/registry.h"
-#include "core/registry/registry.h"
 
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -28,7 +27,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -50,12 +49,9 @@ ReqPackConfig make_planner_config(const std::filesystem::path& root) {
     return config;
 }
 
-std::filesystem::path add_plugin_script(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content,
-    const std::vector<std::string>& dependencySpecs = {}
-) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content,
+                                        const std::vector<std::string>& dependencySpecs = {}) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
     std::string manifest = "return {\n  apiVersion = 1,\n  depends = {";
     if (!dependencySpecs.empty()) {
@@ -67,15 +63,20 @@ std::filesystem::path add_plugin_script(
     }
     manifest += "}\n}\n";
 
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", manifest);
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -156,7 +157,7 @@ function plugin.info(context, package) return { name = package, version = "1.0.0
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("planner expands reqpack.lua depends into ensure dependency packages", "[unit][planner_dependency]") {
     TempDir tempDir{"reqpack-planner-depends"};
@@ -169,7 +170,8 @@ TEST_CASE("planner expands reqpack.lua depends into ensure dependency packages",
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+    std::unique_ptr<Graph> graph(
+        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "app", "demo"));
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
@@ -302,7 +304,8 @@ TEST_CASE("planner auto-downloads missing dependency plugins when enabled", "[un
     REQUIRE(registry.getDatabase()->ensureReady());
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+    std::unique_ptr<Graph> graph(
+        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
     CHECK(std::filesystem::exists(tempDir.path() / "plugins" / "dep" / "run.lua"));
@@ -320,7 +323,8 @@ TEST_CASE("planner topologically sorts graph when configured", "[unit][planner_d
     registry.scanDirectory(config.registry.pluginDirectory);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+    std::unique_ptr<Graph> graph(
+        planner.plan({Request{.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "app", "demo"));
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
@@ -334,7 +338,8 @@ TEST_CASE("planner passes security gateway systems through install filtering", "
     Registry registry(config);
     Planner planner(&registry, registry.getDatabase(), config);
 
-    std::unique_ptr<Graph> graph(planner.plan({Request{.action = ActionType::INSTALL, .system = "snyk", .packages = {"pkg"}}}));
+    std::unique_ptr<Graph> graph(
+        planner.plan({Request{.action = ActionType::INSTALL, .system = "snyk", .packages = {"pkg"}}}));
     REQUIRE(graph != nullptr);
     CHECK(graph_contains_package(*graph, "snyk", "pkg"));
 }

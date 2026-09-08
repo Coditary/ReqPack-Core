@@ -23,7 +23,7 @@ sol::state make_lua() {
     return lua;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("exec rules parser accepts valid unified rules", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
@@ -82,10 +82,7 @@ TEST_CASE("exec rules parser rejects invalid source", "[unit][exec_rules][parse]
         }
     )");
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(rulesObject),
-        Catch::Contains("source must be 'line' or 'screen'")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(rulesObject), Catch::Contains("source must be 'line' or 'screen'"));
 }
 
 TEST_CASE("exec rules parser rejects missing action fields", "[unit][exec_rules][parse]") {
@@ -104,10 +101,8 @@ TEST_CASE("exec rules parser rejects missing action fields", "[unit][exec_rules]
         }
     )");
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(rulesObject),
-        Catch::Contains("progress action requires field 'percent', 'current', 'total', or 'speed'")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(rulesObject),
+                        Catch::Contains("progress action requires field 'percent', 'current', 'total', or 'speed'"));
 }
 
 TEST_CASE("exec rules parser accepts rich progress fields without percent", "[unit][exec_rules][parse]") {
@@ -148,27 +143,20 @@ TEST_CASE("exec rules parser rejects unknown action type", "[unit][exec_rules][p
         }
     )");
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(rulesObject),
-        Catch::Contains("action type 'explode' is unknown")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(rulesObject), Catch::Contains("action type 'explode' is unknown"));
 }
 
 TEST_CASE("exec rules parser rejects malformed top-level rules shape", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, "return 'not-a-table'")),
-        Catch::Contains("rules must be a table")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, "return 'not-a-table'")),
+                        Catch::Contains("rules must be a table"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, "return { rules = 'broken' }")),
-        Catch::Contains("rules.rules must be an array-style table")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, "return { rules = 'broken' }")),
+                        Catch::Contains("rules.rules must be an array-style table"));
 }
 
-TEST_CASE("exec rules parser rejects invalid regex patterns", "[unit][exec_rules][parse]" ) {
+TEST_CASE("exec rules parser rejects invalid regex patterns", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
     const sol::object rulesObject = eval_lua(lua, R"(
         return {
@@ -184,10 +172,7 @@ TEST_CASE("exec rules parser rejects invalid regex patterns", "[unit][exec_rules
         }
     )");
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(rulesObject),
-        Catch::Contains("regex failed to compile")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(rulesObject), Catch::Contains("regex failed to compile"));
 }
 
 TEST_CASE("exec rule runner mode is derived from rules", "[unit][exec_rules][parse]") {
@@ -255,107 +240,79 @@ TEST_CASE("exec rules parser accepts diagnostic action types", "[unit][exec_rule
 TEST_CASE("exec rules parser rejects missing fields for diagnostic actions", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "log" } } } } }
         )")),
-        Catch::Contains("log action requires field 'message'")
-    );
+                        Catch::Contains("log action requires field 'message'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "status" } } } } }
         )")),
-        Catch::Contains("status action requires field 'code'")
-    );
+                        Catch::Contains("status action requires field 'code'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "begin_step" } } } } }
         )")),
-        Catch::Contains("begin_step action requires field 'label'")
-    );
+                        Catch::Contains("begin_step action requires field 'label'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "failed" } } } } }
         )")),
-        Catch::Contains("failed action requires field 'message'")
-    );
+                        Catch::Contains("failed action requires field 'message'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "artifact" } } } } }
         )")),
-        Catch::Contains("artifact action requires field 'payload'")
-    );
+                        Catch::Contains("artifact action requires field 'payload'"));
 }
 
 TEST_CASE("exec rules parser rejects malformed rule tables", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = {} } } }
         )")),
-        Catch::Contains("actions must not be empty")
-    );
+                        Catch::Contains("actions must not be empty"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "send" } } } } }
         )")),
-        Catch::Contains("action requires field 'value'")
-    );
+                        Catch::Contains("action requires field 'value'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", ["repeat"] = "yes", actions = { { type = "log", message = "x" } } } } }
         )")),
-        Catch::Contains("repeat must be a boolean")
-    );
+                        Catch::Contains("repeat must be a boolean"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", unknown = true, actions = { { type = "log", message = "x" } } } } }
         )")),
-        Catch::Contains("contains unknown key 'unknown'")
-    );
+                        Catch::Contains("contains unknown key 'unknown'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { [1] = { source = "line", regex = "x", actions = { { type = "log", message = "x" } } }, [3] = { source = "line", regex = "y", actions = { { type = "log", message = "y" } } } } }
         )")),
-        Catch::Contains("must be contiguous and start at index 1")
-    );
+                        Catch::Contains("must be contiguous and start at index 1"));
 }
 
 TEST_CASE("exec rules parser rejects invalid top-level and action shapes", "[unit][exec_rules][parse]") {
     sol::state lua = make_lua();
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, "return { initial = 1, rules = {} }")),
-        Catch::Contains("rules.initial must be a string")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, "return { initial = 1, rules = {} }")),
+                        Catch::Contains("rules.initial must be a string"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, "return { extra = true, rules = {} }")),
-        Catch::Contains("contains unknown top-level key 'extra'")
-    );
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, "return { extra = true, rules = {} }")),
+                        Catch::Contains("contains unknown top-level key 'extra'"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { type = "log", message = { nested = true } } } } } }
         )")),
-        Catch::Contains("contains unsupported nested value")
-    );
+                        Catch::Contains("contains unsupported nested value"));
 
-    REQUIRE_THROWS_WITH(
-        parse_exec_rules(eval_lua(lua, R"(
+    REQUIRE_THROWS_WITH(parse_exec_rules(eval_lua(lua, R"(
             return { rules = { { source = "line", regex = "x", actions = { { message = "x" } } } } }
         )")),
-        Catch::Contains("is missing field 'type'")
-    );
+                        Catch::Contains("is missing field 'type'"));
 }
 
 TEST_CASE("exec rules parser coerces scalar action field types", "[unit][exec_rules][parse]") {

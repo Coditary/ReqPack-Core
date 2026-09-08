@@ -1,5 +1,5 @@
-#include "transaction_database_internal.h"
 #include "core/state/transaction_database_core.h"
+#include "transaction_database_internal.h"
 
 #include <filesystem>
 
@@ -30,7 +30,7 @@ bool delete_value(MDB_txn* transaction, MDB_dbi database, const std::string& key
     return mdb_del(transaction, database, &dbKey, nullptr) == MDB_SUCCESS;
 }
 
-}  // namespace transaction_database_internal
+} // namespace transaction_database_internal
 
 bool TransactionDatabase::initStorage() const {
     std::lock_guard<std::mutex> lock(this->mutex);
@@ -103,7 +103,8 @@ std::optional<std::string> TransactionDatabase::loadString(const std::string& ke
     return value;
 }
 
-std::vector<std::pair<std::string, std::string>> TransactionDatabase::loadPrefixedEntries(const std::string& prefix) const {
+std::vector<std::pair<std::string, std::string>>
+TransactionDatabase::loadPrefixedEntries(const std::string& prefix) const {
     std::vector<std::pair<std::string, std::string>> entries;
     if (!this->ensureReady()) {
         return entries;

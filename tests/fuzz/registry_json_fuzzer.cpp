@@ -11,8 +11,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         return 0;
     }
 
-    const std::filesystem::path path =
-        std::filesystem::temp_directory_path() / "reqpack-core-fuzz-registry.json";
+    const std::filesystem::path path = std::filesystem::temp_directory_path() / "reqpack-core-fuzz-registry.json";
     {
         std::ofstream output(path, std::ios::binary);
         output.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));

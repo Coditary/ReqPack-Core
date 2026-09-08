@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <iomanip>
 #include <optional>
 #include <sstream>
@@ -132,10 +132,8 @@ std::vector<std::string> wrap_table_text(const std::string& value, const std::si
     return lines;
 }
 
-std::array<std::size_t, TABLE_COLUMNS.size()> table_column_widths(
-    const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows,
-    const std::size_t width
-) {
+std::array<std::size_t, TABLE_COLUMNS.size()>
+table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows, const std::size_t width) {
     std::array<std::size_t, TABLE_COLUMNS.size()> widths{};
     std::size_t usedWidth = 0;
     for (std::size_t index = 0; index < TABLE_COLUMNS.size(); ++index) {
@@ -175,11 +173,8 @@ std::array<std::size_t, TABLE_COLUMNS.size()> table_column_widths(
     return widths;
 }
 
-std::size_t table_message_width(
-    const std::array<std::size_t, TABLE_COLUMNS.size()>& widths,
-    const std::size_t terminalWidth,
-    const bool wideTable
-) {
+std::size_t table_message_width(const std::array<std::size_t, TABLE_COLUMNS.size()>& widths,
+                                const std::size_t terminalWidth, const bool wideTable) {
     std::size_t usedWidth = TABLE_COLUMNS.size() * TABLE_GAP_WIDTH;
     for (const std::size_t width : widths) {
         usedWidth += width;
@@ -200,13 +195,8 @@ std::string padded_table_cell(const std::string& value, const std::size_t width)
     return stream.str();
 }
 
-void append_table_cell(
-    std::ostringstream& stream,
-    const std::string& value,
-    const std::size_t width,
-    const std::string& colorSpec = {},
-    const bool trailingGap = true
-) {
+void append_table_cell(std::ostringstream& stream, const std::string& value, const std::size_t width,
+                       const std::string& colorSpec = {}, const bool trailingGap = true) {
     const std::string cell = padded_table_cell(value, width);
     if (colorSpec.empty()) {
         stream << cell;
@@ -270,7 +260,7 @@ std::optional<Package> find_matching_package(const Graph& graph, const Validatio
     return std::nullopt;
 }
 
-}  // namespace
+} // namespace
 
 namespace audit_exporter_internal {
 
@@ -284,15 +274,11 @@ bool table_colors_enabled() {
     return reqpack_stdout_is_tty();
 }
 
-}  // namespace audit_exporter_internal
+} // namespace audit_exporter_internal
 
-std::string AuditExporter::renderTable(
-    const Graph& graph,
-    const std::vector<ValidationFinding>& findings,
-    const bool colorizeSeverity,
-    const bool disableWrap,
-    const bool wideTable
-) const {
+std::string AuditExporter::renderTable(const Graph& graph, const std::vector<ValidationFinding>& findings,
+                                       const bool colorizeSeverity, const bool disableWrap,
+                                       const bool wideTable) const {
     std::ostringstream stream;
     if (findings.empty()) {
         stream << "No vulnerabilities or audit findings detected.\n";
@@ -336,19 +322,15 @@ std::string AuditExporter::renderTable(
     stream << std::string(std::max<std::size_t>(7, messageWidth), '-') << '\n';
 
     for (std::size_t rowIndex = 0; rowIndex < findings.size(); ++rowIndex) {
-        const auto messageLines = disableWrap
-            ? std::vector<std::string>{normalize_table_value(messages[rowIndex])}
-            : wrap_table_text(messages[rowIndex], messageWidth);
-        const std::string severityColor = colorizeSeverity ? severity_color_spec_for(findings[rowIndex]) : std::string{};
+        const auto messageLines = disableWrap ? std::vector<std::string>{normalize_table_value(messages[rowIndex])}
+                                              : wrap_table_text(messages[rowIndex], messageWidth);
+        const std::string severityColor =
+            colorizeSeverity ? severity_color_spec_for(findings[rowIndex]) : std::string{};
         for (std::size_t lineIndex = 0; lineIndex < messageLines.size(); ++lineIndex) {
             for (std::size_t columnIndex = 0; columnIndex < TABLE_COLUMNS.size(); ++columnIndex) {
                 const bool colorizeColumn = lineIndex == 0 && columnIndex == 4 && !severityColor.empty();
-                append_table_cell(
-                    stream,
-                    lineIndex == 0 ? rows[rowIndex][columnIndex] : "",
-                    widths[columnIndex],
-                    colorizeColumn ? severityColor : std::string{}
-                );
+                append_table_cell(stream, lineIndex == 0 ? rows[rowIndex][columnIndex] : "", widths[columnIndex],
+                                  colorizeColumn ? severityColor : std::string{});
             }
             stream << messageLines[lineIndex] << '\n';
         }

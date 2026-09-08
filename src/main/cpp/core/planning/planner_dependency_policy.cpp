@@ -15,23 +15,22 @@ std::filesystem::path requirements_marker_path(const ReqPackConfig& config, cons
 
 void set_internal_ensure_order_flag(Package& package, const std::size_t order) {
     const std::string prefix(INTERNAL_ENSURE_ORDER_FLAG_PREFIX);
-    package.flags.erase(std::remove_if(package.flags.begin(), package.flags.end(), [&](const std::string& flag) {
-        return flag.rfind(prefix, 0) == 0;
-    }), package.flags.end());
+    package.flags.erase(std::remove_if(package.flags.begin(), package.flags.end(),
+                                       [&](const std::string& flag) { return flag.rfind(prefix, 0) == 0; }),
+                        package.flags.end());
     package.flags.push_back(prefix + std::to_string(order));
 }
 
 void propagate_internal_ensure_order_flag(const Package& source, Package& target) {
     const std::string prefix(INTERNAL_ENSURE_ORDER_FLAG_PREFIX);
-    const auto it = std::find_if(source.flags.begin(), source.flags.end(), [&](const std::string& flag) {
-        return flag.rfind(prefix, 0) == 0;
-    });
+    const auto it = std::find_if(source.flags.begin(), source.flags.end(),
+                                 [&](const std::string& flag) { return flag.rfind(prefix, 0) == 0; });
     if (it == source.flags.end()) {
         return;
     }
-    target.flags.erase(std::remove_if(target.flags.begin(), target.flags.end(), [&](const std::string& flag) {
-        return flag.rfind(prefix, 0) == 0;
-    }), target.flags.end());
+    target.flags.erase(std::remove_if(target.flags.begin(), target.flags.end(),
+                                      [&](const std::string& flag) { return flag.rfind(prefix, 0) == 0; }),
+                       target.flags.end());
     target.flags.push_back(*it);
 }
 
@@ -55,7 +54,7 @@ IPlugin* load_plugin_for_use(Registry* registry, const std::string& system) {
     return registry->getPlugin(system);
 }
 
-}  // namespace planner_internal
+} // namespace planner_internal
 
 bool Planner::shouldInstallPluginDependencies(const std::string& system) const {
     const std::string resolvedSystem = this->registry->resolvePluginName(system);
@@ -80,9 +79,7 @@ bool Planner::pluginRequirementsSatisfied(const std::string& system) const {
     std::vector<Package> requirements;
     for (Package dependency : plugin_bundle_dependency_packages(layout.value())) {
         requirements.push_back(planner_internal::resolve_dependency_system(
-            planner_normalize_dependency(std::move(dependency), system),
-            this->registry
-        ));
+            planner_normalize_dependency(std::move(dependency), system), this->registry));
     }
 
     return this->filterMissingDependencies(requirements).empty();
@@ -168,9 +165,7 @@ std::vector<Package> Planner::collectPluginDependencies(const std::vector<Reques
 
         for (Package dependency : plugin_bundle_dependency_packages(layout.value())) {
             Package normalizedDependency = planner_internal::resolve_dependency_system(
-                planner_normalize_dependency(std::move(dependency), request.system),
-                this->registry
-            );
+                planner_normalize_dependency(std::move(dependency), request.system), this->registry);
             normalizedDependency.action = ActionType::ENSURE;
             planner_internal::set_internal_ensure_order_flag(normalizedDependency, requestIndex);
             dependencies.push_back(std::move(normalizedDependency));
@@ -214,7 +209,8 @@ std::vector<Package> Planner::filterMissingDependencies(const std::vector<Packag
     for (auto& [system, systemDependencies] : dependenciesBySystem) {
         IPlugin* plugin = pluginsBySystem[system];
         const std::vector<Package> pluginMissingDependencies = plugin->getMissingPackages(systemDependencies);
-        missingDependencies.insert(missingDependencies.end(), pluginMissingDependencies.begin(), pluginMissingDependencies.end());
+        missingDependencies.insert(missingDependencies.end(), pluginMissingDependencies.begin(),
+                                   pluginMissingDependencies.end());
     }
 
     return missingDependencies;

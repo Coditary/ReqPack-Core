@@ -13,8 +13,7 @@ namespace {
 
 std::string registry_now_epoch_seconds() {
     return std::to_string(
-        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()
-    );
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 std::vector<std::filesystem::path> collect_registry_json_files(const std::filesystem::path& root) {
@@ -25,8 +24,7 @@ std::vector<std::filesystem::path> collect_registry_json_files(const std::filesy
     }
 
     for (auto it = std::filesystem::recursive_directory_iterator(root, error);
-         it != std::filesystem::recursive_directory_iterator();
-         it.increment(error)) {
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error) {
             return {};
         }
@@ -48,13 +46,11 @@ bool path_has_json_extension(const std::string& path) {
     return std::filesystem::path(path).extension() == ".json";
 }
 
-}  // namespace
+} // namespace
 
 bool RegistryDatabase::bootstrap_registry() const {
     const RegistrySourceMap explicitSources = collect_explicit_registry_sources(this->config);
-    const auto seedExplicitSources = [&]() {
-        return explicitSources.empty() || this->write_records(explicitSources);
-    };
+    const auto seedExplicitSources = [&]() { return explicitSources.empty() || this->write_records(explicitSources); };
 
     if (!is_json_registry_remote(this->config)) {
         return seedExplicitSources();
@@ -102,15 +98,14 @@ bool RegistryDatabase::sync_main_registry(bool* changed, bool forceRefresh) cons
         return true;
     }
 
-    const std::string source = registry_database_git_source_with_ref(
-        this->config.registry.remoteUrl,
-        this->config.registry.remoteBranch
-    );
+    const std::string source =
+        registry_database_git_source_with_ref(this->config.registry.remoteUrl, this->config.registry.remoteBranch);
     if (!sync_git_repository(this->config, source, "main-registry")) {
         return !this->load_all_records().empty();
     }
 
-    const std::filesystem::path repositoryPath = registry_database_git_repository_cache_path(this->config, source, "main-registry");
+    const std::filesystem::path repositoryPath =
+        registry_database_git_repository_cache_path(this->config, source, "main-registry");
     const std::filesystem::path pluginsRoot = repositoryPath / this->config.registry.remotePluginsPath;
     if (!std::filesystem::exists(pluginsRoot)) {
         return !this->load_all_records().empty();
@@ -122,8 +117,8 @@ bool RegistryDatabase::sync_main_registry(bool* changed, bool forceRefresh) cons
     }
 
     const std::optional<std::string> storedCommit = this->load_meta_value(REGISTRY_META_KEY_LAST_COMMIT);
-    if (!forceRefresh && !this->should_refresh_registry() &&
-        storedCommit.has_value() && !storedCommit->empty() && *storedCommit == *currentCommit) {
+    if (!forceRefresh && !this->should_refresh_registry() && storedCommit.has_value() && !storedCommit->empty() &&
+        *storedCommit == *currentCommit) {
         return !this->load_all_records().empty();
     }
 
@@ -159,12 +154,8 @@ bool RegistryDatabase::sync_main_registry(bool* changed, bool forceRefresh) cons
         return this->sync_records({}, false, false, baseMetaValues);
     }
 
-    const std::optional<std::vector<RegistryDiffEntry>> diffEntries = git_registry_diff(
-        repositoryPath,
-        *previousCommit,
-        *currentCommit,
-        this->config.registry.remotePluginsPath
-    );
+    const std::optional<std::vector<RegistryDiffEntry>> diffEntries =
+        git_registry_diff(repositoryPath, *previousCommit, *currentCommit, this->config.registry.remotePluginsPath);
     if (!diffEntries.has_value()) {
         std::vector<RegistryRecord> records;
         try {
@@ -218,12 +209,8 @@ bool RegistryDatabase::sync_main_registry(bool* changed, bool forceRefresh) cons
     if (changed != nullptr) {
         *changed = true;
     }
-    const bool synced = this->sync_records(
-        records,
-        false,
-        false,
-        baseMetaValues,
-        std::vector<std::string>(originPathsToDelete.begin(), originPathsToDelete.end())
-    );
+    const bool synced =
+        this->sync_records(records, false, false, baseMetaValues,
+                           std::vector<std::string>(originPathsToDelete.begin(), originPathsToDelete.end()));
     return synced || !this->load_all_records().empty();
 }

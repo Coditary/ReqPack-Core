@@ -17,4 +17,4 @@ bool load_value(MDB_txn* transaction, MDB_dbi database, const std::string& key, 
 bool put_value(MDB_txn* transaction, MDB_dbi database, const std::string& key, const std::string& value);
 bool delete_value(MDB_txn* transaction, MDB_dbi database, const std::string& key);
 
-}  // namespace transaction_database_internal
+} // namespace transaction_database_internal

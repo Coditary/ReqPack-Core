@@ -8,10 +8,7 @@
 #include "plugins/lua_bridge_value_mapper.h"
 
 LuaBridge::LuaBridge(const std::string& scriptPath, const ReqPackConfig& config)
-    : m_scriptPath(scriptPath),
-      m_config(config),
-      m_logger(Logger::instance()),
-      m_runtime(),
+    : m_scriptPath(scriptPath), m_config(config), m_logger(Logger::instance()), m_runtime(),
       m_hostRuntime(m_logger, m_config, m_pluginId, m_pluginDirectory, &m_securityMetadata),
       m_bindings(m_runtime, m_hostRuntime) {
     m_bindings.registerBuiltinTypes();
@@ -20,7 +17,8 @@ LuaBridge::LuaBridge(const std::string& scriptPath, const ReqPackConfig& config)
     const std::filesystem::path resolvedScriptPath(scriptPath);
     m_pluginDirectory = resolvedScriptPath.parent_path().string();
     m_pluginId = resolvedScriptPath.parent_path().filename().string();
-    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(resolvedScriptPath.parent_path()); layout.has_value()) {
+    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(resolvedScriptPath.parent_path());
+        layout.has_value()) {
         if (!layout->metadata.name.empty()) {
             m_pluginId = layout->metadata.name;
         }
@@ -64,7 +62,8 @@ LuaBridge::LuaBridge(const std::string& scriptPath, const ReqPackConfig& config)
         }
     }
 
-    if (const sol::protected_function getSecurityMetadata = m_runtime.pluginFunction("getSecurityMetadata"); getSecurityMetadata.valid()) {
+    if (const sol::protected_function getSecurityMetadata = m_runtime.pluginFunction("getSecurityMetadata");
+        getSecurityMetadata.valid()) {
         auto result = getSecurityMetadata();
         if (result.valid() && result.return_count() > 0) {
             m_securityMetadata = LuaBridgeValueMapper::pluginSecurityMetadataFromObject(result.get<sol::object>());
@@ -82,16 +81,14 @@ LuaBridge::LuaBridge(const std::string& scriptPath, const ReqPackConfig& config)
 }
 
 PluginCallContext LuaBridge::makeContext(const std::vector<std::string>& flags) const {
-    return PluginCallContext{
-        .pluginId = m_pluginId,
-        .pluginDirectory = m_pluginDirectory,
-        .scriptPath = m_scriptPath,
-        .flags = flags,
-        .host = const_cast<LuaBridge*>(this),
-        .proxy = proxy_config_for_system(m_config, m_pluginId),
-        .repositories = repositories_for_ecosystem(m_config, m_pluginId),
-        .hostInfo = HostInfoService::currentSnapshot()
-    };
+    return PluginCallContext{.pluginId = m_pluginId,
+                             .pluginDirectory = m_pluginDirectory,
+                             .scriptPath = m_scriptPath,
+                             .flags = flags,
+                             .host = const_cast<LuaBridge*>(this),
+                             .proxy = proxy_config_for_system(m_config, m_pluginId),
+                             .repositories = repositories_for_ecosystem(m_config, m_pluginId),
+                             .hostInfo = HostInfoService::currentSnapshot()};
 }
 
 bool LuaBridge::init() {
@@ -118,7 +115,8 @@ bool LuaBridge::shutdown() {
     const bool shutdownOk = luaShutdown.valid() ? [&]() {
         auto result = luaShutdown();
         return result.valid() ? (result.return_count() == 0 ? true : result.get<bool>()) : false;
-    }() : true;
+    }()
+                                                : true;
 
     m_hostRuntime.cleanupAfterShutdown();
     return shutdownOk;

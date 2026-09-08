@@ -208,10 +208,8 @@ std::string zstd_compress(const std::string& content) {
     return output;
 }
 
-std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(
-    const std::filesystem::path& payloadRoot,
-    std::uint64_t& installedSize
-) {
+std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(const std::filesystem::path& payloadRoot,
+                                                                             std::uint64_t& installedSize) {
     if (!rq_package_internal::is_directory_no_error(payloadRoot)) {
         throw std::runtime_error("payload directory not found: " + payloadRoot.string());
     }
@@ -219,8 +217,7 @@ std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(
     std::vector<rq_package_internal::TarWriteEntry> entries;
     std::error_code error;
     for (auto it = std::filesystem::recursive_directory_iterator(payloadRoot, error);
-         it != std::filesystem::recursive_directory_iterator();
-         it.increment(error)) {
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error) {
             throw std::runtime_error("failed to walk payload tree: " + payloadRoot.string());
         }
@@ -284,7 +281,7 @@ std::vector<rq_package_internal::TarWriteEntry> collect_payload_tree_entries(
     return entries;
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_package_internal {
 
@@ -322,7 +319,8 @@ std::vector<TarEntry> parse_tar_entries(const std::string& content) {
         if (size > 0) {
             data.assign(content.data() + offset, static_cast<std::size_t>(size));
         }
-        const std::size_t paddedSize = static_cast<std::size_t>(((size + TAR_BLOCK_SIZE - 1) / TAR_BLOCK_SIZE) * TAR_BLOCK_SIZE);
+        const std::size_t paddedSize =
+            static_cast<std::size_t>(((size + TAR_BLOCK_SIZE - 1) / TAR_BLOCK_SIZE) * TAR_BLOCK_SIZE);
         offset += paddedSize;
 
         if (type == 'L') {
@@ -350,7 +348,8 @@ void validate_payload_metadata_shape(const RqPayloadMetadata& payload) {
     if (payload.path != "payload/payload.tar.zst") {
         throw std::runtime_error("unsupported payload path");
     }
-    if (payload.archive != "tar" || payload.compression != "zstd" || payload.hashAlgorithm != "sha256" || payload.hashFile != "hashes/payload.sha256") {
+    if (payload.archive != "tar" || payload.compression != "zstd" || payload.hashAlgorithm != "sha256" ||
+        payload.hashFile != "hashes/payload.sha256") {
         throw std::runtime_error("unsupported payload metadata values");
     }
 }
@@ -379,7 +378,8 @@ std::string tar_bytes_from_entries(std::vector<TarWriteEntry> entries) {
     return output;
 }
 
-PayloadBuildArtifacts build_payload_from_prebuilt(const RqMetadata& metadata, const std::filesystem::path& projectRoot) {
+PayloadBuildArtifacts build_payload_from_prebuilt(const RqMetadata& metadata,
+                                                  const std::filesystem::path& projectRoot) {
     if (!metadata.payload.has_value()) {
         throw std::runtime_error("payload files present but metadata.payload missing");
     }
@@ -462,9 +462,8 @@ std::string load_payload_hash(const std::string& hashFileContent) {
     if (path != "payload/payload.tar.zst") {
         throw std::runtime_error("payload hash file points to unexpected path");
     }
-    if (hash.size() != 64 || !std::all_of(hash.begin(), hash.end(), [](unsigned char ch) {
-            return std::isxdigit(ch) != 0;
-        })) {
+    if (hash.size() != 64 ||
+        !std::all_of(hash.begin(), hash.end(), [](unsigned char ch) { return std::isxdigit(ch) != 0; })) {
         throw std::runtime_error("payload hash is not valid sha256");
     }
     return to_lower_copy(hash);
@@ -485,7 +484,8 @@ std::string zstd_decompress(const std::string& compressed) {
     return output;
 }
 
-void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::filesystem::path& root, const std::filesystem::path& relativeRoot) {
+void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::filesystem::path& root,
+                               const std::filesystem::path& relativeRoot) {
     if (!exists_no_error(root)) {
         return;
     }
@@ -495,8 +495,7 @@ void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::f
 
     std::error_code error;
     for (auto it = std::filesystem::recursive_directory_iterator(root, error);
-         it != std::filesystem::recursive_directory_iterator();
-         it.increment(error)) {
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error) {
             throw std::runtime_error("failed to read reserved directory: " + root.string());
         }
@@ -558,4 +557,4 @@ void extract_tar_to_directory(const std::string& tarContent, const std::filesyst
     }
 }
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal

@@ -10,20 +10,20 @@
 #include <tuple>
 #include <vector>
 
-#include "plugins/rqp_plugin.h"
 #include "core/common/types.h"
 #include "core/host/host_info.h"
 #include "core/registry/registry.h"
 #include "core/state/rqp_state_store.h"
+#include "plugins/rqp_plugin.h"
 #include "test_helpers.h"
 
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -36,7 +36,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -47,31 +47,33 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-std::filesystem::path build_rqp_package(
-    const std::filesystem::path& root,
-    const std::string& name,
-    const std::string& version = "1.0.0"
-) {
+std::filesystem::path build_rqp_package(const std::filesystem::path& root, const std::string& name,
+                                        const std::string& version = "1.0.0") {
     const std::filesystem::path packageRoot = root / (name + "-pkg");
     const std::filesystem::path controlRoot = packageRoot / "control";
     std::filesystem::create_directories(controlRoot / "scripts");
 
-    write_file(controlRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + name + "\",\n"
-        "  \"version\": \"" + version + "\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"test package\",\n"
-        "  \"description\": \"rqp plugin test package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"tags\": [\"test\"],\n"
-        "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-        "}\n");
+    write_file(controlRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"" +
+                                                  name +
+                                                  "\",\n"
+                                                  "  \"version\": \"" +
+                                                  version +
+                                                  "\",\n"
+                                                  "  \"release\": 1,\n"
+                                                  "  \"revision\": 0,\n"
+                                                  "  \"summary\": \"test package\",\n"
+                                                  "  \"description\": \"rqp plugin test package\",\n"
+                                                  "  \"license\": \"MIT\",\n"
+                                                  "  \"architecture\": \"noarch\",\n"
+                                                  "  \"vendor\": \"ReqPack Tests\",\n"
+                                                  "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                  "  \"tags\": [\"test\"],\n"
+                                                  "  \"url\": \"https://example.test/" +
+                                                  name +
+                                                  ".rqp\"\n"
+                                                  "}\n");
     write_file(controlRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -85,7 +87,9 @@ return {
     write_file(controlRoot / "scripts" / "remove.lua", "return true\n");
 
     const std::filesystem::path packagePath = root / (name + ".rqp");
-    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .").c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " +
+                         escape_shell_arg(packagePath.string()) + " .")
+                            .c_str()) == 0);
     return packagePath;
 }
 
@@ -96,49 +100,57 @@ std::string sha256_file_hex(const std::filesystem::path& path) {
     return hashOutput.substr(pos + 1, 64);
 }
 
-std::filesystem::path write_repository_index(
-    const std::filesystem::path& root,
-    const std::string& packageName,
-    const std::string& packageVersion,
-    const std::filesystem::path& artifactPath,
-    const std::optional<std::string>& packageSha256 = std::nullopt
-) {
+std::filesystem::path write_repository_index(const std::filesystem::path& root, const std::string& packageName,
+                                             const std::string& packageVersion,
+                                             const std::filesystem::path& artifactPath,
+                                             const std::optional<std::string>& packageSha256 = std::nullopt) {
     const std::filesystem::path indexPath = root / "index.json";
-    write_file(indexPath,
+    write_file(
+        indexPath,
         "{\n"
         "  \"schemaVersion\": 1,\n"
         "  \"packages\": [\n"
         "    {\n"
-        "      \"name\": \"" + packageName + "\",\n"
-        "      \"version\": \"" + packageVersion + "\",\n"
-        "      \"release\": 1,\n"
-        "      \"revision\": 0,\n"
-        "      \"architecture\": \"noarch\",\n"
-        "      \"summary\": \"repo package\",\n"
-        "      \"url\": \"file://" + artifactPath.string() + "\""
-        + (packageSha256.has_value() ? ",\n      \"packageSha256\": \"" + packageSha256.value() + "\"\n" : "\n") +
-        "    }\n"
-        "  ]\n"
-        "}\n");
+        "      \"name\": \"" +
+            packageName +
+            "\",\n"
+            "      \"version\": \"" +
+            packageVersion +
+            "\",\n"
+            "      \"release\": 1,\n"
+            "      \"revision\": 0,\n"
+            "      \"architecture\": \"noarch\",\n"
+            "      \"summary\": \"repo package\",\n"
+            "      \"url\": \"file://" +
+            artifactPath.string() + "\"" +
+            (packageSha256.has_value() ? ",\n      \"packageSha256\": \"" + packageSha256.value() + "\"\n" : "\n") +
+            "    }\n"
+            "  ]\n"
+            "}\n");
     return indexPath;
 }
 
 std::filesystem::path write_repository_index_multi(
     const std::filesystem::path& root,
-    const std::vector<std::tuple<std::string, std::string, std::filesystem::path, std::optional<std::string>>>& packages
-) {
+    const std::vector<std::tuple<std::string, std::string, std::filesystem::path, std::optional<std::string>>>&
+        packages) {
     const std::filesystem::path indexPath = root / "index.json";
     std::string entries;
     for (std::size_t index = 0; index < packages.size(); ++index) {
         const auto& [packageName, packageVersion, artifactPath, packageSha256] = packages[index];
         entries += "    {\n"
-            "      \"name\": \"" + packageName + "\",\n"
-            "      \"version\": \"" + packageVersion + "\",\n"
-            "      \"release\": 1,\n"
-            "      \"revision\": 0,\n"
-            "      \"architecture\": \"noarch\",\n"
-            "      \"summary\": \"repo package\",\n"
-            "      \"url\": \"file://" + artifactPath.string() + "\"";
+                   "      \"name\": \"" +
+                   packageName +
+                   "\",\n"
+                   "      \"version\": \"" +
+                   packageVersion +
+                   "\",\n"
+                   "      \"release\": 1,\n"
+                   "      \"revision\": 0,\n"
+                   "      \"architecture\": \"noarch\",\n"
+                   "      \"summary\": \"repo package\",\n"
+                   "      \"url\": \"file://" +
+                   artifactPath.string() + "\"";
         if (packageSha256.has_value()) {
             entries += ",\n      \"packageSha256\": \"" + packageSha256.value() + "\"";
         }
@@ -150,32 +162,41 @@ std::filesystem::path write_repository_index_multi(
         }
     }
 
-    write_file(indexPath,
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"packages\": [\n" + entries +
-        "  ]\n"
-        "}\n");
+    write_file(indexPath, "{\n"
+                          "  \"schemaVersion\": 1,\n"
+                          "  \"packages\": [\n" +
+                              entries +
+                              "  ]\n"
+                              "}\n");
     return indexPath;
 }
 
-void write_plugin_bundle(const std::filesystem::path& pluginRoot, const std::string& pluginName, const std::string& version) {
+void write_plugin_bundle(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                         const std::string& version) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"" + version + "\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"" +
+                                                      version +
+                                                      "\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", R"(
 plugin = {}
 
 function plugin.getName() return REQPACK_PLUGIN_ID end
-function plugin.getVersion() return ")" + version + R"(" end
+function plugin.getVersion() return ")" + version +
+                                                R"(" end
 function plugin.getRequirements() return {} end
 function plugin.getCategories() return { "test" } end
 function plugin.getMissingPackages(packages) return packages or {} end
@@ -213,7 +234,7 @@ PluginCallContext make_plugin_context(RqpPlugin& plugin, std::vector<std::string
     };
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("rqp plugin exposes built-in metadata and capabilities", "[unit][rqp_plugin]") {
     TempDir tempDir{"reqpack-rqp-plugin-metadata"};
@@ -263,9 +284,8 @@ TEST_CASE("rqp plugin list and info report installed rqp packages", "[unit][rqp_
     REQUIRE(plugin.installLocal(context, packagePath.string()));
 
     const std::vector<PackageInfo> listed = plugin.list(context);
-    const auto listedIt = std::find_if(listed.begin(), listed.end(), [](const PackageInfo& info) {
-        return info.name == "listed-tool";
-    });
+    const auto listedIt =
+        std::find_if(listed.begin(), listed.end(), [](const PackageInfo& info) { return info.name == "listed-tool"; });
     REQUIRE(listedIt != listed.end());
     CHECK(listedIt->status == "installed");
 
@@ -361,21 +381,20 @@ TEST_CASE("rqp plugin pack builds output archive from project directory", "[unit
     TempDir tempDir{"reqpack-rqp-plugin-pack"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
-    write_file(projectRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"packed-demo\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"packed\",\n"
-        "  \"description\": \"packed\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/packed-demo.rqp\"\n"
-        "}\n");
+    write_file(projectRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"packed-demo\",\n"
+                                              "  \"version\": \"1.0.0\",\n"
+                                              "  \"release\": 1,\n"
+                                              "  \"revision\": 0,\n"
+                                              "  \"summary\": \"packed\",\n"
+                                              "  \"description\": \"packed\",\n"
+                                              "  \"license\": \"MIT\",\n"
+                                              "  \"architecture\": \"noarch\",\n"
+                                              "  \"vendor\": \"ReqPack Tests\",\n"
+                                              "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                              "  \"url\": \"https://example.test/packed-demo.rqp\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -433,12 +452,10 @@ TEST_CASE("rqp plugin update installs newer repository version", "[unit][rqp_plu
     const std::filesystem::path artifactV1 = build_rqp_package(tempDir.path() / "v1", "updatable-demo", "1.0.0");
     const std::filesystem::path artifactV2 = build_rqp_package(tempDir.path() / "v2", "updatable-demo", "1.1.0");
     const std::filesystem::path indexPath = write_repository_index_multi(
-        tempDir.path(),
-        {
-            {"updatable-demo", "1.0.0", artifactV1, sha256_file_hex(artifactV1)},
-            {"updatable-demo", "1.1.0", artifactV2, sha256_file_hex(artifactV2)},
-        }
-    );
+        tempDir.path(), {
+                            {"updatable-demo", "1.0.0", artifactV1, sha256_file_hex(artifactV1)},
+                            {"updatable-demo", "1.1.0", artifactV2, sha256_file_hex(artifactV2)},
+                        });
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -463,13 +480,8 @@ TEST_CASE("rqp plugin install short-circuits when package is already installed",
     TempDir tempDir{"reqpack-rqp-plugin-install-short-circuit"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "already-there", "2.0.0");
-    const std::filesystem::path indexPath = write_repository_index(
-        tempDir.path(),
-        "already-there",
-        "2.0.0",
-        packagePath,
-        sha256_file_hex(packagePath)
-    );
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "already-there", "2.0.0", packagePath, sha256_file_hex(packagePath));
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -488,13 +500,8 @@ TEST_CASE("rqp plugin install fails on repository artifact sha256 mismatch", "[u
     TempDir tempDir{"reqpack-rqp-plugin-install-bad-hash"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "bad-hash", "1.0.0");
-    const std::filesystem::path indexPath = write_repository_index(
-        tempDir.path(),
-        "bad-hash",
-        "1.0.0",
-        packagePath,
-        std::string(64, 'a')
-    );
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "bad-hash", "1.0.0", packagePath, std::string(64, 'a'));
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -537,9 +544,8 @@ TEST_CASE("rqp plugin list includes scanned local plugin directory", "[unit][rqp
     const PluginCallContext context = make_plugin_context(plugin);
 
     const std::vector<PackageInfo> listed = plugin.list(context);
-    const auto pluginIt = std::find_if(listed.begin(), listed.end(), [](const PackageInfo& info) {
-        return info.name == "scanned-demo";
-    });
+    const auto pluginIt =
+        std::find_if(listed.begin(), listed.end(), [](const PackageInfo& info) { return info.name == "scanned-demo"; });
     REQUIRE(pluginIt != listed.end());
     CHECK(pluginIt->status == "installed");
     CHECK(pluginIt->packageType == "plugin");
@@ -564,7 +570,8 @@ TEST_CASE("rqp plugin install uses internal repository flag override", "[unit][r
     ReqPackConfig config = make_plugin_config(tempDir);
     config.rqp.repositories.clear();
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "flagged-repo", "1.0.0");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "flagged-repo", "1.0.0", packagePath);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "flagged-repo", "1.0.0", packagePath);
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());
@@ -598,7 +605,8 @@ TEST_CASE("rqp plugin search finds repository packages by term", "[unit][rqp_plu
     TempDir tempDir{"reqpack-rqp-plugin-search-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "searchable-repo", "6.0.0");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "searchable-repo", "6.0.0", packagePath);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "searchable-repo", "6.0.0", packagePath);
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -606,9 +614,8 @@ TEST_CASE("rqp plugin search finds repository packages by term", "[unit][rqp_plu
     const PluginCallContext context = make_plugin_context(plugin);
 
     const std::vector<PackageInfo> results = plugin.search(context, "searchable repo");
-    const auto match = std::find_if(results.begin(), results.end(), [](const PackageInfo& info) {
-        return info.name == "searchable-repo";
-    });
+    const auto match = std::find_if(results.begin(), results.end(),
+                                    [](const PackageInfo& info) { return info.name == "searchable-repo"; });
     REQUIRE(match != results.end());
     CHECK(match->status == "available");
 }
@@ -652,13 +659,8 @@ TEST_CASE("rqp plugin remove uninstalls repository-installed package", "[unit][r
     TempDir tempDir{"reqpack-rqp-plugin-remove-repo"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "removable-repo", "1.5.0");
-    const std::filesystem::path indexPath = write_repository_index(
-        tempDir.path(),
-        "removable-repo",
-        "1.5.0",
-        packagePath,
-        sha256_file_hex(packagePath)
-    );
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "removable-repo", "1.5.0", packagePath, sha256_file_hex(packagePath));
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -673,7 +675,8 @@ TEST_CASE("rqp plugin remove uninstalls repository-installed package", "[unit][r
     CHECK(RqpStateStore(config).findInstalled("removable-repo", "1.5.0").empty());
 }
 
-void add_registry_plugin_source(ReqPackConfig& config, const TempDir& tempDir, const std::string& pluginName, const std::string& script) {
+void add_registry_plugin_source(ReqPackConfig& config, const TempDir& tempDir, const std::string& pluginName,
+                                const std::string& script) {
     const std::filesystem::path sourceRoot = tempDir.path() / "remote-source";
     write_plugin_bundle(sourceRoot, pluginName, "1.0.0");
     write_file(sourceRoot / pluginName / "run.lua", script);
@@ -739,9 +742,8 @@ function plugin.shutdown() return true end
     const PluginCallContext context = make_plugin_context(plugin);
 
     const std::vector<PackageInfo> results = plugin.search(context, "searchable plugin");
-    const auto match = std::find_if(results.begin(), results.end(), [](const PackageInfo& info) {
-        return info.name == "searchable-plugin";
-    });
+    const auto match = std::find_if(results.begin(), results.end(),
+                                    [](const PackageInfo& info) { return info.name == "searchable-plugin"; });
     REQUIRE(match != results.end());
 }
 
@@ -749,7 +751,8 @@ TEST_CASE("rqp plugin install records unavailable events for missing packages", 
     TempDir tempDir{"reqpack-rqp-plugin-install-missing"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "available-only", "1.0.0");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "available-only", "1.0.0", packagePath);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "available-only", "1.0.0", packagePath);
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -798,10 +801,8 @@ TEST_CASE("rqp plugin installLocal rejects multiple nested rqp files", "[unit][r
     REQUIRE(plugin.init());
     const PluginCallContext context = make_plugin_context(plugin);
 
-    REQUIRE_THROWS_WITH(
-        plugin.installLocal(context, extractedDir.string()),
-        Catch::Matchers::Contains("multiple installable rqp files found in extracted archive")
-    );
+    REQUIRE_THROWS_WITH(plugin.installLocal(context, extractedDir.string()),
+                        Catch::Matchers::Contains("multiple installable rqp files found in extracted archive"));
 }
 
 TEST_CASE("rqp plugin update upgrades repository-installed package", "[unit][rqp_plugin]") {
@@ -810,12 +811,10 @@ TEST_CASE("rqp plugin update upgrades repository-installed package", "[unit][rqp
     const std::filesystem::path packageV1 = build_rqp_package(tempDir.path() / "v1", "update-repo", "1.0.0");
     const std::filesystem::path packageV2 = build_rqp_package(tempDir.path() / "v2", "update-repo", "2.0.0");
     const std::filesystem::path indexPath = write_repository_index_multi(
-        tempDir.path(),
-        {
-            {"update-repo", "1.0.0", packageV1, sha256_file_hex(packageV1)},
-            {"update-repo", "2.0.0", packageV2, sha256_file_hex(packageV2)},
-        }
-    );
+        tempDir.path(), {
+                            {"update-repo", "1.0.0", packageV1, sha256_file_hex(packageV1)},
+                            {"update-repo", "2.0.0", packageV2, sha256_file_hex(packageV2)},
+                        });
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -835,7 +834,7 @@ TEST_CASE("rqp plugin update upgrades repository-installed package", "[unit][rqp
 }
 
 class RecordingDownloadHost final : public IPluginRuntimeHost {
-public:
+  public:
     std::function<DownloadResult(const std::string&, const std::string&)> onDownload;
     std::filesystem::path tempRoot;
 
@@ -868,35 +867,38 @@ public:
         return {};
     }
 
-private:
+  private:
     int tempCounter{0};
 };
 
-std::filesystem::path build_rqp_package_with_manifest_install(
-    const std::filesystem::path& root,
-    const std::string& name,
-    const std::string& version = "1.0.0"
-) {
+std::filesystem::path build_rqp_package_with_manifest_install(const std::filesystem::path& root,
+                                                              const std::string& name,
+                                                              const std::string& version = "1.0.0") {
     const std::filesystem::path packageRoot = root / (name + "-pkg");
     const std::filesystem::path controlRoot = packageRoot / "control";
     std::filesystem::create_directories(controlRoot / "scripts");
 
-    write_file(controlRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + name + "\",\n"
-        "  \"version\": \"" + version + "\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"manifest package\",\n"
-        "  \"description\": \"manifest package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"tags\": [\"test\"],\n"
-        "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-        "}\n");
+    write_file(controlRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"" +
+                                                  name +
+                                                  "\",\n"
+                                                  "  \"version\": \"" +
+                                                  version +
+                                                  "\",\n"
+                                                  "  \"release\": 1,\n"
+                                                  "  \"revision\": 0,\n"
+                                                  "  \"summary\": \"manifest package\",\n"
+                                                  "  \"description\": \"manifest package\",\n"
+                                                  "  \"license\": \"MIT\",\n"
+                                                  "  \"architecture\": \"noarch\",\n"
+                                                  "  \"vendor\": \"ReqPack Tests\",\n"
+                                                  "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                  "  \"tags\": [\"test\"],\n"
+                                                  "  \"url\": \"https://example.test/" +
+                                                  name +
+                                                  ".rqp\"\n"
+                                                  "}\n");
     write_file(controlRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -916,7 +918,9 @@ return true
     write_file(controlRoot / "scripts" / "remove.lua", "return true\n");
 
     const std::filesystem::path packagePath = root / (name + ".rqp");
-    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .").c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " +
+                         escape_shell_arg(packagePath.string()) + " .")
+                            .c_str()) == 0);
     return packagePath;
 }
 
@@ -956,15 +960,12 @@ TEST_CASE("rqp plugin list includes installed packages and registry aliases", "[
     REQUIRE(plugin.installLocal(context, packagePath.string()));
 
     const std::vector<PackageInfo> packages = plugin.list(context);
-    const auto installed = std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) {
-        return info.name == "listed-alias";
-    });
-    const auto builtin = std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) {
-        return info.name == "rqp";
-    });
-    const auto aliasEntry = std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) {
-        return info.name == "alias-plugin";
-    });
+    const auto installed = std::find_if(packages.begin(), packages.end(),
+                                        [](const PackageInfo& info) { return info.name == "listed-alias"; });
+    const auto builtin =
+        std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) { return info.name == "rqp"; });
+    const auto aliasEntry = std::find_if(packages.begin(), packages.end(),
+                                         [](const PackageInfo& info) { return info.name == "alias-plugin"; });
     REQUIRE(installed != packages.end());
     CHECK(installed->status == "installed");
     CHECK(installed->packageType == "package");
@@ -977,9 +978,11 @@ TEST_CASE("rqp plugin list includes installed packages and registry aliases", "[
 TEST_CASE("rqp plugin search skips installed packages but finds repository matches", "[unit][rqp_plugin]") {
     TempDir tempDir{"reqpack-rqp-plugin-search-filter"};
     ReqPackConfig config = make_plugin_config(tempDir);
-    const std::filesystem::path installedPackage = build_rqp_package(tempDir.path() / "installed", "installed-search", "1.0.0");
+    const std::filesystem::path installedPackage =
+        build_rqp_package(tempDir.path() / "installed", "installed-search", "1.0.0");
     const std::filesystem::path repoPackage = build_rqp_package(tempDir.path() / "repo", "repo-searchable", "3.0.0");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "repo-searchable", "3.0.0", repoPackage);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "repo-searchable", "3.0.0", repoPackage);
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -988,15 +991,13 @@ TEST_CASE("rqp plugin search skips installed packages but finds repository match
     REQUIRE(plugin.installLocal(context, installedPackage.string()));
 
     const std::vector<PackageInfo> results = plugin.search(context, "search");
-    const auto installedMatch = std::find_if(results.begin(), results.end(), [](const PackageInfo& info) {
-        return info.name == "installed-search";
-    });
+    const auto installedMatch = std::find_if(results.begin(), results.end(),
+                                             [](const PackageInfo& info) { return info.name == "installed-search"; });
     if (installedMatch != results.end()) {
         CHECK(installedMatch->status == "installed");
     }
-    const auto repoMatch = std::find_if(results.begin(), results.end(), [](const PackageInfo& info) {
-        return info.name == "repo-searchable";
-    });
+    const auto repoMatch = std::find_if(results.begin(), results.end(),
+                                        [](const PackageInfo& info) { return info.name == "repo-searchable"; });
     REQUIRE(repoMatch != results.end());
     CHECK(repoMatch->status == "available");
 }
@@ -1005,7 +1006,8 @@ TEST_CASE("rqp plugin info resolves versioned repository package names", "[unit]
     TempDir tempDir{"reqpack-rqp-plugin-info-versioned"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "versioned-info", "5.5.5");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "versioned-info", "5.5.5", packagePath);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "versioned-info", "5.5.5", packagePath);
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -1019,7 +1021,8 @@ TEST_CASE("rqp plugin info resolves versioned repository package names", "[unit]
 TEST_CASE("rqp plugin install and remove persist and clean manifest artifacts", "[unit][rqp_plugin]") {
     TempDir tempDir{"reqpack-rqp-plugin-manifest"};
     ReqPackConfig config = make_plugin_config(tempDir);
-    const std::filesystem::path packagePath = build_rqp_package_with_manifest_install(tempDir.path(), "manifest-demo", "1.0.0");
+    const std::filesystem::path packagePath =
+        build_rqp_package_with_manifest_install(tempDir.path(), "manifest-demo", "1.0.0");
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());
@@ -1046,22 +1049,25 @@ TEST_CASE("rqp plugin remove cleans empty manifest directories", "[unit][rqp_plu
     const std::filesystem::path packageRoot = tempDir.path() / (name + "-pkg");
     const std::filesystem::path controlRoot = packageRoot / "control";
     std::filesystem::create_directories(controlRoot / "scripts");
-    write_file(controlRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + name + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"manifest dir demo\",\n"
-        "  \"description\": \"manifest dir demo\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"tags\": [\"test\"],\n"
-        "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-        "}\n");
+    write_file(controlRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"" +
+                                                  name +
+                                                  "\",\n"
+                                                  "  \"version\": \"1.0.0\",\n"
+                                                  "  \"release\": 1,\n"
+                                                  "  \"revision\": 0,\n"
+                                                  "  \"summary\": \"manifest dir demo\",\n"
+                                                  "  \"description\": \"manifest dir demo\",\n"
+                                                  "  \"license\": \"MIT\",\n"
+                                                  "  \"architecture\": \"noarch\",\n"
+                                                  "  \"vendor\": \"ReqPack Tests\",\n"
+                                                  "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                  "  \"tags\": [\"test\"],\n"
+                                                  "  \"url\": \"https://example.test/" +
+                                                  name +
+                                                  ".rqp\"\n"
+                                                  "}\n");
     write_file(controlRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -1079,7 +1085,9 @@ return true
 )");
     write_file(controlRoot / "scripts" / "remove.lua", "return true\n");
     const std::filesystem::path packagePath = tempDir.path() / (name + ".rqp");
-    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .").c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " +
+                         escape_shell_arg(packagePath.string()) + " .")
+                            .c_str()) == 0);
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());
@@ -1105,9 +1113,7 @@ TEST_CASE("rqp plugin install fails when repository index cannot be loaded", "[u
 
     RecordingDownloadHost host;
     host.tempRoot = tempDir.path();
-    host.onDownload = [](const std::string&, const std::string&) {
-        return DownloadResult{};
-    };
+    host.onDownload = [](const std::string&, const std::string&) { return DownloadResult{}; };
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());
@@ -1116,10 +1122,8 @@ TEST_CASE("rqp plugin install fails when repository index cannot be loaded", "[u
 
     Package request;
     request.name = "ghost";
-    REQUIRE_THROWS_WITH(
-        plugin.install(context, {request}),
-        Catch::Matchers::Contains("failed to load rqp repository index")
-    );
+    REQUIRE_THROWS_WITH(plugin.install(context, {request}),
+                        Catch::Matchers::Contains("failed to load rqp repository index"));
 }
 
 TEST_CASE("rqp plugin install resolves downloaded repository directory artifacts", "[unit][rqp_plugin]") {
@@ -1131,21 +1135,20 @@ TEST_CASE("rqp plugin install resolves downloaded repository directory artifacts
     std::filesystem::copy_file(packagePath, bundleDirectory / "download.rqp");
 
     const std::filesystem::path indexPath = tempDir.path() / "index.json";
-    write_file(indexPath,
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"packages\": [\n"
-        "    {\n"
-        "      \"name\": \"directory-repo\",\n"
-        "      \"version\": \"1.0.0\",\n"
-        "      \"release\": 1,\n"
-        "      \"revision\": 0,\n"
-        "      \"architecture\": \"noarch\",\n"
-        "      \"summary\": \"repo package\",\n"
-        "      \"url\": \"https://repo.test/directory-repo.pkg\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n");
+    write_file(indexPath, "{\n"
+                          "  \"schemaVersion\": 1,\n"
+                          "  \"packages\": [\n"
+                          "    {\n"
+                          "      \"name\": \"directory-repo\",\n"
+                          "      \"version\": \"1.0.0\",\n"
+                          "      \"release\": 1,\n"
+                          "      \"revision\": 0,\n"
+                          "      \"architecture\": \"noarch\",\n"
+                          "      \"summary\": \"repo package\",\n"
+                          "      \"url\": \"https://repo.test/directory-repo.pkg\"\n"
+                          "    }\n"
+                          "  ]\n"
+                          "}\n");
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RecordingDownloadHost host;
@@ -1157,9 +1160,9 @@ TEST_CASE("rqp plugin install resolves downloaded repository directory artifacts
             result.resolvedPath = bundleDirectory.string();
             return result;
         }
-        std::filesystem::copy_file(url.rfind("file://") == 0 ? std::filesystem::path(url.substr(7)) : std::filesystem::path(url),
-            destinationPath,
-            std::filesystem::copy_options::overwrite_existing);
+        std::filesystem::copy_file(url.rfind("file://") == 0 ? std::filesystem::path(url.substr(7))
+                                                             : std::filesystem::path(url),
+                                   destinationPath, std::filesystem::copy_options::overwrite_existing);
         result.success = true;
         result.resolvedPath = destinationPath;
         return result;
@@ -1188,13 +1191,8 @@ TEST_CASE("rqp plugin list exposes request name aliases for installed packages",
     TempDir tempDir{"reqpack-rqp-plugin-request-alias"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "actual-name", "1.0.0");
-    const std::filesystem::path indexPath = write_repository_index(
-        tempDir.path(),
-        "friendly-name",
-        "1.0.0",
-        packagePath,
-        sha256_file_hex(packagePath)
-    );
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "friendly-name", "1.0.0", packagePath, sha256_file_hex(packagePath));
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);
@@ -1207,12 +1205,10 @@ TEST_CASE("rqp plugin list exposes request name aliases for installed packages",
     REQUIRE(plugin.install(context, {request}));
 
     const std::vector<PackageInfo> packages = plugin.list(context);
-    const auto canonical = std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) {
-        return info.name == "actual-name";
-    });
-    const auto alias = std::find_if(packages.begin(), packages.end(), [](const PackageInfo& info) {
-        return info.name == "friendly-name";
-    });
+    const auto canonical = std::find_if(packages.begin(), packages.end(),
+                                        [](const PackageInfo& info) { return info.name == "actual-name"; });
+    const auto alias = std::find_if(packages.begin(), packages.end(),
+                                    [](const PackageInfo& info) { return info.name == "friendly-name"; });
     REQUIRE(canonical != packages.end());
     CHECK(canonical->packageType == "package");
     REQUIRE(alias != packages.end());
@@ -1235,7 +1231,8 @@ TEST_CASE("rqp plugin ignores empty internal repository flag overrides", "[unit]
     TempDir tempDir{"reqpack-rqp-plugin-empty-repo-flag"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "flagged-empty", "1.0.0");
-    const std::filesystem::path indexPath = write_repository_index(tempDir.path(), "flagged-empty", "1.0.0", packagePath);
+    const std::filesystem::path indexPath =
+        write_repository_index(tempDir.path(), "flagged-empty", "1.0.0", packagePath);
     config.rqp.repositories = {"file://" + indexPath.string()};
 
     RqpPlugin plugin(config);

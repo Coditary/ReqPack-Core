@@ -48,11 +48,8 @@ ActionType action_from_lua_object(const sol::object& object) {
 }
 
 bool packages_match_exact_without_action(const Package& left, const Package& right) {
-    return left.system == right.system &&
-           left.name == right.name &&
-           left.version == right.version &&
-           left.sourcePath == right.sourcePath &&
-           left.localTarget == right.localTarget;
+    return left.system == right.system && left.name == right.name && left.version == right.version &&
+           left.sourcePath == right.sourcePath && left.localTarget == right.localTarget;
 }
 
 bool packages_match_loose_without_action(const Package& candidate, const Package& original) {
@@ -227,13 +224,12 @@ std::optional<std::vector<PluginNetworkScope>> network_scopes_from_lua_object(co
     return scopes;
 }
 
-}  // namespace
+} // namespace
 
 std::string LuaBridgeValueMapper::toLowerCopy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
@@ -275,9 +271,8 @@ std::string LuaBridgeValueMapper::serializeLuaPayload(const sol::object& value) 
     for (const auto& [key, entry] : value.as<sol::table>()) {
         fields.emplace_back(valueToString(key), valueToString(entry));
     }
-    std::sort(fields.begin(), fields.end(), [](const auto& left, const auto& right) {
-        return left.first < right.first;
-    });
+    std::sort(fields.begin(), fields.end(),
+              [](const auto& left, const auto& right) { return left.first < right.first; });
     bool first = true;
     for (const auto& [keyText, valueText] : fields) {
         if (!first) {
@@ -393,7 +388,8 @@ std::optional<Package> LuaBridgeValueMapper::packageFromObject(const sol::object
     return package;
 }
 
-void LuaBridgeValueMapper::inheritMissingPackageFields(const std::vector<Package>& sourcePackages, std::vector<Package>& packages) {
+void LuaBridgeValueMapper::inheritMissingPackageFields(const std::vector<Package>& sourcePackages,
+                                                       std::vector<Package>& packages) {
     std::vector<bool> matched(sourcePackages.size(), false);
 
     auto apply_defaults = [](Package& target, const Package& source) {
@@ -424,9 +420,8 @@ void LuaBridgeValueMapper::inheritMissingPackageFields(const std::vector<Package
             if (matched[index]) {
                 continue;
             }
-            const bool matches = loose
-                ? packages_match_loose_without_action(candidate, sourcePackages[index])
-                : packages_match_exact_without_action(candidate, sourcePackages[index]);
+            const bool matches = loose ? packages_match_loose_without_action(candidate, sourcePackages[index])
+                                       : packages_match_exact_without_action(candidate, sourcePackages[index]);
             if (matches) {
                 return index;
             }
@@ -494,7 +489,8 @@ std::optional<ProxyResolution> LuaBridgeValueMapper::proxyResolutionFromObject(c
     ProxyResolution resolution;
     resolution.targetSystem = targetSystem.value();
 
-    if (const sol::object packagesObject = table["packages"]; packagesObject.valid() && !packagesObject.is<sol::lua_nil_t>()) {
+    if (const sol::object packagesObject = table["packages"];
+        packagesObject.valid() && !packagesObject.is<sol::lua_nil_t>()) {
         const auto packages = stringArrayFromObject(packagesObject);
         if (!packages.has_value()) {
             return std::nullopt;
@@ -545,7 +541,8 @@ std::optional<PluginSecurityMetadata> LuaBridgeValueMapper::pluginSecurityMetada
         parsed.writeScopes = writeScopes.value();
         hasAnyField = true;
     }
-    if (const auto networkScopes = network_scopes_from_lua_object(metadata["networkScopes"]); networkScopes.has_value()) {
+    if (const auto networkScopes = network_scopes_from_lua_object(metadata["networkScopes"]);
+        networkScopes.has_value()) {
         parsed.networkScopes = networkScopes.value();
         hasAnyField = true;
     }
@@ -561,7 +558,8 @@ std::optional<PluginSecurityMetadata> LuaBridgeValueMapper::pluginSecurityMetada
         parsed.purlType = purlType.value();
         hasAnyField = true;
     }
-    if (const sol::optional<std::string> comparatorProfile = metadata["versionComparatorProfile"]; comparatorProfile.has_value()) {
+    if (const sol::optional<std::string> comparatorProfile = metadata["versionComparatorProfile"];
+        comparatorProfile.has_value()) {
         parsed.versionComparator.profile = comparatorProfile.value();
         hasAnyField = true;
     }

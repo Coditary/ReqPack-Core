@@ -32,16 +32,14 @@ struct RpmEvrValue {
 
 std::string lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
 bool is_numeric_token(const std::string& value) {
-    return !value.empty() && std::all_of(value.begin(), value.end(), [](unsigned char c) {
-        return std::isdigit(c) != 0;
-    });
+    return !value.empty() &&
+           std::all_of(value.begin(), value.end(), [](unsigned char c) { return std::isdigit(c) != 0; });
 }
 
 std::string trim_leading_zeroes(const std::string& value) {
@@ -78,7 +76,8 @@ std::vector<std::string> split_on_char(const std::string& value, const char sepa
 
 SemverValue parse_semver(const std::string& raw) {
     std::string value = raw;
-    if (!value.empty() && (value.front() == 'v' || value.front() == 'V') && value.size() > 1 && std::isdigit(static_cast<unsigned char>(value[1]))) {
+    if (!value.empty() && (value.front() == 'v' || value.front() == 'V') && value.size() > 1 &&
+        std::isdigit(static_cast<unsigned char>(value[1]))) {
         value.erase(value.begin());
     }
 
@@ -155,7 +154,8 @@ std::string normalize_pep440(std::string value) {
     value = lower_copy(value);
     std::replace(value.begin(), value.end(), '-', '.');
     std::replace(value.begin(), value.end(), '_', '.');
-    if (!value.empty() && value.front() == 'v' && value.size() > 1 && std::isdigit(static_cast<unsigned char>(value[1]))) {
+    if (!value.empty() && value.front() == 'v' && value.size() > 1 &&
+        std::isdigit(static_cast<unsigned char>(value[1]))) {
         value.erase(value.begin());
     }
     return value;
@@ -205,7 +205,8 @@ Pep440Value parse_pep440(const std::string& raw) {
     }
 
     std::smatch match;
-    const std::regex versionRegex(R"(^([0-9]+(?:\.[0-9]+)*)(?:(a|alpha|b|beta|rc|c|pre|preview)([0-9]*))?(?:(?:\.)?(post|rev|r)([0-9]*))?(?:(?:\.)?dev([0-9]*))?$)");
+    const std::regex versionRegex(
+        R"(^([0-9]+(?:\.[0-9]+)*)(?:(a|alpha|b|beta|rc|c|pre|preview)([0-9]*))?(?:(?:\.)?(post|rev|r)([0-9]*))?(?:(?:\.)?dev([0-9]*))?$)");
     if (!std::regex_match(value, match, versionRegex)) {
         parsed.release = split_on_char(value, '.');
         return parsed;
@@ -252,7 +253,8 @@ int compare_pep440(const std::string& left, const std::string& right) {
     const std::size_t maxReleaseSize = std::max(parsedLeft.release.size(), parsedRight.release.size());
     for (std::size_t index = 0; index < maxReleaseSize; ++index) {
         const std::string leftPart = index < parsedLeft.release.size() ? parsedLeft.release[index] : std::string{"0"};
-        const std::string rightPart = index < parsedRight.release.size() ? parsedRight.release[index] : std::string{"0"};
+        const std::string rightPart =
+            index < parsedRight.release.size() ? parsedRight.release[index] : std::string{"0"};
         const int comparison = compare_numeric_strings(leftPart, rightPart);
         if (comparison != 0) {
             return comparison;
@@ -308,10 +310,12 @@ int rpmvercmp(const std::string& left, const std::string& right) {
     std::size_t leftIndex = 0;
     std::size_t rightIndex = 0;
     while (leftIndex < left.size() || rightIndex < right.size()) {
-        while (leftIndex < left.size() && !std::isalnum(static_cast<unsigned char>(left[leftIndex])) && left[leftIndex] != '~') {
+        while (leftIndex < left.size() && !std::isalnum(static_cast<unsigned char>(left[leftIndex])) &&
+               left[leftIndex] != '~') {
             ++leftIndex;
         }
-        while (rightIndex < right.size() && !std::isalnum(static_cast<unsigned char>(right[rightIndex])) && right[rightIndex] != '~') {
+        while (rightIndex < right.size() && !std::isalnum(static_cast<unsigned char>(right[rightIndex])) &&
+               right[rightIndex] != '~') {
             ++rightIndex;
         }
 
@@ -347,18 +351,21 @@ int rpmvercmp(const std::string& left, const std::string& right) {
 
         const std::size_t leftSegmentStart = leftIndex;
         const std::size_t rightSegmentStart = rightIndex;
-        while (leftIndex < left.size() && (leftNumeric ? std::isdigit(static_cast<unsigned char>(left[leftIndex])) != 0 : std::isalpha(static_cast<unsigned char>(left[leftIndex])) != 0)) {
+        while (leftIndex < left.size() &&
+               (leftNumeric ? std::isdigit(static_cast<unsigned char>(left[leftIndex])) != 0
+                            : std::isalpha(static_cast<unsigned char>(left[leftIndex])) != 0)) {
             ++leftIndex;
         }
-        while (rightIndex < right.size() && (rightNumeric ? std::isdigit(static_cast<unsigned char>(right[rightIndex])) != 0 : std::isalpha(static_cast<unsigned char>(right[rightIndex])) != 0)) {
+        while (rightIndex < right.size() &&
+               (rightNumeric ? std::isdigit(static_cast<unsigned char>(right[rightIndex])) != 0
+                             : std::isalpha(static_cast<unsigned char>(right[rightIndex])) != 0)) {
             ++rightIndex;
         }
 
         const std::string leftSegment = left.substr(leftSegmentStart, leftIndex - leftSegmentStart);
         const std::string rightSegment = right.substr(rightSegmentStart, rightIndex - rightSegmentStart);
-        const int comparison = leftNumeric
-            ? compare_numeric_strings(leftSegment, rightSegment)
-            : (leftSegment == rightSegment ? 0 : (leftSegment < rightSegment ? -1 : 1));
+        const int comparison = leftNumeric ? compare_numeric_strings(leftSegment, rightSegment)
+                                           : (leftSegment == rightSegment ? 0 : (leftSegment < rightSegment ? -1 : 1));
         if (comparison != 0) {
             return comparison;
         }
@@ -411,20 +418,8 @@ std::vector<std::string> tokenize_maven(const std::string& raw) {
 
 std::pair<int, std::string> maven_qualifier_key(const std::string& token) {
     static const std::map<std::string, int> knownQualifiers{
-        {"alpha", 1},
-        {"a", 1},
-        {"beta", 2},
-        {"b", 2},
-        {"milestone", 3},
-        {"m", 3},
-        {"rc", 4},
-        {"cr", 4},
-        {"snapshot", 5},
-        {"", 6},
-        {"ga", 6},
-        {"final", 6},
-        {"release", 6},
-        {"sp", 7},
+        {"alpha", 1}, {"a", 1},        {"beta", 2}, {"b", 2},  {"milestone", 3}, {"m", 3},       {"rc", 4},
+        {"cr", 4},    {"snapshot", 5}, {"", 6},     {"ga", 6}, {"final", 6},     {"release", 6}, {"sp", 7},
     };
 
     const std::string normalized = lower_copy(token);
@@ -532,13 +527,9 @@ int compare_tokens(const std::string& left, const std::string& right) {
     return left < right ? -1 : 1;
 }
 
-}  // namespace
+} // namespace
 
-int version_compare_values(
-    const std::string& left,
-    const std::string& right,
-    const VersionComparatorSpec& spec
-) {
+int version_compare_values(const std::string& left, const std::string& right, const VersionComparatorSpec& spec) {
     if (spec.profile == "semver") {
         return compare_semver(left, right);
     }
@@ -567,18 +558,10 @@ int version_compare_values(
     return 0;
 }
 
-bool version_less_equal(
-    const std::string& left,
-    const std::string& right,
-    const VersionComparatorSpec& spec
-) {
+bool version_less_equal(const std::string& left, const std::string& right, const VersionComparatorSpec& spec) {
     return version_compare_values(left, right, spec) <= 0;
 }
 
-bool version_greater_equal(
-    const std::string& left,
-    const std::string& right,
-    const VersionComparatorSpec& spec
-) {
+bool version_greater_equal(const std::string& left, const std::string& right, const VersionComparatorSpec& spec) {
     return version_compare_values(left, right, spec) >= 0;
 }

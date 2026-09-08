@@ -96,7 +96,7 @@ bool write_host_info_snapshot_file(const std::filesystem::path& path, const Host
 std::optional<HostInfoSnapshot> read_host_info_snapshot_file(const std::filesystem::path& path);
 
 class HostInfoService {
-public:
+  public:
     static std::shared_ptr<const HostInfoSnapshot> currentSnapshot();
     static std::shared_ptr<const HostInfoSnapshot> refreshSnapshot();
     static bool invalidateCache();

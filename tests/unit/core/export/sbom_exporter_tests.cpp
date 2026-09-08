@@ -17,10 +17,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -33,12 +33,12 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class StaticMetadataProvider final : public PluginMetadataProvider {
-public:
+  public:
     std::map<std::string, PluginSecurityMetadata> metadata;
 
     std::optional<PluginSecurityMetadata> getPluginSecurityMetadata(const std::string& name) override {
@@ -67,7 +67,7 @@ std::string read_file(const std::filesystem::path& path) {
 }
 
 class RecordingDisplay final : public IDisplay {
-public:
+  public:
     void onSessionBegin(DisplayMode, const std::vector<std::string>&) override {}
     void onSessionEnd(bool, int, int, int) override {}
     void onItemBegin(const std::string&, const std::string&) override {}
@@ -89,9 +89,8 @@ public:
 };
 
 class ScopedLoggerDisplay {
-public:
-    explicit ScopedLoggerDisplay(IDisplay* display)
-        : logger_(Logger::instance()) {
+  public:
+    explicit ScopedLoggerDisplay(IDisplay* display) : logger_(Logger::instance()) {
         logger_.flushSync();
         logger_.setDisplay(display);
     }
@@ -102,19 +101,21 @@ public:
         logger_.flushSync();
     }
 
-private:
+  private:
     Logger& logger_;
 };
 
 Graph make_graph() {
     Graph graph;
-    const auto react = boost::add_vertex(Package{.action = ActionType::SBOM, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
-    const auto scheduler = boost::add_vertex(Package{.action = ActionType::SBOM, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
+    const auto react = boost::add_vertex(
+        Package{.action = ActionType::SBOM, .system = "npm", .name = "react", .version = "18.3.1"}, graph);
+    const auto scheduler = boost::add_vertex(
+        Package{.action = ActionType::SBOM, .system = "npm", .name = "scheduler", .version = "0.24.0"}, graph);
     boost::add_edge(scheduler, react, graph);
     return graph;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("sbom exporter renders default table output", "[unit][sbom][export]") {
     ScopedEnvVar columns{"COLUMNS", "72"};
@@ -125,13 +126,19 @@ TEST_CASE("sbom exporter renders default table output", "[unit][sbom][export]") 
     request.action = ActionType::SBOM;
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1", .sourcePath = "/tmp/source/with many path parts/example artifact.jar"}, graph);
+    boost::add_vertex(Package{.action = ActionType::SBOM,
+                              .system = "maven",
+                              .name = "org.apache.logging.log4j:log4j-core",
+                              .version = "2.13.1",
+                              .sourcePath = "/tmp/source/with many path parts/example artifact.jar"},
+                      graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find('\t') == std::string::npos);
     CHECK(rendered.find("SYSTEM NAME                         VERSION SOURCE") != std::string::npos);
     CHECK(rendered.find("maven  org.apache.logging.log4j:... 2.13.1  /tmp/source/with many path") != std::string::npos);
-    CHECK(rendered.find(std::string{"\n"} + std::string(44, ' ') + "parts/example artifact.jar\n") != std::string::npos);
+    CHECK(rendered.find(std::string{"\n"} + std::string(44, ' ') + "parts/example artifact.jar\n") !=
+          std::string::npos);
 }
 
 TEST_CASE("sbom exporter colorizes terminal table output", "[unit][sbom][export]") {
@@ -157,10 +164,16 @@ TEST_CASE("sbom exporter supports no-wrap and wide table flags", "[unit][sbom][e
     request.flags = {"wide", "no-wrap"};
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "org.apache.logging.log4j:log4j-core", .version = "2.13.1", .sourcePath = "/tmp/source/with many path parts/example artifact.jar and more sections"}, graph);
+    boost::add_vertex(Package{.action = ActionType::SBOM,
+                              .system = "maven",
+                              .name = "org.apache.logging.log4j:log4j-core",
+                              .version = "2.13.1",
+                              .sourcePath = "/tmp/source/with many path parts/example artifact.jar and more sections"},
+                      graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
-    CHECK(rendered.find("/tmp/source/with many path parts/example artifact.jar and more sections") != std::string::npos);
+    CHECK(rendered.find("/tmp/source/with many path parts/example artifact.jar and more sections") !=
+          std::string::npos);
     CHECK(rendered.find(std::string{"\n"} + std::string(44, ' ') + "parts/example") == std::string::npos);
 }
 
@@ -207,7 +220,8 @@ TEST_CASE("sbom exporter reports file-open failure through logger diagnostics", 
         return message.find("failed to open sbom output path: " + tempDir.path().string()) != std::string::npos;
     }));
     CHECK(std::any_of(display.messages.begin(), display.messages.end(), [](const std::string& message) {
-        return message.find("Cause: ReqPack could not open requested SBOM output file for writing.") != std::string::npos;
+        return message.find("Cause: ReqPack could not open requested SBOM output file for writing.") !=
+               std::string::npos;
     }));
 }
 
@@ -225,7 +239,9 @@ TEST_CASE("sbom exporter formats maven purls from plugin metadata", "[unit][sbom
     request.outputFormat = "cyclonedx-json";
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"}, graph);
+    boost::add_vertex(
+        Package{.action = ActionType::SBOM, .system = "maven", .name = "org.slf4j:slf4j-api", .version = "2.0.16"},
+        graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find("\"purl\": \"pkg:maven/org.slf4j/slf4j-api@2.0.16\"") != std::string::npos);
@@ -245,7 +261,8 @@ TEST_CASE("sbom exporter skips invalid maven purls", "[unit][sbom][export]") {
     request.outputFormat = "cyclonedx-json";
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "slf4j-api", .version = "2.0.16"}, graph);
+    boost::add_vertex(Package{.action = ActionType::SBOM, .system = "maven", .name = "slf4j-api", .version = "2.0.16"},
+                      graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find("\"purl\"") == std::string::npos);

@@ -20,22 +20,24 @@ void remove_cleanup_paths_quietly(const std::vector<std::filesystem::path>& clea
     }
 }
 
-}  // namespace
+} // namespace
 
 std::string generic_archive_suffix(const std::filesystem::path& path) {
     static const std::array<std::string, 14> suffixes{
-        ".pkg.tar.zst", ".pkg.tar.xz", ".pkg.tar.gz", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.zst", ".tgz", ".tbz2", ".txz", ".tzst", ".zip", ".7z", ".tar"
-    };
+        ".pkg.tar.zst", ".pkg.tar.xz", ".pkg.tar.gz", ".tar.gz", ".tar.bz2", ".tar.xz", ".tar.zst",
+        ".tgz",         ".tbz2",       ".txz",        ".tzst",   ".zip",     ".7z",     ".tar"};
     static const std::array<std::string, 4> compressedSuffixes{".gz", ".bz2", ".xz", ".zst"};
 
     const std::string filename = archive_resolver_internal::to_lower_copy(path.filename().string());
     for (const std::string& suffix : suffixes) {
-        if (filename.size() >= suffix.size() && filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
+        if (filename.size() >= suffix.size() &&
+            filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
             return suffix;
         }
     }
     for (const std::string& suffix : compressedSuffixes) {
-        if (filename.size() >= suffix.size() && filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
+        if (filename.size() >= suffix.size() &&
+            filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
             return suffix;
         }
     }
@@ -46,7 +48,8 @@ std::string archive_wrapper_suffix(const std::filesystem::path& path) {
     static const std::array<std::string, 2> suffixes{".gpg", ".pgp"};
     const std::string filename = archive_resolver_internal::to_lower_copy(path.filename().string());
     for (const std::string& suffix : suffixes) {
-        if (filename.size() >= suffix.size() && filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
+        if (filename.size() >= suffix.size() &&
+            filename.compare(filename.size() - suffix.size(), suffix.size(), suffix) == 0) {
             return suffix;
         }
     }
@@ -61,7 +64,8 @@ bool is_archive_wrapper_path(const std::filesystem::path& path) {
     return !archive_wrapper_suffix(path).empty();
 }
 
-ArchiveResolution extract_archive_to_temp_directory(const std::filesystem::path& path, const ArchiveExtractionOptions& options) {
+ArchiveResolution extract_archive_to_temp_directory(const std::filesystem::path& path,
+                                                    const ArchiveExtractionOptions& options) {
     ArchiveResolution result;
     result.installPath = path;
     if (!is_generic_archive_path(path) && !is_archive_wrapper_path(path)) {
@@ -69,11 +73,7 @@ ArchiveResolution extract_archive_to_temp_directory(const std::filesystem::path&
     }
 
     const archive_resolver_internal::ProcessedArchivePath processed = process_archive_layers(
-        path,
-        options,
-        result.cleanupPaths,
-        std::filesystem::temp_directory_path() / "reqpack" / "archives"
-    );
+        path, options, result.cleanupPaths, std::filesystem::temp_directory_path() / "reqpack" / "archives");
     result.installPath = processed.path;
     result.changed = processed.changed;
     return result;
@@ -85,8 +85,10 @@ bool extract_archive_in_place(const std::filesystem::path& path, const ArchiveEx
     }
 
     std::vector<std::filesystem::path> cleanupPaths;
-    const std::filesystem::path parent = path.parent_path().empty() ? std::filesystem::current_path() : path.parent_path();
-    const archive_resolver_internal::ProcessedArchivePath processed = process_archive_layers(path, options, cleanupPaths, parent);
+    const std::filesystem::path parent =
+        path.parent_path().empty() ? std::filesystem::current_path() : path.parent_path();
+    const archive_resolver_internal::ProcessedArchivePath processed =
+        process_archive_layers(path, options, cleanupPaths, parent);
     if (!processed.changed || processed.path == path) {
         remove_cleanup_paths_quietly(cleanupPaths);
         return false;

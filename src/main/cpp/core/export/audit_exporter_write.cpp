@@ -11,23 +11,17 @@
 
 namespace {
 
-DiagnosticMessage audit_output_diagnostic(const std::string& summary, const std::string& cause, const std::string& recommendation) {
-    return make_error_diagnostic(
-        "audit",
-        summary,
-        cause,
-        recommendation,
-        {},
-        "audit",
-        "output"
-    );
+DiagnosticMessage audit_output_diagnostic(const std::string& summary, const std::string& cause,
+                                          const std::string& recommendation) {
+    return make_error_diagnostic("audit", summary, cause, recommendation, {}, "audit", "output");
 }
 
 bool request_has_flag(const Request& request, const std::string& name) {
     return std::find(request.flags.begin(), request.flags.end(), name) != request.flags.end();
 }
 
-bool write_output_file(const std::string& rendered, const Request& request, const std::string& outputPath, const bool interactive) {
+bool write_output_file(const std::string& rendered, const Request& request, const std::string& outputPath,
+                       const bool interactive) {
     std::filesystem::path filePath(outputPath);
     if (filePath.is_relative()) {
         filePath = std::filesystem::current_path() / filePath;
@@ -57,11 +51,10 @@ bool write_output_file(const std::string& rendered, const Request& request, cons
     if (!parentPath.empty()) {
         std::filesystem::create_directories(parentPath, error);
         if (error) {
-            Logger::instance().diagnostic(audit_output_diagnostic(
-                "failed to create audit output directory: " + resolvedOutputPath,
-                "ReqPack could not create parent directory for audit export output.",
-                "Check target path permissions and parent directory state, then retry."
-            ));
+            Logger::instance().diagnostic(
+                audit_output_diagnostic("failed to create audit output directory: " + resolvedOutputPath,
+                                        "ReqPack could not create parent directory for audit export output.",
+                                        "Check target path permissions and parent directory state, then retry."));
             Logger::instance().flushSync();
             return false;
         }
@@ -69,22 +62,20 @@ bool write_output_file(const std::string& rendered, const Request& request, cons
 
     std::ofstream output(resolvedOutputPath, std::ios::binary | std::ios::trunc);
     if (!output.is_open()) {
-        Logger::instance().diagnostic(audit_output_diagnostic(
-            "failed to open audit output path: " + resolvedOutputPath,
-            "ReqPack could not open requested audit output file for writing.",
-            "Check whether path points to writable file location and retry."
-        ));
+        Logger::instance().diagnostic(
+            audit_output_diagnostic("failed to open audit output path: " + resolvedOutputPath,
+                                    "ReqPack could not open requested audit output file for writing.",
+                                    "Check whether path points to writable file location and retry."));
         Logger::instance().flushSync();
         return false;
     }
 
     output << rendered;
     if (!output.good()) {
-        Logger::instance().diagnostic(audit_output_diagnostic(
-            "failed to write audit output path: " + resolvedOutputPath,
-            "ReqPack could not finish writing audit export to output file.",
-            "Check disk space, filesystem health, and write permissions, then retry."
-        ));
+        Logger::instance().diagnostic(
+            audit_output_diagnostic("failed to write audit output path: " + resolvedOutputPath,
+                                    "ReqPack could not finish writing audit export to output file.",
+                                    "Check disk space, filesystem health, and write permissions, then retry."));
         Logger::instance().flushSync();
         return false;
     }
@@ -94,9 +85,10 @@ bool write_output_file(const std::string& rendered, const Request& request, cons
     return true;
 }
 
-}  // namespace
+} // namespace
 
-bool AuditExporter::exportGraph(const Graph& graph, const std::vector<ValidationFinding>& findings, const Request& request) const {
+bool AuditExporter::exportGraph(const Graph& graph, const std::vector<ValidationFinding>& findings,
+                                const Request& request) const {
     const std::string rendered = renderGraph(graph, findings, request);
     const std::string outputPath = resolveOutputPath(request);
     if (outputPath.empty()) {

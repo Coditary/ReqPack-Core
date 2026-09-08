@@ -38,9 +38,8 @@ std::string trim_copy(const std::string& value) {
 }
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -57,7 +56,7 @@ std::int64_t current_epoch_seconds() {
     return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 }
 
-}  // namespace host_info_internal
+} // namespace host_info_internal
 
 namespace {
 
@@ -130,7 +129,8 @@ HostPlatformInfo detect_platform_info() {
         platform.arch = normalize_host_architecture(uts.machine);
     }
     if (platform.arch.empty()) {
-        platform.arch = normalize_host_architecture(exec_read_first_line("uname -m 2>/dev/null").value_or(std::string{}));
+        platform.arch =
+            normalize_host_architecture(exec_read_first_line("uname -m 2>/dev/null").value_or(std::string{}));
     }
 #endif
     if (platform.arch.empty()) {
@@ -193,11 +193,13 @@ void fill_macos_os_info(HostInfoSnapshot& snapshot) {
     snapshot.os.name = "macOS";
     snapshot.os.distroName = std::string{"macOS"};
 
-    if (const std::optional<std::string> name = exec_read_first_line("sw_vers -productName 2>/dev/null"); name.has_value()) {
+    if (const std::optional<std::string> name = exec_read_first_line("sw_vers -productName 2>/dev/null");
+        name.has_value()) {
         snapshot.os.name = name.value();
         snapshot.os.distroName = name.value();
     }
-    if (const std::optional<std::string> version = exec_read_first_line("sw_vers -productVersion 2>/dev/null"); version.has_value()) {
+    if (const std::optional<std::string> version = exec_read_first_line("sw_vers -productVersion 2>/dev/null");
+        version.has_value()) {
         snapshot.os.version = version;
         snapshot.os.versionId = version;
     }
@@ -309,8 +311,7 @@ std::optional<std::string> sysctl_string(const char* name) {
     return optional_trimmed(value);
 }
 
-template <typename T>
-std::optional<T> sysctl_scalar(const char* name) {
+template <typename T> std::optional<T> sysctl_scalar(const char* name) {
     T value{};
     size_t size = sizeof(value);
     if (::sysctlbyname(name, &value, &size, nullptr, 0) != 0 || size != sizeof(value)) {
@@ -338,10 +339,12 @@ void fill_cpu_info(HostInfoSnapshot& snapshot) {
     if (const std::optional<std::string> model = sysctl_string("machdep.cpu.brand_string"); model.has_value()) {
         snapshot.cpu.model = model;
     }
-    if (const std::optional<std::uint32_t> physical = sysctl_scalar<std::uint32_t>("hw.physicalcpu"); physical.has_value()) {
+    if (const std::optional<std::uint32_t> physical = sysctl_scalar<std::uint32_t>("hw.physicalcpu");
+        physical.has_value()) {
         snapshot.cpu.physicalCores = physical;
     }
-    if (const std::optional<std::uint32_t> logicalCpu = sysctl_scalar<std::uint32_t>("hw.logicalcpu"); logicalCpu.has_value()) {
+    if (const std::optional<std::uint32_t> logicalCpu = sysctl_scalar<std::uint32_t>("hw.logicalcpu");
+        logicalCpu.has_value()) {
         snapshot.cpu.logicalCores = logicalCpu;
     }
 #endif
@@ -388,10 +391,9 @@ void fill_memory_info(HostMemoryInfo& memory) {
 }
 
 bool should_skip_mount_type(const std::string& fsType) {
-    static const std::array<const char*, 15> ignored{
-        "proc", "sysfs", "tmpfs", "devtmpfs", "devfs", "cgroup", "cgroup2", "overlay",
-        "squashfs", "autofs", "debugfs", "tracefs", "nsfs", "mqueue", "fusectl"
-    };
+    static const std::array<const char*, 15> ignored{"proc",    "sysfs",   "tmpfs",   "devtmpfs", "devfs",
+                                                     "cgroup",  "cgroup2", "overlay", "squashfs", "autofs",
+                                                     "debugfs", "tracefs", "nsfs",    "mqueue",   "fusectl"};
     return std::find(ignored.begin(), ignored.end(), fsType) != ignored.end();
 }
 
@@ -407,8 +409,10 @@ void fill_mount_capacity(const std::string& mountPoint, HostMountInfo& mount) {
     }
 
     const std::uint64_t total = static_cast<std::uint64_t>(info.f_blocks) * static_cast<std::uint64_t>(info.f_frsize);
-    const std::uint64_t available = static_cast<std::uint64_t>(info.f_bavail) * static_cast<std::uint64_t>(info.f_frsize);
-    const std::uint64_t freeBytes = static_cast<std::uint64_t>(info.f_bfree) * static_cast<std::uint64_t>(info.f_frsize);
+    const std::uint64_t available =
+        static_cast<std::uint64_t>(info.f_bavail) * static_cast<std::uint64_t>(info.f_frsize);
+    const std::uint64_t freeBytes =
+        static_cast<std::uint64_t>(info.f_bfree) * static_cast<std::uint64_t>(info.f_frsize);
     mount.totalBytes = total;
     mount.availableBytes = available;
     if (total >= freeBytes) {
@@ -489,8 +493,7 @@ void try_add_linux_gpu_from_lspci(std::vector<HostGpuInfo>& gpus) {
         const std::string line = trim_copy(buffer.data());
         const std::string lower = to_lower_copy(line);
         if (lower.find("vga compatible controller") == std::string::npos &&
-            lower.find("3d controller") == std::string::npos &&
-            lower.find("display controller") == std::string::npos) {
+            lower.find("3d controller") == std::string::npos && lower.find("display controller") == std::string::npos) {
             continue;
         }
 
@@ -498,7 +501,9 @@ void try_add_linux_gpu_from_lspci(std::vector<HostGpuInfo>& gpus) {
         gpu.backend = std::string{"lspci"};
         if (lower.find("nvidia") != std::string::npos) {
             gpu.vendor = std::string{"NVIDIA"};
-        } else if (lower.find("amd") != std::string::npos || lower.find("advanced micro devices") != std::string::npos || lower.find("ati") != std::string::npos) {
+        } else if (lower.find("amd") != std::string::npos ||
+                   lower.find("advanced micro devices") != std::string::npos ||
+                   lower.find("ati") != std::string::npos) {
             gpu.vendor = std::string{"AMD"};
         } else if (lower.find("intel") != std::string::npos) {
             gpu.vendor = std::string{"Intel"};
@@ -573,7 +578,7 @@ void fill_gpu_info(std::vector<HostGpuInfo>& gpus) {
 #endif
 }
 
-}  // namespace
+} // namespace
 
 namespace host_info_internal {
 
@@ -607,4 +612,4 @@ HostInfoSnapshot collect_live_snapshot(const std::string& refreshReason) {
     return snapshot;
 }
 
-}  // namespace host_info_internal
+} // namespace host_info_internal

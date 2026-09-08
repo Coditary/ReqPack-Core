@@ -14,10 +14,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -30,7 +30,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -52,12 +52,9 @@ ReqPackConfig make_planner_test_config(const std::filesystem::path& root) {
     return config;
 }
 
-std::filesystem::path add_plugin_script(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content,
-    const std::vector<std::string>& dependencySpecs = {}
-) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content,
+                                        const std::vector<std::string>& dependencySpecs = {}) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
     std::string manifest = "return {\n  apiVersion = 1,\n  depends = {";
     if (!dependencySpecs.empty()) {
@@ -69,15 +66,20 @@ std::filesystem::path add_plugin_script(
     }
     manifest += "}\n}\n";
 
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", manifest);
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -105,7 +107,8 @@ bool graph_contains_package(const Graph& graph, const std::string& system, const
     return false;
 }
 
-std::optional<Graph::vertex_descriptor> find_package_vertex(const Graph& graph, const std::string& system, const std::string& name) {
+std::optional<Graph::vertex_descriptor> find_package_vertex(const Graph& graph, const std::string& system,
+                                                            const std::string& name) {
     auto [vertex, vertexEnd] = boost::vertices(graph);
     for (; vertex != vertexEnd; ++vertex) {
         const Package& package = graph[*vertex];
@@ -116,7 +119,8 @@ std::optional<Graph::vertex_descriptor> find_package_vertex(const Graph& graph, 
     return std::nullopt;
 }
 
-bool graph_has_dependency_edge(const Graph& graph, const std::string& fromSystem, const std::string& fromName, const std::string& toSystem, const std::string& toName) {
+bool graph_has_dependency_edge(const Graph& graph, const std::string& fromSystem, const std::string& fromName,
+                               const std::string& toSystem, const std::string& toName) {
     const auto from = find_package_vertex(graph, fromSystem, fromName);
     const auto to = find_package_vertex(graph, toSystem, toName);
     if (!from.has_value() || !to.has_value()) {
@@ -277,7 +281,7 @@ function plugin.info(context, package) return { name = package, version = "1.0.0
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("planner ensure builds dependency DAG from plugin requirements", "[integration][planner][service]") {
     TempDir tempDir{"reqpack-planner-ensure-dag"};
@@ -301,7 +305,8 @@ TEST_CASE("planner ensure builds dependency DAG from plugin requirements", "[int
     CHECK(graph_has_dependency_edge(*graph, "leaf", "openssl", "dep", "runtime"));
 }
 
-TEST_CASE("planner ensure returns empty graph when plugin requirements are already satisfied", "[integration][planner][service]") {
+TEST_CASE("planner ensure returns empty graph when plugin requirements are already satisfied",
+          "[integration][planner][service]") {
     TempDir tempDir{"reqpack-planner-ensure-empty"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
 
@@ -317,7 +322,8 @@ TEST_CASE("planner ensure returns empty graph when plugin requirements are alrea
     CHECK(collect_packages(*graph).empty());
 }
 
-TEST_CASE("planner install marks requirements ready when plugin dependencies are already satisfied", "[integration][planner][service]") {
+TEST_CASE("planner install marks requirements ready when plugin dependencies are already satisfied",
+          "[integration][planner][service]") {
     TempDir tempDir{"reqpack-planner-marker"};
     ReqPackConfig config = make_planner_test_config(tempDir.path());
 

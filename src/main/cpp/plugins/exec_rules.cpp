@@ -42,8 +42,7 @@ namespace {
 struct LineAccumulator {
     std::string buffer;
 
-    template <typename Callback>
-    void append(const std::string& text, Callback&& callback) {
+    template <typename Callback> void append(const std::string& text, Callback&& callback) {
         std::size_t start = 0;
         while (start < text.size()) {
             const std::size_t newline = text.find('\n', start);
@@ -59,8 +58,7 @@ struct LineAccumulator {
         }
     }
 
-    template <typename Callback>
-    void flush(Callback&& callback) {
+    template <typename Callback> void flush(Callback&& callback) {
         if (buffer.empty()) {
             return;
         }
@@ -72,14 +70,15 @@ struct LineAccumulator {
 
 std::string to_lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
-void log_plugin_message(Logger& logger, spdlog::level::level_enum level, const std::string& pluginId, const std::string& message) {
-    logger.emit(OutputAction::LOG, OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
+void log_plugin_message(Logger& logger, spdlog::level::level_enum level, const std::string& pluginId,
+                        const std::string& message) {
+    logger.emit(OutputAction::LOG,
+                OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void log_rule_warning(Logger& logger, const std::string& pluginId, const std::string& message) {
@@ -95,7 +94,8 @@ OutputContext plugin_output_context(const std::string& sourceId, const std::stri
     return OutputContext{.source = hasItemId ? sourceId : "plugin", .scope = pluginScope};
 }
 
-void log_exec_transcript_chunk(Logger& logger, const std::string& pluginId, const std::string& chunk, const bool mirrorToTerminal) {
+void log_exec_transcript_chunk(Logger& logger, const std::string& pluginId, const std::string& chunk,
+                               const bool mirrorToTerminal) {
     log_plugin_message(logger, spdlog::level::debug, pluginId, std::string("[exec] ") + chunk);
     if (mirrorToTerminal) {
         logger.logStdout(chunk, pluginId, "exec");
@@ -178,8 +178,10 @@ bool write_all(int fd, const std::string& value) {
 #endif
 }
 
-void emit_log_action(Logger& logger, const std::string& pluginId, spdlog::level::level_enum level, const std::string& message) {
-    logger.emit(OutputAction::LOG, OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
+void emit_log_action(Logger& logger, const std::string& pluginId, spdlog::level::level_enum level,
+                     const std::string& message) {
+    logger.emit(OutputAction::LOG,
+                OutputContext{.level = level, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void emit_status_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope, int statusCode) {
@@ -188,12 +190,9 @@ void emit_status_action(Logger& logger, const std::string& sourceId, const std::
     logger.emit(OutputAction::PLUGIN_STATUS, context);
 }
 
-std::optional<std::uint64_t> parse_progress_bytes(const ResolvedExecRuleAction& action,
-                                                 const std::string& valueKey,
-                                                 const std::string& unitKey,
-                                                 Logger& logger,
-                                                 const std::string& pluginScope,
-                                                 const std::string& label) {
+std::optional<std::uint64_t> parse_progress_bytes(const ResolvedExecRuleAction& action, const std::string& valueKey,
+                                                  const std::string& unitKey, Logger& logger,
+                                                  const std::string& pluginScope, const std::string& label) {
     const auto valueIt = action.fields.find(valueKey);
     const auto unitIt = action.fields.find(unitKey);
     if (valueIt == action.fields.end() || unitIt == action.fields.end()) {
@@ -214,9 +213,8 @@ std::optional<std::uint64_t> parse_progress_bytes(const ResolvedExecRuleAction& 
     return normalized;
 }
 
-std::optional<DisplayProgressMetrics> build_progress_metrics(Logger& logger,
-                                                            const std::string& pluginScope,
-                                                            const ResolvedExecRuleAction& action) {
+std::optional<DisplayProgressMetrics> build_progress_metrics(Logger& logger, const std::string& pluginScope,
+                                                             const ResolvedExecRuleAction& action) {
     DisplayProgressMetrics metrics;
     if (const auto it = action.fields.find("percent"); it != action.fields.end()) {
         const std::optional<int> percent = parse_int_value(it->second);
@@ -227,18 +225,21 @@ std::optional<DisplayProgressMetrics> build_progress_metrics(Logger& logger,
         }
     }
 
-    metrics.currentBytes = parse_progress_bytes(action, "current", "currentUnit", logger, pluginScope, "progress current");
+    metrics.currentBytes =
+        parse_progress_bytes(action, "current", "currentUnit", logger, pluginScope, "progress current");
     metrics.totalBytes = parse_progress_bytes(action, "total", "totalUnit", logger, pluginScope, "progress total");
     metrics.bytesPerSecond = parse_progress_bytes(action, "speed", "speedUnit", logger, pluginScope, "progress speed");
     metrics = canonicalize_progress_metrics(metrics);
 
-    if (!metrics.percent.has_value() && !metrics.currentBytes.has_value() && !metrics.totalBytes.has_value() && !metrics.bytesPerSecond.has_value()) {
+    if (!metrics.percent.has_value() && !metrics.currentBytes.has_value() && !metrics.totalBytes.has_value() &&
+        !metrics.bytesPerSecond.has_value()) {
         return std::nullopt;
     }
     return metrics;
 }
 
-void emit_progress_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const DisplayProgressMetrics& metrics) {
+void emit_progress_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                          const DisplayProgressMetrics& metrics) {
     OutputContext context = plugin_output_context(sourceId, pluginScope);
     context.progressPercent = metrics.percent;
     context.currentBytes = metrics.currentBytes;
@@ -247,109 +248,105 @@ void emit_progress_action(Logger& logger, const std::string& sourceId, const std
     logger.emit(OutputAction::PLUGIN_PROGRESS, context);
 }
 
-void emit_event_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& name, const std::string& payload) {
+void emit_event_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                       const std::string& name, const std::string& payload) {
     OutputContext context = plugin_output_context(sourceId, pluginScope);
     context.eventName = name;
     context.payload = payload;
     logger.emit(OutputAction::PLUGIN_EVENT, context);
 }
 
-void emit_artifact_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& payload) {
+void emit_artifact_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                          const std::string& payload) {
     OutputContext context = plugin_output_context(sourceId, pluginScope);
     context.payload = payload;
     logger.emit(OutputAction::PLUGIN_ARTIFACT, context);
 }
 
-void dispatch_resolved_action(
-    Logger& logger,
-    const std::string& sourceId,
-    const std::string& pluginScope,
-    const ResolvedExecRuleAction& action,
-    const std::optional<int>& masterFd
-) {
+void dispatch_resolved_action(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                              const ResolvedExecRuleAction& action, const std::optional<int>& masterFd) {
     try {
         switch (action.type) {
-            case ExecRuleActionType::Send: {
-                if (!masterFd.has_value()) {
-                    log_rule_warning(logger, pluginScope, "send action skipped because PTY writer is unavailable.");
-                    return;
-                }
-                const auto it = action.fields.find("value");
-                const std::string value = it == action.fields.end() ? std::string{} : it->second;
-                if (value.empty()) {
-                    log_rule_warning(logger, pluginScope, "send action resolved to empty value.");
-                    return;
-                }
-                if (!write_all(masterFd.value(), value)) {
-                    log_rule_warning(logger, pluginScope, "send action failed to write to child process.");
-                }
+        case ExecRuleActionType::Send: {
+            if (!masterFd.has_value()) {
+                log_rule_warning(logger, pluginScope, "send action skipped because PTY writer is unavailable.");
                 return;
             }
-            case ExecRuleActionType::State: {
-                const auto it = action.fields.find("value");
-                if (it == action.fields.end() || it->second.empty()) {
-                    log_rule_warning(logger, pluginScope, "state action resolved to empty value.");
-                }
+            const auto it = action.fields.find("value");
+            const std::string value = it == action.fields.end() ? std::string{} : it->second;
+            if (value.empty()) {
+                log_rule_warning(logger, pluginScope, "send action resolved to empty value.");
                 return;
             }
-            case ExecRuleActionType::Log: {
-                const std::string level = action.fields.contains("level") ? action.fields.at("level") : "info";
-                const std::string message = action.fields.contains("message") ? action.fields.at("message") : std::string{};
-                emit_log_action(logger, pluginScope, parse_log_level(level), message);
+            if (!write_all(masterFd.value(), value)) {
+                log_rule_warning(logger, pluginScope, "send action failed to write to child process.");
+            }
+            return;
+        }
+        case ExecRuleActionType::State: {
+            const auto it = action.fields.find("value");
+            if (it == action.fields.end() || it->second.empty()) {
+                log_rule_warning(logger, pluginScope, "state action resolved to empty value.");
+            }
+            return;
+        }
+        case ExecRuleActionType::Log: {
+            const std::string level = action.fields.contains("level") ? action.fields.at("level") : "info";
+            const std::string message = action.fields.contains("message") ? action.fields.at("message") : std::string{};
+            emit_log_action(logger, pluginScope, parse_log_level(level), message);
+            return;
+        }
+        case ExecRuleActionType::Status: {
+            const std::string raw = action.fields.contains("code") ? action.fields.at("code") : std::string{};
+            const std::optional<int> code = parse_int_value(raw);
+            if (!code.has_value()) {
+                log_rule_warning(logger, pluginScope, "status action value '" + raw + "' is not an integer.");
                 return;
             }
-            case ExecRuleActionType::Status: {
-                const std::string raw = action.fields.contains("code") ? action.fields.at("code") : std::string{};
-                const std::optional<int> code = parse_int_value(raw);
-                if (!code.has_value()) {
-                    log_rule_warning(logger, pluginScope, "status action value '" + raw + "' is not an integer.");
-                    return;
-                }
-                emit_status_action(logger, sourceId, pluginScope, code.value());
+            emit_status_action(logger, sourceId, pluginScope, code.value());
+            return;
+        }
+        case ExecRuleActionType::Progress: {
+            const std::optional<DisplayProgressMetrics> metrics = build_progress_metrics(logger, pluginScope, action);
+            if (!metrics.has_value()) {
                 return;
             }
-            case ExecRuleActionType::Progress: {
-                const std::optional<DisplayProgressMetrics> metrics = build_progress_metrics(logger, pluginScope, action);
-                if (!metrics.has_value()) {
-                    return;
-                }
-                emit_progress_action(logger, sourceId, pluginScope, metrics.value());
+            emit_progress_action(logger, sourceId, pluginScope, metrics.value());
+            return;
+        }
+        case ExecRuleActionType::BeginStep:
+            emit_event_action(logger, sourceId, pluginScope, "begin_step",
+                              action.fields.contains("label") ? action.fields.at("label") : std::string{});
+            return;
+        case ExecRuleActionType::Success:
+            emit_event_action(logger, sourceId, pluginScope, "success", "ok");
+            return;
+        case ExecRuleActionType::Failed:
+            emit_event_action(logger, sourceId, pluginScope, "failed",
+                              action.fields.contains("message") ? action.fields.at("message") : std::string{});
+            return;
+        case ExecRuleActionType::Event: {
+            const std::string name = action.fields.contains("name") ? action.fields.at("name") : std::string{};
+            if (name.empty()) {
+                log_rule_warning(logger, pluginScope, "event action resolved to empty name.");
                 return;
             }
-            case ExecRuleActionType::BeginStep:
-                emit_event_action(logger, sourceId, pluginScope, "begin_step", action.fields.contains("label") ? action.fields.at("label") : std::string{});
-                return;
-            case ExecRuleActionType::Success:
-                emit_event_action(logger, sourceId, pluginScope, "success", "ok");
-                return;
-            case ExecRuleActionType::Failed:
-                emit_event_action(logger, sourceId, pluginScope, "failed", action.fields.contains("message") ? action.fields.at("message") : std::string{});
-                return;
-            case ExecRuleActionType::Event: {
-                const std::string name = action.fields.contains("name") ? action.fields.at("name") : std::string{};
-                if (name.empty()) {
-                    log_rule_warning(logger, pluginScope, "event action resolved to empty name.");
-                    return;
-                }
-                emit_event_action(logger, sourceId, pluginScope, name, action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
-                return;
-            }
-            case ExecRuleActionType::Artifact:
-                emit_artifact_action(logger, sourceId, pluginScope, action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
-                return;
+            emit_event_action(logger, sourceId, pluginScope, name,
+                              action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
+            return;
+        }
+        case ExecRuleActionType::Artifact:
+            emit_artifact_action(logger, sourceId, pluginScope,
+                                 action.fields.contains("payload") ? action.fields.at("payload") : std::string{});
+            return;
         }
     } catch (const std::exception& error) {
         log_rule_warning(logger, pluginScope, error.what());
     }
 }
 
-void dispatch_evaluation_result(
-    Logger& logger,
-    const std::string& sourceId,
-    const std::string& pluginScope,
-    const ExecRuleEvaluationResult& result,
-    const std::optional<int>& masterFd
-) {
+void dispatch_evaluation_result(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                                const ExecRuleEvaluationResult& result, const std::optional<int>& masterFd) {
     for (const ResolvedExecRuleAction& action : result.actions) {
         dispatch_resolved_action(logger, sourceId, pluginScope, action, masterFd);
     }
@@ -366,11 +363,8 @@ std::string resolve_windows_cmd_exe() {
     return "C:\\Windows\\System32\\cmd.exe";
 }
 
-bool read_windows_pipe_to_result(
-    HANDLE readPipe,
-    ExecResult& result,
-    const std::function<void(const std::string&)>& onChunk
-) {
+bool read_windows_pipe_to_result(HANDLE readPipe, ExecResult& result,
+                                 const std::function<void(const std::string&)>& onChunk) {
     std::array<char, 4096> buffer{};
     for (;;) {
         DWORD count = 0;
@@ -391,13 +385,8 @@ bool read_windows_pipe_to_result(
     }
 }
 
-ExecResult run_shell_command(
-    Logger& logger,
-    const std::string& pluginScope,
-    const std::string& command,
-    const std::function<void(const std::string&)>& onChunk,
-    const bool silent
-) {
+ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, const std::string& command,
+                             const std::function<void(const std::string&)>& onChunk, const bool silent) {
     ExecResult result;
 
     SECURITY_ATTRIBUTES securityAttributes{};
@@ -417,15 +406,8 @@ ExecResult run_shell_command(
         return result;
     }
 
-    HANDLE nulInput = CreateFileA(
-        "NUL",
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        &securityAttributes,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        nullptr
-    );
+    HANDLE nulInput = CreateFileA("NUL", GENERIC_READ, FILE_SHARE_READ, &securityAttributes, OPEN_EXISTING,
+                                  FILE_ATTRIBUTE_NORMAL, nullptr);
     if (nulInput == INVALID_HANDLE_VALUE) {
         CloseHandle(readPipe);
         CloseHandle(writePipe);
@@ -445,18 +427,8 @@ ExecResult run_shell_command(
     const std::string cmdExe = resolve_windows_cmd_exe();
     std::string commandLine = "\"" + cmdExe + "\" /c " + command;
 
-    const BOOL created = CreateProcessA(
-        cmdExe.c_str(),
-        commandLine.data(),
-        nullptr,
-        nullptr,
-        TRUE,
-        CREATE_NO_WINDOW,
-        nullptr,
-        nullptr,
-        &startupInfo,
-        &processInfo
-    );
+    const BOOL created = CreateProcessA(cmdExe.c_str(), commandLine.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
+                                        nullptr, nullptr, &startupInfo, &processInfo);
 
     CloseHandle(writePipe);
     CloseHandle(nulInput);
@@ -504,7 +476,8 @@ ExecResult run_shell_command(
 
 #else
 
-bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, ExecResult& result, const std::function<void(const std::string&)>& onChunk) {
+bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, ExecResult& result,
+                       const std::function<void(const std::string&)>& onChunk) {
     std::array<char, 4096> buffer{};
     for (;;) {
         const ssize_t count = ::read(fd, buffer.data(), buffer.size());
@@ -525,7 +498,8 @@ bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, Exec
     }
 }
 
-ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, const std::string& command, const std::function<void(const std::string&)>& onChunk, const bool silent) {
+ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, const std::string& command,
+                             const std::function<void(const std::string&)>& onChunk, const bool silent) {
     ExecResult result;
 
     int pipeFds[2] = {-1, -1};
@@ -572,7 +546,8 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
     environmentPointers.push_back(nullptr);
 
     pid_t child = 0;
-    const int spawnResult = posix_spawn(&child, "/bin/sh", &fileActions, nullptr, argv.data(), environmentPointers.data());
+    const int spawnResult =
+        posix_spawn(&child, "/bin/sh", &fileActions, nullptr, argv.data(), environmentPointers.data());
     posix_spawn_file_actions_destroy(&fileActions);
     if (spawnResult != 0) {
         ::close(pipeFds[0]);
@@ -609,20 +584,25 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
 
 #endif
 
-ExecResult run_plain_command(Logger& logger, const std::string& pluginScope, const std::string& command, const bool silent) {
+ExecResult run_plain_command(Logger& logger, const std::string& pluginScope, const std::string& command,
+                             const bool silent) {
     return run_shell_command(logger, pluginScope, command, [](const std::string&) {}, silent);
 }
 
-ExecResult run_line_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& command, const ExecRuleset& ruleset, const bool silent) {
+ExecResult run_line_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                            const std::string& command, const ExecRuleset& ruleset, const bool silent) {
     ExecRuleRuntimeState runtime = make_exec_rule_runtime_state(ruleset);
     LineAccumulator lines;
 
-    ExecResult result = run_shell_command(logger, pluginScope, command, [&](const std::string& chunk) {
-        lines.append(chunk, [&](const std::string& line) {
-            const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_line_input(ruleset, runtime, line);
-            dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, std::nullopt);
-        });
-    }, silent);
+    ExecResult result = run_shell_command(
+        logger, pluginScope, command,
+        [&](const std::string& chunk) {
+            lines.append(chunk, [&](const std::string& line) {
+                const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_line_input(ruleset, runtime, line);
+                dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, std::nullopt);
+            });
+        },
+        silent);
     lines.flush([&](const std::string& line) {
         const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_line_input(ruleset, runtime, line);
         dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, std::nullopt);
@@ -630,7 +610,8 @@ ExecResult run_line_command(Logger& logger, const std::string& sourceId, const s
     return result;
 }
 
-ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& command, const ExecRuleset& ruleset, const bool silent) {
+ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                           const std::string& command, const ExecRuleset& ruleset, const bool silent) {
 #if defined(_WIN32)
     // No ConPTY integration yet: fall back to cmd.exe line capture.
     return run_line_command(logger, sourceId, pluginScope, command, ruleset, silent);
@@ -667,7 +648,8 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
                     const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_line_input(ruleset, runtime, line);
                     dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, masterFd);
                 });
-                const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_screen_input(ruleset, runtime, normalizedTranscript);
+                const ExecRuleEvaluationResult evaluation =
+                    evaluate_exec_rule_screen_input(ruleset, runtime, normalizedTranscript);
                 dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, masterFd);
             }
             continue;
@@ -693,7 +675,8 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
         const ExecRuleEvaluationResult evaluation = evaluate_exec_rule_line_input(ruleset, runtime, line);
         dispatch_evaluation_result(logger, sourceId, pluginScope, evaluation, masterFd);
     });
-    const ExecRuleEvaluationResult finalScreenEvaluation = evaluate_exec_rule_screen_input(ruleset, runtime, normalizedTranscript);
+    const ExecRuleEvaluationResult finalScreenEvaluation =
+        evaluate_exec_rule_screen_input(ruleset, runtime, normalizedTranscript);
     dispatch_evaluation_result(logger, sourceId, pluginScope, finalScreenEvaluation, masterFd);
 
     ::close(masterFd);
@@ -717,13 +700,15 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
 #endif
 }
 
-}  // namespace
+} // namespace
 
-ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& command, const bool silent) {
+ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                              const std::string& command, const bool silent) {
     return run_plain_command(logger, pluginScope, command, silent);
 }
 
-ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope, const std::string& command, const sol::object& rules, const bool silent) {
+ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                              const std::string& command, const sol::object& rules, const bool silent) {
     ExecRuleset ruleset;
     try {
         ruleset = parse_exec_rules(rules);
@@ -733,12 +718,12 @@ ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const
     }
 
     switch (determine_exec_rule_runner_mode(ruleset)) {
-        case ExecRuleRunnerMode::Plain:
-            return run_plain_command(logger, pluginScope, command, silent);
-        case ExecRuleRunnerMode::Line:
-            return run_line_command(logger, sourceId, pluginScope, command, ruleset, silent);
-        case ExecRuleRunnerMode::Pty:
-            return run_pty_command(logger, sourceId, pluginScope, command, ruleset, silent);
+    case ExecRuleRunnerMode::Plain:
+        return run_plain_command(logger, pluginScope, command, silent);
+    case ExecRuleRunnerMode::Line:
+        return run_line_command(logger, sourceId, pluginScope, command, ruleset, silent);
+    case ExecRuleRunnerMode::Pty:
+        return run_pty_command(logger, sourceId, pluginScope, command, ruleset, silent);
     }
 
     return ExecResult{.success = false, .exitCode = 1, .stdoutText = {}, .stderrText = "unknown runner mode"};

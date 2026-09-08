@@ -31,9 +31,8 @@ std::optional<ptree> parse_json_tree(const std::string& json) {
 }
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -87,12 +86,11 @@ std::vector<std::string> parse_string_or_array_field(const ptree& tree, const st
 }
 
 bool is_valid_sha256(const std::string& value) {
-    return value.size() == 64 && std::all_of(value.begin(), value.end(), [](unsigned char ch) {
-        return std::isxdigit(ch) != 0;
-    });
+    return value.size() == 64 &&
+           std::all_of(value.begin(), value.end(), [](unsigned char ch) { return std::isxdigit(ch) != 0; });
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_repository_internal {
 
@@ -137,4 +135,4 @@ RqRepositoryIndex parse_index_impl(const std::string& content, const std::string
     return index;
 }
 
-}  // namespace rq_repository_internal
+} // namespace rq_repository_internal

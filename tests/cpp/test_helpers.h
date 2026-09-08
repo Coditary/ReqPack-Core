@@ -76,21 +76,18 @@ inline void set_test_environment_value(const std::string& name, const std::optio
 }
 
 class ScopedEnvVar {
-public:
-    explicit ScopedEnvVar(std::string name)
-        : name_(std::move(name)) {
+  public:
+    explicit ScopedEnvVar(std::string name) : name_(std::move(name)) {
         if (const char* existing = std::getenv(name_.c_str())) {
             previous_ = std::string(existing);
         }
     }
 
-    ScopedEnvVar(std::string name, std::string value)
-        : ScopedEnvVar(std::move(name)) {
+    ScopedEnvVar(std::string name, std::string value) : ScopedEnvVar(std::move(name)) {
         set_test_environment_value(name_, value);
     }
 
-    ScopedEnvVar(const char* name, const char* value)
-        : name_(name) {
+    ScopedEnvVar(const char* name, const char* value) : name_(name) {
         if (const char* existing = std::getenv(name_.c_str())) {
             previous_ = std::string(existing);
         }
@@ -109,7 +106,7 @@ public:
         }
     }
 
-private:
+  private:
     std::string name_;
     std::optional<std::string> previous_;
 };

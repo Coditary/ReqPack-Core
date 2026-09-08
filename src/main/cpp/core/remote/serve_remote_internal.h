@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/remote/serve_remote.h"
-#include "core/remote/remote_profiles.h"
 #include "core/common/socket_platform.h"
+#include "core/remote/remote_profiles.h"
+#include "core/remote/serve_remote.h"
 
 #include <atomic>
 #include <cctype>
@@ -37,10 +37,7 @@ struct JsonCommand {
     std::optional<std::string> password;
 };
 
-enum class ConnectionProtocol {
-    TEXT,
-    JSON
-};
+enum class ConnectionProtocol { TEXT, JSON };
 
 struct SessionIdentity {
     bool authenticated{false};
@@ -139,10 +136,8 @@ inline std::vector<std::string> tokenize_command_line(const std::string& command
     return tokens;
 }
 
-inline std::vector<std::string> merged_command_arguments(
-    const std::vector<std::string>& commandTokens,
-    const std::vector<std::string>& inheritedArguments
-) {
+inline std::vector<std::string> merged_command_arguments(const std::vector<std::string>& commandTokens,
+                                                         const std::vector<std::string>& inheritedArguments) {
     std::vector<std::string> merged;
     merged.reserve(commandTokens.size() + inheritedArguments.size());
     merged.insert(merged.end(), commandTokens.begin(), commandTokens.end());
@@ -151,19 +146,19 @@ inline std::vector<std::string> merged_command_arguments(
 }
 
 class ScopedRemoteSignalHandlers {
-public:
+  public:
     explicit ScopedRemoteSignalHandlers(ReqpackSocket serverFd);
     ~ScopedRemoteSignalHandlers();
 
     bool shutdownRequested() const;
 
-private:
+  private:
 #if defined(_WIN32)
     void (*oldTerm_)(int){SIG_DFL};
     void (*oldInt_)(int){SIG_DFL};
 #else
-    struct sigaction oldTerm_ {};
-    struct sigaction oldInt_ {};
+    struct sigaction oldTerm_{};
+    struct sigaction oldInt_{};
 #endif
     bool installed_{false};
 };
@@ -172,10 +167,8 @@ bool send_all(ReqpackSocket fd, const std::string& data);
 bool read_exact_bytes(ReqpackSocket fd, char* buffer, std::size_t count);
 bool discard_bytes(ReqpackSocket fd, std::uintmax_t count);
 std::optional<std::string> read_line_from_socket(ReqpackSocket fd);
-std::optional<ConnectionProtocol> detect_connection_protocol(
-    const ServeRuntimeOptions& options,
-    const std::string& firstLine
-);
+std::optional<ConnectionProtocol> detect_connection_protocol(const ServeRuntimeOptions& options,
+                                                             const std::string& firstLine);
 ReqpackSocket create_server_socket(const ServeRuntimeOptions& options, Logger& logger);
 
 RemoteStateSnapshot snapshot_remote_state(RemoteServerState& state);
@@ -191,26 +184,16 @@ void set_session_protocol(RemoteServerState& state, int sessionId, ConnectionPro
 
 bool has_user_registry(const RemoteStateSnapshot& snapshot);
 bool auth_required(const RemoteStateSnapshot& snapshot);
-bool authenticate_text_command(
-    RemoteServerState& state,
-    int sessionId,
-    const std::string& line,
-    SessionIdentity& identity,
-    RemoteResponse& response
-);
-bool authenticate_json_command(
-    RemoteServerState& state,
-    int sessionId,
-    const JsonCommand& command,
-    SessionIdentity& identity,
-    RemoteResponse& response
-);
+bool authenticate_text_command(RemoteServerState& state, int sessionId, const std::string& line,
+                               SessionIdentity& identity, RemoteResponse& response);
+bool authenticate_json_command(RemoteServerState& state, int sessionId, const JsonCommand& command,
+                               SessionIdentity& identity, RemoteResponse& response);
 
 std::optional<UploadInstallEnvelope> parse_upload_install_envelope(const std::vector<std::string>& commandTokens);
 std::string sanitize_upload_filename(std::string filename);
 
 class ScopedPathCleanup {
-public:
+  public:
     ScopedPathCleanup() = default;
     explicit ScopedPathCleanup(std::filesystem::path path);
     ~ScopedPathCleanup();
@@ -222,7 +205,7 @@ public:
 
     const std::filesystem::path& path() const;
 
-private:
+  private:
     void reset();
 
     std::filesystem::path path_;
@@ -234,46 +217,17 @@ std::string substitute_upload_path(const std::string& commandTemplate, const std
 bool reload_remote_state(RemoteServerState& state, Logger& logger, std::string& error);
 bool requests_allowed_in_readonly_mode(const std::vector<Request>& requests);
 bool command_requires_close(const std::string& command);
-RemoteResponse execute_command(
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    const SessionIdentity& identity,
-    const std::string& commandLine,
-    std::mutex& commandMutex
-);
-RemoteResponse execute_upload_install_command(
-    ReqpackSocket clientFd,
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    const SessionIdentity& identity,
-    const std::vector<std::string>& commandTokens,
-    std::mutex& commandMutex
-);
+RemoteResponse execute_command(Cli& cli, RemoteServerState& state, Logger& logger, IDisplay* display,
+                               const SessionIdentity& identity, const std::string& commandLine,
+                               std::mutex& commandMutex);
+RemoteResponse execute_upload_install_command(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state,
+                                              Logger& logger, IDisplay* display, const SessionIdentity& identity,
+                                              const std::vector<std::string>& commandTokens, std::mutex& commandMutex);
 
 std::optional<JsonCommand> parse_json_command(const std::string& line);
 std::string json_response(bool ok, const CommandOutput& output);
 std::string text_response(bool ok, const CommandOutput& output);
-void handle_text_client(
-    ReqpackSocket clientFd,
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    int sessionId,
-    std::mutex& commandMutex,
-    std::optional<std::string> pendingLine = std::nullopt
-);
-void handle_json_client(
-    ReqpackSocket clientFd,
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    int sessionId,
-    std::mutex& commandMutex,
-    std::optional<std::string> pendingLine = std::nullopt
-);
+void handle_text_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state, Logger& logger, IDisplay* display,
+                        int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine = std::nullopt);
+void handle_json_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state, Logger& logger, IDisplay* display,
+                        int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine = std::nullopt);

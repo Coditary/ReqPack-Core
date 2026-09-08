@@ -9,7 +9,7 @@
 void log_lua_error(Logger& logger, const std::string& scope, const std::string& message);
 
 class LuaBridgeScriptRuntime {
-public:
+  public:
     LuaBridgeScriptRuntime();
 
     sol::state& state();
@@ -23,7 +23,7 @@ public:
     sol::protected_function pluginFunction(const char* name) const;
     const sol::table& pluginTable() const;
 
-private:
+  private:
     sol::state m_lua;
     sol::table m_pluginTable;
 };

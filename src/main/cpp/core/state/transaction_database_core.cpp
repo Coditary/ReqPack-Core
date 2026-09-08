@@ -35,10 +35,11 @@ std::optional<std::pair<std::string, std::string>> parse_item_key(const std::str
     return std::make_pair(runId, itemId);
 }
 
-}  // namespace
+} // namespace
 
 std::string transaction_database_package_token(const Package& package) {
-    return std::to_string(static_cast<int>(package.action)) + "|" + package.system + "|" + package.name + "|" + package.version + "|" + package.sourcePath + "|" + (package.localTarget ? "1" : "0");
+    return std::to_string(static_cast<int>(package.action)) + "|" + package.system + "|" + package.name + "|" +
+           package.version + "|" + package.sourcePath + "|" + (package.localTarget ? "1" : "0");
 }
 
 std::string transaction_database_item_id_for_package(const Package& package) {
@@ -116,7 +117,8 @@ std::string transaction_database_serialize_run(const TransactionRunRecord& run) 
     return stream.str();
 }
 
-std::optional<TransactionRunRecord> transaction_database_deserialize_run(const std::string& runId, const std::string& payload) {
+std::optional<TransactionRunRecord> transaction_database_deserialize_run(const std::string& runId,
+                                                                         const std::string& payload) {
     TransactionRunRecord run;
     run.id = runId;
 
@@ -153,7 +155,8 @@ std::optional<TransactionRunRecord> transaction_database_deserialize_run(const s
         }
     }
 
-    if (run.id.empty() || !hasState || !hasCreatedAt || !hasUpdatedAt || run.state.empty() || run.createdAt.empty() || run.updatedAt.empty()) {
+    if (run.id.empty() || !hasState || !hasCreatedAt || !hasUpdatedAt || run.state.empty() || run.createdAt.empty() ||
+        run.updatedAt.empty()) {
         return std::nullopt;
     }
     return run;
@@ -173,7 +176,8 @@ std::string transaction_database_serialize_item(const TransactionItemRecord& ite
     return stream.str();
 }
 
-std::optional<TransactionItemRecord> transaction_database_deserialize_item(const std::string& key, const std::string& payload) {
+std::optional<TransactionItemRecord> transaction_database_deserialize_item(const std::string& key,
+                                                                           const std::string& payload) {
     const std::optional<std::pair<std::string, std::string>> parsedKey = parse_item_key(key);
     if (!parsedKey.has_value()) {
         return std::nullopt;
@@ -246,7 +250,8 @@ std::optional<TransactionItemRecord> transaction_database_deserialize_item(const
         }
     }
 
-    if (item.runId.empty() || item.itemId.empty() || !hasSequence || !hasAction || !hasSystem || !hasName || !hasVersion || !hasSourcePath || !hasLocalTarget || !hasStatus || !hasError || item.status.empty()) {
+    if (item.runId.empty() || item.itemId.empty() || !hasSequence || !hasAction || !hasSystem || !hasName ||
+        !hasVersion || !hasSourcePath || !hasLocalTarget || !hasStatus || !hasError || item.status.empty()) {
         return std::nullopt;
     }
     return item;

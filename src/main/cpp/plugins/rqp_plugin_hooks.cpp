@@ -60,76 +60,104 @@ std::string manifest_payload_json(const std::string& type, const std::string& pa
 }
 
 class RqpRuntimeHost final : public IPluginRuntimeHost {
-public:
+  public:
     void setConfig(const ReqPackConfig* config) {
         config_ = config;
     }
 
     void logDebug(const std::string& pluginId, const std::string& message) override {
-        Logger::instance().emit(OutputAction::LOG, OutputContext{.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
+        Logger::instance().emit(
+            OutputAction::LOG,
+            OutputContext{.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logInfo(const std::string& pluginId, const std::string& message) override {
-        Logger::instance().emit(OutputAction::LOG, OutputContext{.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
+        Logger::instance().emit(
+            OutputAction::LOG,
+            OutputContext{.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logWarn(const std::string& pluginId, const std::string& message) override {
-        Logger::instance().emit(OutputAction::LOG, OutputContext{.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
+        Logger::instance().emit(
+            OutputAction::LOG,
+            OutputContext{.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void logError(const std::string& pluginId, const std::string& message) override {
-        Logger::instance().emit(OutputAction::LOG, OutputContext{.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
+        Logger::instance().emit(
+            OutputAction::LOG,
+            OutputContext{.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
     }
 
     void emitStatus(const std::string& pluginId, int statusCode) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_STATUS, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .statusCode = statusCode});
+        Logger::instance().emit(
+            OutputAction::PLUGIN_STATUS,
+            OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .statusCode = statusCode});
     }
 
     void emitProgress(const std::string& pluginId, const DisplayProgressMetrics& metrics) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
         const DisplayProgressMetrics normalized = canonicalize_progress_metrics(metrics);
-        if (!normalized.percent.has_value() && !normalized.currentBytes.has_value() && !normalized.totalBytes.has_value() && !normalized.bytesPerSecond.has_value()) {
+        if (!normalized.percent.has_value() && !normalized.currentBytes.has_value() &&
+            !normalized.totalBytes.has_value() && !normalized.bytesPerSecond.has_value()) {
             return;
         }
         Logger::instance().emit(OutputAction::PLUGIN_PROGRESS, OutputContext{
-            .source = hasItemId ? pluginId : "plugin",
-            .scope = "rqp",
-            .progressPercent = normalized.percent,
-            .currentBytes = normalized.currentBytes,
-            .totalBytes = normalized.totalBytes,
-            .bytesPerSecond = normalized.bytesPerSecond,
-        });
+                                                                   .source = hasItemId ? pluginId : "plugin",
+                                                                   .scope = "rqp",
+                                                                   .progressPercent = normalized.percent,
+                                                                   .currentBytes = normalized.currentBytes,
+                                                                   .totalBytes = normalized.totalBytes,
+                                                                   .bytesPerSecond = normalized.bytesPerSecond,
+                                                               });
     }
 
     void emitBeginStep(const std::string& pluginId, const std::string& label) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .eventName = "begin_step", .payload = label});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
+                                                                          .scope = "rqp",
+                                                                          .eventName = "begin_step",
+                                                                          .payload = label});
     }
 
     void emitCommit(const std::string& pluginId) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .eventName = "commit", .payload = "committed"});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
+                                                                          .scope = "rqp",
+                                                                          .eventName = "commit",
+                                                                          .payload = "committed"});
     }
 
     void emitSuccess(const std::string& pluginId) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .eventName = "success", .payload = "ok"});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
+                                                                          .scope = "rqp",
+                                                                          .eventName = "success",
+                                                                          .payload = "ok"});
     }
 
     void emitFailure(const std::string& pluginId, const std::string& message) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .eventName = "failed", .payload = message});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
+                                                                          .scope = "rqp",
+                                                                          .eventName = "failed",
+                                                                          .payload = message});
     }
 
     void emitEvent(const std::string& pluginId, const std::string& eventName, const std::string& payload) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .eventName = eventName, .payload = payload});
+        Logger::instance().emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = hasItemId ? pluginId : "plugin",
+                                                                          .scope = "rqp",
+                                                                          .eventName = eventName,
+                                                                          .payload = payload});
     }
 
     void registerArtifact(const std::string& pluginId, const std::string& payload) override {
         const bool hasItemId = pluginId.find(':') != std::string::npos;
-        Logger::instance().emit(OutputAction::PLUGIN_ARTIFACT, OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .payload = payload});
+        Logger::instance().emit(
+            OutputAction::PLUGIN_ARTIFACT,
+            OutputContext{.source = hasItemId ? pluginId : "plugin", .scope = "rqp", .payload = payload});
         artifactPayloads_.push_back(payload);
     }
 
@@ -158,12 +186,14 @@ public:
         }
     }
 
-    DownloadResult download(const std::string& pluginId, const std::string& url, const std::string& destinationPath) override {
+    DownloadResult download(const std::string& pluginId, const std::string& url,
+                            const std::string& destinationPath) override {
         (void)pluginId;
         const std::filesystem::path targetPath(destinationPath);
         auto finalize = [&](const std::filesystem::path& path) -> DownloadResult {
             try {
-                const ArchiveExtractionOptions options = config_ != nullptr ? archive_options_from_config(*config_) : ArchiveExtractionOptions{};
+                const ArchiveExtractionOptions options =
+                    config_ != nullptr ? archive_options_from_config(*config_) : ArchiveExtractionOptions{};
                 (void)extract_archive_in_place(path, options);
             } catch (...) {
                 return {};
@@ -178,7 +208,8 @@ public:
         }
 
         if (url.rfind("file://", 0) == 0) {
-            std::filesystem::copy_file(url.substr(7), targetPath, std::filesystem::copy_options::overwrite_existing, error);
+            std::filesystem::copy_file(url.substr(7), targetPath, std::filesystem::copy_options::overwrite_existing,
+                                       error);
             if (error) {
                 return {};
             }
@@ -233,7 +264,7 @@ public:
         return finalize(targetPath);
     }
 
-private:
+  private:
     const ReqPackConfig* config_{nullptr};
     std::vector<std::filesystem::path> tempDirectories_{};
     std::vector<std::string> artifactPayloads_{};
@@ -241,7 +272,7 @@ private:
 
 RqpRuntimeHost RQP_RUNTIME_HOST;
 
-}  // namespace
+} // namespace
 
 IPluginRuntimeHost* rqp_plugin_runtime_host() {
     return &RQP_RUNTIME_HOST;
@@ -259,7 +290,8 @@ std::vector<std::string> rqp_plugin_take_runtime_host_artifacts() {
     return RQP_RUNTIME_HOST.takeArtifacts();
 }
 
-bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout& layout, const std::string& hookKey) const {
+bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout& layout,
+                        const std::string& hookKey) const {
     const auto hookIt = layout.hooks.find(hookKey);
     if (hookIt == layout.hooks.end()) {
         return true;
@@ -274,7 +306,8 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
     rqp_plugin_clear_runtime_host_artifacts();
 
     sol::state lua;
-    lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math, sol::lib::os);
+    lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math,
+                       sol::lib::os);
     ensure_ffi_available(lua);
 
     sol::table contextTable = lua.create_table();
@@ -321,18 +354,11 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
     contextTable["tx"] = tx;
 
     sol::table exec = lua.create_table();
-    exec.set_function("run", [context](const std::string& command) {
-        return context.execute(command);
-    });
+    exec.set_function("run", [context](const std::string& command) { return context.execute(command); });
     contextTable["exec"] = exec;
-    lua.new_usertype<ExecResult>(
-        "ExecResult",
-        sol::constructors<ExecResult()>(),
-        "success", &ExecResult::success,
-        "exitCode", &ExecResult::exitCode,
-        "stdout", &ExecResult::stdoutText,
-        "stderr", &ExecResult::stderrText
-    );
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
+                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
+                                 &ExecResult::stderrText);
 
     sol::table fs = lua.create_table();
     fs.set_function("copy", [context](const std::string& source, const std::string& destination) {
@@ -346,9 +372,7 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
         context.registerArtifact(manifest_payload_json("dir", path));
         return true;
     });
-    fs.set_function("exists", [](const std::string& path) {
-        return std::filesystem::exists(path);
-    });
+    fs.set_function("exists", [](const std::string& path) { return std::filesystem::exists(path); });
     contextTable["fs"] = fs;
 
     sol::table artifacts = lua.create_table();
@@ -404,7 +428,8 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
     return true;
 }
 
-bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInstalledPackage& installed, const std::string& hookKey) const {
+bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInstalledPackage& installed,
+                                 const std::string& hookKey) const {
     const auto hookIt = installed.hooks.find(hookKey);
     if (hookIt == installed.hooks.end()) {
         return true;
@@ -419,7 +444,8 @@ bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInst
     rqp_plugin_clear_runtime_host_artifacts();
 
     sol::state lua;
-    lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math, sol::lib::os);
+    lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math,
+                       sol::lib::os);
     ensure_ffi_available(lua);
 
     sol::table contextTable = lua.create_table();
@@ -466,23 +492,14 @@ bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInst
     contextTable["tx"] = tx;
 
     sol::table exec = lua.create_table();
-    exec.set_function("run", [context](const std::string& command) {
-        return context.execute(command);
-    });
+    exec.set_function("run", [context](const std::string& command) { return context.execute(command); });
     contextTable["exec"] = exec;
-    lua.new_usertype<ExecResult>(
-        "ExecResult",
-        sol::constructors<ExecResult()>(),
-        "success", &ExecResult::success,
-        "exitCode", &ExecResult::exitCode,
-        "stdout", &ExecResult::stdoutText,
-        "stderr", &ExecResult::stderrText
-    );
+    lua.new_usertype<ExecResult>("ExecResult", sol::constructors<ExecResult()>(), "success", &ExecResult::success,
+                                 "exitCode", &ExecResult::exitCode, "stdout", &ExecResult::stdoutText, "stderr",
+                                 &ExecResult::stderrText);
 
     sol::table fs = lua.create_table();
-    fs.set_function("exists", [](const std::string& path) {
-        return std::filesystem::exists(path);
-    });
+    fs.set_function("exists", [](const std::string& path) { return std::filesystem::exists(path); });
     contextTable["fs"] = fs;
 
     lua["context"] = contextTable;

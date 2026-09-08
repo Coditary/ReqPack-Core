@@ -12,10 +12,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -28,7 +28,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -46,16 +46,22 @@ void init_git_repository(const std::filesystem::path& path) {
 
 void commit_all_git_repository(const std::filesystem::path& path, const std::string& message) {
     REQUIRE(std::system((std::string{"git -C \""} + path.string() + "\" add .").c_str()) == 0);
-    REQUIRE(std::system((std::string{"git -C \""} + path.string() +
-                         "\" -c user.email=reqpack@test.invalid -c user.name=ReqPackTests commit -q -m \"" + message + "\"").c_str()) == 0);
+    REQUIRE(
+        std::system((std::string{"git -C \""} + path.string() +
+                     "\" -c user.email=reqpack@test.invalid -c user.name=ReqPackTests commit -q -m \"" + message + "\"")
+                        .c_str()) == 0);
 }
 
 void remove_git_path(const std::filesystem::path& repository, const std::filesystem::path& path) {
-    REQUIRE(std::system((std::string{"git -C \""} + repository.string() + "\" rm -q \"" + path.string() + "\"").c_str()) == 0);
+    REQUIRE(std::system(
+                (std::string{"git -C \""} + repository.string() + "\" rm -q \"" + path.string() + "\"").c_str()) == 0);
 }
 
-void move_git_path(const std::filesystem::path& repository, const std::filesystem::path& from, const std::filesystem::path& to) {
-    REQUIRE(std::system((std::string{"git -C \""} + repository.string() + "\" mv \"" + from.string() + "\" \"" + to.string() + "\"").c_str()) == 0);
+void move_git_path(const std::filesystem::path& repository, const std::filesystem::path& from,
+                   const std::filesystem::path& to) {
+    REQUIRE(std::system((std::string{"git -C \""} + repository.string() + "\" mv \"" + from.string() + "\" \"" +
+                         to.string() + "\"")
+                            .c_str()) == 0);
 }
 
 ReqPackConfig make_registry_test_config(const std::filesystem::path& root) {
@@ -67,17 +73,23 @@ ReqPackConfig make_registry_test_config(const std::filesystem::path& root) {
     return config;
 }
 
-std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName, const std::string& content) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -155,7 +167,7 @@ function plugin.info(context, package) return { name = package, version = "1", d
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("registry scans plugin directory and exposes registered plugin names", "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-scan"};
@@ -219,7 +231,8 @@ TEST_CASE("registry loads valid plugin and resolves category lookup", "[integrat
     CHECK(found[0] == "valid");
 }
 
-TEST_CASE("registry marks invalid plugin as failed when contract validation fails", "[integration][registry][service]") {
+TEST_CASE("registry marks invalid plugin as failed when contract validation fails",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-invalid"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
 
@@ -237,7 +250,8 @@ TEST_CASE("registry resolves aliases from database and config", "[integration][r
     TempDir tempDir{"reqpack-registry-alias"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.planner.systemAliases["yum"] = "dnf";
-    config.registry.sources["aliasdb"] = RegistrySourceEntry{.source = "valid", .alias = true, .description = "db alias"};
+    config.registry.sources["aliasdb"] =
+        RegistrySourceEntry{.source = "valid", .alias = true, .description = "db alias"};
 
     add_plugin_script(tempDir.path() / "plugins", "valid", VALID_PLUGIN);
 
@@ -281,7 +295,8 @@ TEST_CASE("registry materializes database-backed plugin script on load", "[integ
     CHECK(registry.getPlugin("cached") != nullptr);
 }
 
-TEST_CASE("registry blocks database-backed plugin load when thin-layer metadata is required but missing", "[integration][registry][service]") {
+TEST_CASE("registry blocks database-backed plugin load when thin-layer metadata is required but missing",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-thin-layer-block"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -302,7 +317,8 @@ TEST_CASE("registry blocks database-backed plugin load when thin-layer metadata 
     CHECK_FALSE(std::filesystem::exists(tempDir.path() / "plugins" / "cached" / "run.lua"));
 }
 
-TEST_CASE("registry allows database-backed plugin load when thin-layer metadata is present", "[integration][registry][service]") {
+TEST_CASE("registry allows database-backed plugin load when thin-layer metadata is present",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-thin-layer-pass"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -330,7 +346,8 @@ TEST_CASE("registry allows database-backed plugin load when thin-layer metadata 
     CHECK(std::filesystem::exists(tempDir.path() / "plugins" / "cached" / "run.lua"));
 }
 
-TEST_CASE("registry blocks unpinned git-backed plugin load when thin-layer trust is required", "[integration][registry][service]") {
+TEST_CASE("registry blocks unpinned git-backed plugin load when thin-layer trust is required",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-thin-layer-git-ref-block"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -351,7 +368,8 @@ TEST_CASE("registry blocks unpinned git-backed plugin load when thin-layer trust
     CHECK_FALSE(std::filesystem::exists(tempDir.path() / "plugins" / "cached" / "run.lua"));
 }
 
-TEST_CASE("registry blocks database-backed plugin load when thin-layer script hash mismatches", "[integration][registry][service]") {
+TEST_CASE("registry blocks database-backed plugin load when thin-layer script hash mismatches",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-thin-layer-hash-block"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -378,7 +396,8 @@ TEST_CASE("registry blocks database-backed plugin load when thin-layer script ha
     CHECK_FALSE(std::filesystem::exists(tempDir.path() / "plugins" / "cached" / "cached.lua"));
 }
 
-TEST_CASE("registry blocks database-backed plugin load when runtime metadata mismatches trust record", "[integration][registry][service]") {
+TEST_CASE("registry blocks database-backed plugin load when runtime metadata mismatches trust record",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-thin-layer-runtime-mismatch"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -405,7 +424,8 @@ TEST_CASE("registry blocks database-backed plugin load when runtime metadata mis
     CHECK(registry.getState("cached") == PluginState::FAILED);
 }
 
-TEST_CASE("registry bootstraps metadata from git json registry and lazily materializes payload", "[integration][registry][service]") {
+TEST_CASE("registry bootstraps metadata from git json registry and lazily materializes payload",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-json-bootstrap"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
@@ -420,20 +440,13 @@ TEST_CASE("registry bootstraps metadata from git json registry and lazily materi
     commit_all_git_repository(remotePlugin, "plugin");
 
     const std::string registryJson =
-        std::string{"{\n"}
-        + "  \"schemaVersion\": 1,\n"
-        + "  \"name\": \"valid\",\n"
-        + "  \"source\": \"git+" + remotePlugin.string() + "?ref=main\",\n"
-        + "  \"description\": \"valid plugin\",\n"
-        + "  \"role\": \"package-manager\",\n"
-        + "  \"capabilities\": [\"exec\"],\n"
-        + "  \"ecosystemScopes\": [\"demo-osv\"],\n"
-        + "  \"writeScopes\": [{\"kind\": \"temp\"}],\n"
-        + "  \"networkScopes\": [{\"host\": \"api.osv.dev\", \"scheme\": \"https\", \"pathPrefix\": \"/v1\"}],\n"
-        + "  \"privilegeLevel\": \"none\",\n"
-        + "  \"scriptSha256\": \"" + registry_database_sha256_hex(VALID_PLUGIN) + "\",\n"
-        + "  \"aliases\": [{\"name\": \"okay\"}]\n"
-        + "}\n";
+        std::string{"{\n"} + "  \"schemaVersion\": 1,\n" + "  \"name\": \"valid\",\n" + "  \"source\": \"git+" +
+        remotePlugin.string() + "?ref=main\",\n" + "  \"description\": \"valid plugin\",\n" +
+        "  \"role\": \"package-manager\",\n" + "  \"capabilities\": [\"exec\"],\n" +
+        "  \"ecosystemScopes\": [\"demo-osv\"],\n" + "  \"writeScopes\": [{\"kind\": \"temp\"}],\n" +
+        "  \"networkScopes\": [{\"host\": \"api.osv.dev\", \"scheme\": \"https\", \"pathPrefix\": \"/v1\"}],\n" +
+        "  \"privilegeLevel\": \"none\",\n" + "  \"scriptSha256\": \"" + registry_database_sha256_hex(VALID_PLUGIN) +
+        "\",\n" + "  \"aliases\": [{\"name\": \"okay\"}]\n" + "}\n";
     write_file(remoteRegistry / "registry" / "v" / "valid.json", registryJson);
     commit_all_git_repository(remoteRegistry, "registry");
 
@@ -459,7 +472,8 @@ TEST_CASE("registry bootstraps metadata from git json registry and lazily materi
     CHECK_FALSE(refreshed->script.empty());
 }
 
-TEST_CASE("registry layers explicit config sources on top of git json main registry", "[integration][registry][service]") {
+TEST_CASE("registry layers explicit config sources on top of git json main registry",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-json-explicit"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
@@ -475,16 +489,16 @@ TEST_CASE("registry layers explicit config sources on top of git json main regis
     commit_all_git_repository(remotePlugin, "plugin");
     write_file(explicitSource, VALID_PLUGIN);
 
-    write_file(remoteRegistry / "registry" / "v" / "valid.json", std::string{
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"name\": \"valid\",\n"
-        "  \"source\": \"git+" + remotePlugin.string() + "?ref=main\",\n"
-        "  \"description\": \"valid plugin\",\n"
-        "  \"role\": \"package-manager\",\n"
-        "  \"privilegeLevel\": \"none\"\n"
-        "}\n"
-    });
+    write_file(remoteRegistry / "registry" / "v" / "valid.json", std::string{"{\n"
+                                                                             "  \"schemaVersion\": 1,\n"
+                                                                             "  \"name\": \"valid\",\n"
+                                                                             "  \"source\": \"git+" +
+                                                                             remotePlugin.string() +
+                                                                             "?ref=main\",\n"
+                                                                             "  \"description\": \"valid plugin\",\n"
+                                                                             "  \"role\": \"package-manager\",\n"
+                                                                             "  \"privilegeLevel\": \"none\"\n"
+                                                                             "}\n"});
     commit_all_git_repository(remoteRegistry, "registry");
 
     config.registry.remoteUrl = std::string{"git+"} + remoteRegistry.string();
@@ -503,7 +517,8 @@ TEST_CASE("registry layers explicit config sources on top of git json main regis
     CHECK(database.getRecord("cached")->source == explicitSource.string());
 }
 
-TEST_CASE("registry bootstrap ignores legacy lua registry files but keeps explicit config sources", "[integration][registry][service]") {
+TEST_CASE("registry bootstrap ignores legacy lua registry files but keeps explicit config sources",
+          "[integration][registry][service]") {
     TempDir tempDir{"reqpack-registry-legacy-bootstrap-ignore"};
     ReqPackConfig config = make_registry_test_config(tempDir.path());
     const std::filesystem::path explicitSource = tempDir.path() / "explicit-source" / "apt.lua";

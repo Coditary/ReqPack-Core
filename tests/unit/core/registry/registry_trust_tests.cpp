@@ -12,10 +12,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -28,7 +28,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -48,21 +48,23 @@ ReqPackConfig make_registry_trust_config(const std::filesystem::path& root) {
     return config;
 }
 
-std::filesystem::path add_plugin_script(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content
-) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -102,7 +104,7 @@ function plugin.info(context, package) return { name = package, version = "1.0.0
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("registry materializes database-backed plugin script on load", "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-materialize"};
@@ -134,7 +136,8 @@ TEST_CASE("registry materializes database-backed plugin script on load", "[unit]
     CHECK(registry.getState("trusted") == PluginState::ACTIVE);
 }
 
-TEST_CASE("registry blocks database-backed plugin when thin-layer trust metadata is missing", "[unit][registry_trust]") {
+TEST_CASE("registry blocks database-backed plugin when thin-layer trust metadata is missing",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-block"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -416,7 +419,8 @@ TEST_CASE("registry getPluginSecurityMetadata returns null when script hash mism
     CHECK(registry.getState("trusted") == PluginState::FAILED);
 }
 
-TEST_CASE("registry blocks load when trust record capability is missing from runtime metadata", "[unit][registry_trust]") {
+TEST_CASE("registry blocks load when trust record capability is missing from runtime metadata",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-capability-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -442,7 +446,8 @@ TEST_CASE("registry blocks load when trust record capability is missing from run
     CHECK(registry.getState("trusted") == PluginState::FAILED);
 }
 
-TEST_CASE("registry blocks load when trust record ecosystem scope is missing from runtime metadata", "[unit][registry_trust]") {
+TEST_CASE("registry blocks load when trust record ecosystem scope is missing from runtime metadata",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-ecosystem-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -468,7 +473,8 @@ TEST_CASE("registry blocks load when trust record ecosystem scope is missing fro
     CHECK(registry.getState("trusted") == PluginState::FAILED);
 }
 
-TEST_CASE("registry blocks load when trust record write scope is missing from runtime metadata", "[unit][registry_trust]") {
+TEST_CASE("registry blocks load when trust record write scope is missing from runtime metadata",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-write-scope-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -494,7 +500,8 @@ TEST_CASE("registry blocks load when trust record write scope is missing from ru
     CHECK(registry.getState("trusted") == PluginState::FAILED);
 }
 
-TEST_CASE("registry blocks load when trust record network scope is missing from runtime metadata", "[unit][registry_trust]") {
+TEST_CASE("registry blocks load when trust record network scope is missing from runtime metadata",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-network-scope-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;
@@ -520,7 +527,8 @@ TEST_CASE("registry blocks load when trust record network scope is missing from 
     CHECK(registry.getState("trusted") == PluginState::FAILED);
 }
 
-TEST_CASE("registry blocks load when trust record privilege level mismatches runtime metadata", "[unit][registry_trust]") {
+TEST_CASE("registry blocks load when trust record privilege level mismatches runtime metadata",
+          "[unit][registry_trust]") {
     TempDir tempDir{"reqpack-registry-trust-privilege-mismatch"};
     ReqPackConfig config = make_registry_trust_config(tempDir.path());
     config.security.requireThinLayer = true;

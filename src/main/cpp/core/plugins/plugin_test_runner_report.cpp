@@ -9,30 +9,38 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size() + 8);
     for (unsigned char c : value) {
         switch (c) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default:
-                if (c < 0x20) {
-                    std::ostringstream code;
-                    code << "\\u" << std::hex << std::uppercase
-                         << static_cast<int>((c >> 12) & 0xF)
-                         << static_cast<int>((c >> 8) & 0xF)
-                         << static_cast<int>((c >> 4) & 0xF)
-                         << static_cast<int>(c & 0xF);
-                    escaped += code.str();
-                } else {
-                    escaped.push_back(static_cast<char>(c));
-                }
-                break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            if (c < 0x20) {
+                std::ostringstream code;
+                code << "\\u" << std::hex << std::uppercase << static_cast<int>((c >> 12) & 0xF)
+                     << static_cast<int>((c >> 8) & 0xF) << static_cast<int>((c >> 4) & 0xF)
+                     << static_cast<int>(c & 0xF);
+                escaped += code.str();
+            } else {
+                escaped.push_back(static_cast<char>(c));
+            }
+            break;
         }
     }
     return escaped;
 }
 
-}  // namespace
+} // namespace
 
 void print_plugin_test_report(const PluginTestRunReport& report, std::ostream& output) {
     for (const PluginTestCaseSummary& entry : report.cases) {
@@ -45,8 +53,7 @@ void print_plugin_test_report(const PluginTestRunReport& report, std::ostream& o
             output << "  artifacts: " << entry.artifacts.size() << '\n';
         }
     }
-    output << "Cases: " << (report.passed + report.failed)
-           << ", Passed: " << report.passed
+    output << "Cases: " << (report.passed + report.failed) << ", Passed: " << report.passed
            << ", Failed: " << report.failed << '\n';
 }
 
@@ -109,8 +116,8 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (eventRecordIndex != 0) {
                 stream << ", ";
             }
-            stream << "{\"name\":\"" << json_escape(entry.eventRecords[eventRecordIndex].name)
-                   << "\",\"payload\":\"" << json_escape(entry.eventRecords[eventRecordIndex].payload) << "\"}";
+            stream << "{\"name\":\"" << json_escape(entry.eventRecords[eventRecordIndex].name) << "\",\"payload\":\""
+                   << json_escape(entry.eventRecords[eventRecordIndex].payload) << "\"}";
         }
         stream << "]\n";
         stream << "    }";

@@ -19,10 +19,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -35,7 +35,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -46,17 +46,23 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-std::filesystem::path write_plugin_bundle(const std::filesystem::path& root, const std::string& pluginName, const std::string& runScript) {
+std::filesystem::path write_plugin_bundle(const std::filesystem::path& root, const std::string& pluginName,
+                                          const std::string& runScript) {
     const std::filesystem::path pluginDirectory = root / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", runScript);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -64,7 +70,7 @@ std::filesystem::path write_plugin_bundle(const std::filesystem::path& root, con
     return pluginDirectory / "run.lua";
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit][lua_bridge_bindings]") {
     TempDir tempDir{"reqpack-lua-bridge-bindings"};
@@ -84,35 +90,39 @@ TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit]
         .pluginDirectory = tempDir.path().string(),
         .scriptPath = (tempDir.path() / "run.lua").string(),
         .host = nullptr,
-        .proxy = ProxyConfig{
-            .defaultTarget = "dnf",
-            .targets = {"dnf", "apt"},
-            .options = {{"arch", "x86_64"}},
-        },
-        .repositories = {
-            RepositoryEntry{
-                .id = "main",
-                .url = "https://example.test/repo",
-                .priority = 10,
-                .enabled = true,
-                .type = "rpm",
-                .auth = {
-                    .type = RepositoryAuthType::TOKEN,
-                    .username = "user",
-                    .password = "pass",
-                    .token = "secret",
-                    .sshKey = "/tmp/key",
-                    .headerName = "Authorization",
-                },
-                .validation = {.checksum = RepositoryChecksumPolicy::WARN, .tlsVerify = true},
-                .scope = {.include = {"*"}, .exclude = {"debug"}},
-                .extras = {
-                    {"tags", std::vector<std::string>{"stable"}},
-                    {"mirror", std::string{"primary"}},
-                    {"retries", 3.0},
+        .proxy =
+            ProxyConfig{
+                .defaultTarget = "dnf",
+                .targets = {"dnf", "apt"},
+                .options = {{"arch", "x86_64"}},
+            },
+        .repositories =
+            {
+                RepositoryEntry{
+                    .id = "main",
+                    .url = "https://example.test/repo",
+                    .priority = 10,
+                    .enabled = true,
+                    .type = "rpm",
+                    .auth =
+                        {
+                            .type = RepositoryAuthType::TOKEN,
+                            .username = "user",
+                            .password = "pass",
+                            .token = "secret",
+                            .sshKey = "/tmp/key",
+                            .headerName = "Authorization",
+                        },
+                    .validation = {.checksum = RepositoryChecksumPolicy::WARN, .tlsVerify = true},
+                    .scope = {.include = {"*"}, .exclude = {"debug"}},
+                    .extras =
+                        {
+                            {"tags", std::vector<std::string>{"stable"}},
+                            {"mirror", std::string{"primary"}},
+                            {"retries", 3.0},
+                        },
                 },
             },
-        },
         .hostInfo = HostInfoService::currentSnapshot(),
     };
 
@@ -185,10 +195,8 @@ TEST_CASE("lua bridge bindings expose builtin and context types to lua", "[unit]
 TEST_CASE("lua bridge bindings wire context callbacks through plugin install", "[unit][lua_bridge_bindings]") {
     TempDir tempDir{"reqpack-lua-bridge-bindings-callbacks"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "demo",
-        "demo",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "demo", "demo",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "demo" end
 function plugin.getVersion() return "1.0.0" end
@@ -214,8 +222,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -239,10 +246,8 @@ function plugin.shutdown() return true end
 TEST_CASE("lua bridge bindings cover exec rules proxy and event surfaces", "[unit][lua_bridge_bindings]") {
     TempDir tempDir{"reqpack-lua-bridge-bindings-surfaces"};
     ReqPackConfig config;
-    const std::filesystem::path scriptPath = write_plugin_bundle(
-        tempDir.path() / "plugins" / "surfaces",
-        "surfaces",
-        R"(
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path() / "plugins" / "surfaces", "surfaces",
+                                                                 R"(
 plugin = {}
 function plugin.getName() return "surfaces" end
 function plugin.getVersion() return "1.0.0" end
@@ -279,8 +284,7 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)"
-    );
+)");
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
@@ -385,8 +389,10 @@ TEST_CASE("lua bridge bindings expose detailed host kernel and storage fields", 
     snapshot.cpu.physicalCores = 4;
     snapshot.memory.totalBytes = 16ULL * 1024 * 1024 * 1024;
     snapshot.memory.availableBytes = 8ULL * 1024 * 1024 * 1024;
-    snapshot.gpus.push_back(HostGpuInfo{.vendor = "Demo", .model = "GPU", .driverVersion = "1.2.3", .backend = "vulkan"});
-    snapshot.storage.mounts.push_back(HostMountInfo{.device = "/dev/sda1", .mountPoint = "/", .totalBytes = 1024, .availableBytes = 512});
+    snapshot.gpus.push_back(
+        HostGpuInfo{.vendor = "Demo", .model = "GPU", .driverVersion = "1.2.3", .backend = "vulkan"});
+    snapshot.storage.mounts.push_back(
+        HostMountInfo{.device = "/dev/sda1", .mountPoint = "/", .totalBytes = 1024, .availableBytes = 512});
 
     PluginCallContext context{
         .pluginId = "demo",

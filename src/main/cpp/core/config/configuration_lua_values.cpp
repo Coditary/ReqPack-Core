@@ -65,26 +65,30 @@ std::optional<RepositoryAuthConfig> load_repository_auth_config(const sol::objec
         auth.token = configuration_internal::expand_env_reference(token.value());
     }
     if (const sol::optional<std::string> sshKey = authTable["sshKey"]; sshKey.has_value()) {
-        auth.sshKey = configuration_internal::expand_user_path(configuration_internal::expand_env_reference(sshKey.value())).string();
+        auth.sshKey =
+            configuration_internal::expand_user_path(configuration_internal::expand_env_reference(sshKey.value()))
+                .string();
     }
     if (const sol::optional<std::string> headerName = authTable["headerName"]; headerName.has_value()) {
         auth.headerName = configuration_internal::expand_env_reference(headerName.value());
     }
 
     switch (auth.type) {
-        case RepositoryAuthType::NONE:
-            if (!auth.username.empty() || !auth.password.empty() || !auth.token.empty() || !auth.sshKey.empty() || !auth.headerName.empty()) {
-                return std::nullopt;
-            }
-            return auth;
-        case RepositoryAuthType::BASIC:
-            return (!auth.username.empty() && !auth.password.empty()) ? std::optional<RepositoryAuthConfig>(auth) : std::nullopt;
-        case RepositoryAuthType::TOKEN:
-            return !auth.token.empty() ? std::optional<RepositoryAuthConfig>(auth) : std::nullopt;
-        case RepositoryAuthType::SSH:
-            return !auth.sshKey.empty() ? std::optional<RepositoryAuthConfig>(auth) : std::nullopt;
-        default:
+    case RepositoryAuthType::NONE:
+        if (!auth.username.empty() || !auth.password.empty() || !auth.token.empty() || !auth.sshKey.empty() ||
+            !auth.headerName.empty()) {
             return std::nullopt;
+        }
+        return auth;
+    case RepositoryAuthType::BASIC:
+        return (!auth.username.empty() && !auth.password.empty()) ? std::optional<RepositoryAuthConfig>(auth)
+                                                                  : std::nullopt;
+    case RepositoryAuthType::TOKEN:
+        return !auth.token.empty() ? std::optional<RepositoryAuthConfig>(auth) : std::nullopt;
+    case RepositoryAuthType::SSH:
+        return !auth.sshKey.empty() ? std::optional<RepositoryAuthConfig>(auth) : std::nullopt;
+    default:
+        return std::nullopt;
     }
 }
 
@@ -183,7 +187,7 @@ std::optional<RepositoryEntry> load_repository_entry(const sol::table& table) {
     return entry;
 }
 
-}  // namespace
+} // namespace
 
 namespace configuration_internal {
 
@@ -369,13 +373,15 @@ RegistrySourceMap load_registry_sources_from_table(const sol::table& table) {
             }
             entry.writeScopes = load_registry_write_scopes(entryTable["writeScopes"]);
             entry.networkScopes = load_registry_network_scopes(entryTable["networkScopes"]);
-            if (const sol::optional<std::string> privilegeLevel = entryTable["privilegeLevel"]; privilegeLevel.has_value()) {
+            if (const sol::optional<std::string> privilegeLevel = entryTable["privilegeLevel"];
+                privilegeLevel.has_value()) {
                 entry.privilegeLevel = to_lower_copy(privilegeLevel.value());
             }
             if (const sol::optional<std::string> scriptSha256 = entryTable["scriptSha256"]; scriptSha256.has_value()) {
                 entry.scriptSha256 = to_lower_copy(scriptSha256.value());
             }
-            if (const sol::optional<std::string> bootstrapSha256 = entryTable["bootstrapSha256"]; bootstrapSha256.has_value()) {
+            if (const sol::optional<std::string> bootstrapSha256 = entryTable["bootstrapSha256"];
+                bootstrapSha256.has_value()) {
                 entry.bootstrapSha256 = to_lower_copy(bootstrapSha256.value());
             }
         } else {
@@ -566,4 +572,4 @@ void merge_registry_sources(RegistrySourceMap& target, const RegistrySourceMap& 
     }
 }
 
-}  // namespace configuration_internal
+} // namespace configuration_internal

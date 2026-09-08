@@ -16,10 +16,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -32,17 +32,16 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 bool contains_prefix(const std::vector<std::string>& values, const std::string& prefix) {
-    return std::any_of(values.begin(), values.end(), [&prefix](const std::string& value) {
-        return value.rfind(prefix, 0) == 0;
-    });
+    return std::any_of(values.begin(), values.end(),
+                       [&prefix](const std::string& value) { return value.rfind(prefix, 0) == 0; });
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("network environment prefers configured CA bundle when valid", "[unit][network][env]") {
     TempDir tempDir{"reqpack-network-env"};

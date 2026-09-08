@@ -18,10 +18,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -34,7 +34,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -63,65 +63,63 @@ void init_git_repository(const std::filesystem::path& path) {
     std::error_code error;
     std::filesystem::create_directories(path, error);
     require_command_success("git -C " + escape_shell_arg(path.string()) + " init -b main");
-    require_command_success(
-        "git -C " + escape_shell_arg(path.string()) +
-        " config user.email 'reqpack@test.local' && git -C " + escape_shell_arg(path.string()) +
-        " config user.name 'ReqPack Tests'"
-    );
+    require_command_success("git -C " + escape_shell_arg(path.string()) +
+                            " config user.email 'reqpack@test.local' && git -C " + escape_shell_arg(path.string()) +
+                            " config user.name 'ReqPack Tests'");
 }
 
 void commit_all_git_repository(const std::filesystem::path& path, const std::string& message) {
-    require_command_success(
-        "git -C " + escape_shell_arg(path.string()) + " add -A && git -C " + escape_shell_arg(path.string()) +
-        " commit -m " + escape_shell_arg(message)
-    );
+    require_command_success("git -C " + escape_shell_arg(path.string()) + " add -A && git -C " +
+                            escape_shell_arg(path.string()) + " commit -m " + escape_shell_arg(message));
 }
 
-void write_plugin_bundle(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& version,
-    const std::string& versionLabel
-) {
+void write_plugin_bundle(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                         const std::string& version, const std::string& versionLabel) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"" + version + "\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"" +
+                                                      version +
+                                                      "\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua",
-        "plugin = {}\n"
-        "function plugin.getName() return REQPACK_PLUGIN_ID end\n"
-        "function plugin.getVersion() return '" + version + "' end\n"
-        "function plugin.getSecurityMetadata() return { osvEcosystem = 'demo-osv', purlType = 'generic', versionComparatorProfile = 'lexicographic' } end\n"
-        "function plugin.getRequirements() return {} end\n"
-        "function plugin.getCategories() return { 'pkg' } end\n"
-        "function plugin.getMissingPackages(packages) return packages end\n"
-        "function plugin.install(context, packages) return true end\n"
-        "function plugin.installLocal(context, path) return true end\n"
-        "function plugin.remove(context, packages) return true end\n"
-        "function plugin.update(context, packages) return true end\n"
-        "function plugin.list(context) return {} end\n"
-        "function plugin.search(context, prompt) return {} end\n"
-        "function plugin.info(context, package) return { name = package, version = '" + versionLabel + "' } end\n"
-        "function plugin.shutdown() return true end\n"
-    );
+               "plugin = {}\n"
+               "function plugin.getName() return REQPACK_PLUGIN_ID end\n"
+               "function plugin.getVersion() return '" +
+                   version +
+                   "' end\n"
+                   "function plugin.getSecurityMetadata() return { osvEcosystem = 'demo-osv', purlType = 'generic', "
+                   "versionComparatorProfile = 'lexicographic' } end\n"
+                   "function plugin.getRequirements() return {} end\n"
+                   "function plugin.getCategories() return { 'pkg' } end\n"
+                   "function plugin.getMissingPackages(packages) return packages end\n"
+                   "function plugin.install(context, packages) return true end\n"
+                   "function plugin.installLocal(context, path) return true end\n"
+                   "function plugin.remove(context, packages) return true end\n"
+                   "function plugin.update(context, packages) return true end\n"
+                   "function plugin.list(context) return {} end\n"
+                   "function plugin.search(context, prompt) return {} end\n"
+                   "function plugin.info(context, package) return { name = package, version = '" +
+                   versionLabel +
+                   "' } end\n"
+                   "function plugin.shutdown() return true end\n");
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
     write_file(pluginDirectory / "scripts" / "remove.lua", "return true\n");
 }
 
-void commit_plugin_source_version(
-    const std::filesystem::path& repoPath,
-    const std::string& pluginName,
-    const std::string& tag,
-    const std::string& version,
-    const std::string& versionLabel
-) {
+void commit_plugin_source_version(const std::filesystem::path& repoPath, const std::string& pluginName,
+                                  const std::string& tag, const std::string& version, const std::string& versionLabel) {
     write_plugin_bundle(repoPath, pluginName, version, versionLabel);
     commit_all_git_repository(repoPath, pluginName + " " + tag);
     require_command_success("git -C " + escape_shell_arg(repoPath.string()) + " tag -f " + escape_shell_arg(tag));
@@ -197,7 +195,8 @@ TEST_CASE("orchestrator remove missing plugin wrapper fails in-process", "[integ
     CHECK(orchestrator.run() != 0);
 }
 
-TEST_CASE("orchestrator update all expand refreshes git registry plugins in-process", "[integration][orchestrator][plugin-flow]") {
+TEST_CASE("orchestrator update all expand refreshes git registry plugins in-process",
+          "[integration][orchestrator][plugin-flow]") {
     TempDir tempDir{"reqpack-orchestrator-plugin-update-all-in-process"};
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
@@ -206,16 +205,16 @@ TEST_CASE("orchestrator update all expand refreshes git registry plugins in-proc
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
     commit_plugin_source_version(pipRepoPath, "pip", "v2", "1.2.0", "v1.2.0");
 
-    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"name\": \"pip\",\n"
-        "  \"source\": \"git+" + pipRepoPath.string() + "\",\n"
-        "  \"description\": \"pip plugin\",\n"
-        "  \"role\": \"package-manager\",\n"
-        "  \"privilegeLevel\": \"none\"\n"
-        "}\n"
-    });
+    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{"{\n"
+                                                                           "  \"schemaVersion\": 1,\n"
+                                                                           "  \"name\": \"pip\",\n"
+                                                                           "  \"source\": \"git+" +
+                                                                           pipRepoPath.string() +
+                                                                           "\",\n"
+                                                                           "  \"description\": \"pip plugin\",\n"
+                                                                           "  \"role\": \"package-manager\",\n"
+                                                                           "  \"privilegeLevel\": \"none\"\n"
+                                                                           "}\n"});
     commit_all_git_repository(remoteRegistry, "initial");
 
     ReqPackConfig config = default_reqpack_config();

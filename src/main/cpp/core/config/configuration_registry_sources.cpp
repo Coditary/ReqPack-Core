@@ -68,10 +68,12 @@ RegistrySourceMap collect_explicit_registry_sources(const ReqPackConfig& config)
 
 RegistrySourceMap collect_registry_sources(const ReqPackConfig& config) {
     RegistrySourceMap sources = collect_explicit_registry_sources(config);
-    configuration_internal::merge_registry_sources(sources, load_registry_sources_from_lua(registry_source_file_path(config.registry.databasePath)));
+    configuration_internal::merge_registry_sources(
+        sources, load_registry_sources_from_lua(registry_source_file_path(config.registry.databasePath)));
 
     if (!config.registry.overlayPath.empty()) {
-        configuration_internal::merge_registry_sources(sources, load_registry_sources_from_lua(config.registry.overlayPath));
+        configuration_internal::merge_registry_sources(sources,
+                                                       load_registry_sources_from_lua(config.registry.overlayPath));
     }
 
     return sources;

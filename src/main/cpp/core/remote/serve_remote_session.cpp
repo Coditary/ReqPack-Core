@@ -47,8 +47,7 @@ CommandOutput active_connection_count_output(RemoteServerState& state) {
         count = static_cast<int>(state.sessions.size());
     }
     output.blocks.push_back(make_command_field_value_block(std::vector<CommandOutputField>{
-        CommandOutputField{.key = "Active Connections", .value = std::to_string(count)}
-    }));
+        CommandOutputField{.key = "Active Connections", .value = std::to_string(count)}}));
     output.success = true;
     output.succeeded = 1;
     return output;
@@ -73,9 +72,8 @@ CommandOutput active_connection_list_output(RemoteServerState& state) {
             });
         }
     }
-    output.blocks.push_back(make_command_table_block(
-        {"Id", "User", "Admin", "Auth", "Protocol", "Address", "Connected"},
-        rows));
+    output.blocks.push_back(
+        make_command_table_block({"Id", "User", "Admin", "Auth", "Protocol", "Address", "Connected"}, rows));
     output.success = true;
     output.succeeded = static_cast<int>(rows.size());
     return output;

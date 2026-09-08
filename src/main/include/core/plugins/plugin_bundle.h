@@ -45,8 +45,10 @@ struct PluginBundleProbe {
 
 std::optional<PluginBundleProbe> plugin_bundle_probe_directory(const std::filesystem::path& directory);
 std::optional<PluginBundleLayout> plugin_bundle_read_directory(const std::filesystem::path& directory);
-std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem::path& basePath, const std::string& expectedPluginId = {});
-std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConfig& config, const std::string& pluginId);
+std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem::path& basePath,
+                                                          const std::string& expectedPluginId = {});
+std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConfig& config,
+                                                               const std::string& pluginId);
 std::vector<Package> plugin_bundle_dependency_packages(const PluginBundleLayout& layout);
 std::filesystem::path plugin_bundle_ready_marker_path(const std::filesystem::path& directory);
 std::filesystem::path plugin_bundle_manifest_path(const std::filesystem::path& directory);

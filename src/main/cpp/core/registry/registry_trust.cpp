@@ -11,17 +11,18 @@ namespace {
 
 bool contains_write_scope(const std::vector<PluginWriteScope>& scopes, const RegistryWriteScope& expected) {
     return std::find_if(scopes.begin(), scopes.end(), [&](const PluginWriteScope& scope) {
-        return scope.kind == expected.kind && scope.value == expected.value;
-    }) != scopes.end();
+               return scope.kind == expected.kind && scope.value == expected.value;
+           }) != scopes.end();
 }
 
 bool contains_network_scope(const std::vector<PluginNetworkScope>& scopes, const RegistryNetworkScope& expected) {
     return std::find_if(scopes.begin(), scopes.end(), [&](const PluginNetworkScope& scope) {
-        return scope.host == expected.host && scope.scheme == expected.scheme && scope.pathPrefix == expected.pathPrefix;
-    }) != scopes.end();
+               return scope.host == expected.host && scope.scheme == expected.scheme &&
+                      scope.pathPrefix == expected.pathPrefix;
+           }) != scopes.end();
 }
 
-}  // namespace
+} // namespace
 
 bool Registry::passesThinLayerTrust(const RegistryRecord& record) const {
     if (record.name == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
@@ -32,7 +33,8 @@ bool Registry::passesThinLayerTrust(const RegistryRecord& record) const {
 }
 
 bool Registry::runtimeMetadataMatchesTrustRecord(const std::string& name, const RegistryRecord& record) const {
-    if (!this->config.security.requireThinLayer || record.alias || record.name == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
+    if (!this->config.security.requireThinLayer || record.alias ||
+        record.name == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
         return true;
     }
 
@@ -51,13 +53,15 @@ bool Registry::runtimeMetadataMatchesTrustRecord(const std::string& name, const 
     }
 
     for (const std::string& capability : record.capabilities) {
-        if (std::find(metadata->capabilities.begin(), metadata->capabilities.end(), capability) == metadata->capabilities.end()) {
+        if (std::find(metadata->capabilities.begin(), metadata->capabilities.end(), capability) ==
+            metadata->capabilities.end()) {
             return false;
         }
     }
 
     for (const std::string& ecosystem : record.ecosystemScopes) {
-        if (std::find(metadata->ecosystemScopes.begin(), metadata->ecosystemScopes.end(), ecosystem) == metadata->ecosystemScopes.end()) {
+        if (std::find(metadata->ecosystemScopes.begin(), metadata->ecosystemScopes.end(), ecosystem) ==
+            metadata->ecosystemScopes.end()) {
             return false;
         }
     }

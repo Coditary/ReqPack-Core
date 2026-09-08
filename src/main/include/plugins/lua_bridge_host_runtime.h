@@ -24,12 +24,10 @@ struct LuaBridgeRuntimeBindingContext {
 };
 
 class LuaBridgeHostRuntime {
-public:
+  public:
     using ExecOverride = std::function<ExecResult(const std::string& sourceId, const std::string& command)>;
 
-    LuaBridgeHostRuntime(Logger& logger,
-                         const ReqPackConfig& config,
-                         const std::string& pluginId,
+    LuaBridgeHostRuntime(Logger& logger, const ReqPackConfig& config, const std::string& pluginId,
                          const std::string& pluginDirectory,
                          const std::optional<PluginSecurityMetadata>* securityMetadata);
 
@@ -52,10 +50,8 @@ public:
 
     ExecResult runCommand(const std::string& command) const;
     ExecResult executeCommandWithPolicy(const std::string& sourceId, const std::string& command, bool silent) const;
-    ExecResult executeCommandWithPolicy(const std::string& sourceId,
-                                        const std::string& command,
-                                        const sol::object& rules,
-                                        bool silent) const;
+    ExecResult executeCommandWithPolicy(const std::string& sourceId, const std::string& command,
+                                        const sol::object& rules, bool silent) const;
 
     DownloadResult downloadToPath(const std::string& url, const std::string& destinationPath);
 
@@ -77,7 +73,7 @@ public:
 
     void setExecOverride(ExecOverride execOverride);
 
-private:
+  private:
     bool shouldEnforceExecutionPolicy() const;
     ExecResult denyExecution(const std::string& message) const;
 

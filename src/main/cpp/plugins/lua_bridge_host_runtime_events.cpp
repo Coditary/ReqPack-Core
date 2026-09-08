@@ -10,42 +10,51 @@ std::string runtime_output_source(const std::string& pluginId) {
     return pluginId.find(':') != std::string::npos ? pluginId : "plugin";
 }
 
-}  // namespace
+} // namespace
 
 void LuaBridgeHostRuntime::logDebug(const std::string& pluginId, const std::string& message) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::LOG, OutputContext{.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
+    m_logger.emit(
+        OutputAction::LOG,
+        OutputContext{.level = spdlog::level::debug, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void LuaBridgeHostRuntime::logInfo(const std::string& pluginId, const std::string& message) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::LOG, OutputContext{.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
+    m_logger.emit(
+        OutputAction::LOG,
+        OutputContext{.level = spdlog::level::info, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void LuaBridgeHostRuntime::logWarn(const std::string& pluginId, const std::string& message) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::LOG, OutputContext{.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
+    m_logger.emit(
+        OutputAction::LOG,
+        OutputContext{.level = spdlog::level::warn, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void LuaBridgeHostRuntime::logError(const std::string& pluginId, const std::string& message) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::LOG, OutputContext{.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
+    m_logger.emit(
+        OutputAction::LOG,
+        OutputContext{.level = spdlog::level::err, .message = message, .source = "plugin", .scope = pluginId});
 }
 
 void LuaBridgeHostRuntime::emitStatus(const std::string& pluginId, const int statusCode) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::PLUGIN_STATUS,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .statusCode = statusCode});
+    m_logger.emit(
+        OutputAction::PLUGIN_STATUS,
+        OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .statusCode = statusCode});
 }
 
 void LuaBridgeHostRuntime::emitProgress(const std::string& pluginId, const DisplayProgressMetrics& metrics) {
@@ -58,54 +67,65 @@ void LuaBridgeHostRuntime::emitProgress(const std::string& pluginId, const Displ
         return;
     }
     m_logger.emit(OutputAction::PLUGIN_PROGRESS, OutputContext{
-        .source = runtime_output_source(pluginId),
-        .scope = m_pluginId,
-        .progressPercent = normalized.percent,
-        .currentBytes = normalized.currentBytes,
-        .totalBytes = normalized.totalBytes,
-        .bytesPerSecond = normalized.bytesPerSecond,
-    });
+                                                     .source = runtime_output_source(pluginId),
+                                                     .scope = m_pluginId,
+                                                     .progressPercent = normalized.percent,
+                                                     .currentBytes = normalized.currentBytes,
+                                                     .totalBytes = normalized.totalBytes,
+                                                     .bytesPerSecond = normalized.bytesPerSecond,
+                                                 });
 }
 
 void LuaBridgeHostRuntime::emitBeginStep(const std::string& pluginId, const std::string& label) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::PLUGIN_EVENT,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .eventName = "begin_step", .payload = label});
+    m_logger.emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = runtime_output_source(pluginId),
+                                                            .scope = m_pluginId,
+                                                            .eventName = "begin_step",
+                                                            .payload = label});
 }
 
 void LuaBridgeHostRuntime::emitCommit(const std::string& pluginId) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::PLUGIN_EVENT,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .eventName = "commit", .payload = "committed"});
+    m_logger.emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = runtime_output_source(pluginId),
+                                                            .scope = m_pluginId,
+                                                            .eventName = "commit",
+                                                            .payload = "committed"});
 }
 
 void LuaBridgeHostRuntime::emitSuccess(const std::string& pluginId) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::PLUGIN_EVENT,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .eventName = "success", .payload = "ok"});
+    m_logger.emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = runtime_output_source(pluginId),
+                                                            .scope = m_pluginId,
+                                                            .eventName = "success",
+                                                            .payload = "ok"});
 }
 
 void LuaBridgeHostRuntime::emitFailure(const std::string& pluginId, const std::string& message) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
-    m_logger.emit(OutputAction::PLUGIN_EVENT,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .eventName = "failed", .payload = message});
+    m_logger.emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = runtime_output_source(pluginId),
+                                                            .scope = m_pluginId,
+                                                            .eventName = "failed",
+                                                            .payload = message});
 }
 
-void LuaBridgeHostRuntime::emitEvent(const std::string& pluginId, const std::string& eventName, const std::string& payload) {
+void LuaBridgeHostRuntime::emitEvent(const std::string& pluginId, const std::string& eventName,
+                                     const std::string& payload) {
     if (m_silentRuntimeOutput.load()) {
         return;
     }
     m_recentEvents.push_back(PluginEventRecord{.name = eventName, .payload = payload});
-    m_logger.emit(OutputAction::PLUGIN_EVENT,
-                  OutputContext{.source = runtime_output_source(pluginId), .scope = m_pluginId, .eventName = eventName, .payload = payload});
+    m_logger.emit(OutputAction::PLUGIN_EVENT, OutputContext{.source = runtime_output_source(pluginId),
+                                                            .scope = m_pluginId,
+                                                            .eventName = eventName,
+                                                            .payload = payload});
 }
 
 void LuaBridgeHostRuntime::registerArtifact(const std::string& pluginId, const std::string& payload) {

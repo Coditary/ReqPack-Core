@@ -10,9 +10,8 @@ namespace {
 
 std::string to_lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
@@ -64,9 +63,8 @@ std::vector<sol::object> read_array_table(const sol::table& table, const std::st
         indexed.emplace_back(index.value(), value);
     }
 
-    std::sort(indexed.begin(), indexed.end(), [](const auto& left, const auto& right) {
-        return left.first < right.first;
-    });
+    std::sort(indexed.begin(), indexed.end(),
+              [](const auto& left, const auto& right) { return left.first < right.first; });
 
     std::vector<sol::object> result;
     result.reserve(indexed.size());
@@ -124,56 +122,57 @@ bool has_required_field(const ExecRuleAction& action, const std::string& name) {
 
 void validate_action_fields(const ExecRuleAction& action) {
     switch (action.type) {
-        case ExecRuleActionType::Send:
-        case ExecRuleActionType::State:
-            if (!has_required_field(action, "value")) {
-                throw std::runtime_error("action requires field 'value'.");
-            }
-            break;
-        case ExecRuleActionType::Log:
-            if (!has_required_field(action, "message")) {
-                throw std::runtime_error("log action requires field 'message'.");
-            }
-            break;
-        case ExecRuleActionType::Status:
-            if (!has_required_field(action, "code")) {
-                throw std::runtime_error("status action requires field 'code'.");
-            }
-            break;
-        case ExecRuleActionType::Progress:
-            if (!has_required_field(action, "percent") && !has_required_field(action, "current") &&
-                !has_required_field(action, "total") && !has_required_field(action, "speed")) {
-                throw std::runtime_error("progress action requires field 'percent', 'current', 'total', or 'speed'.");
-            }
-            break;
-        case ExecRuleActionType::BeginStep:
-            if (!has_required_field(action, "label")) {
-                throw std::runtime_error("begin_step action requires field 'label'.");
-            }
-            break;
-        case ExecRuleActionType::Failed:
-            if (!has_required_field(action, "message")) {
-                throw std::runtime_error("failed action requires field 'message'.");
-            }
-            break;
-        case ExecRuleActionType::Event:
-            if (!has_required_field(action, "name")) {
-                throw std::runtime_error("event action requires field 'name'.");
-            }
-            break;
-        case ExecRuleActionType::Artifact:
-            if (!has_required_field(action, "payload")) {
-                throw std::runtime_error("artifact action requires field 'payload'.");
-            }
-            break;
-        case ExecRuleActionType::Success:
-            break;
+    case ExecRuleActionType::Send:
+    case ExecRuleActionType::State:
+        if (!has_required_field(action, "value")) {
+            throw std::runtime_error("action requires field 'value'.");
+        }
+        break;
+    case ExecRuleActionType::Log:
+        if (!has_required_field(action, "message")) {
+            throw std::runtime_error("log action requires field 'message'.");
+        }
+        break;
+    case ExecRuleActionType::Status:
+        if (!has_required_field(action, "code")) {
+            throw std::runtime_error("status action requires field 'code'.");
+        }
+        break;
+    case ExecRuleActionType::Progress:
+        if (!has_required_field(action, "percent") && !has_required_field(action, "current") &&
+            !has_required_field(action, "total") && !has_required_field(action, "speed")) {
+            throw std::runtime_error("progress action requires field 'percent', 'current', 'total', or 'speed'.");
+        }
+        break;
+    case ExecRuleActionType::BeginStep:
+        if (!has_required_field(action, "label")) {
+            throw std::runtime_error("begin_step action requires field 'label'.");
+        }
+        break;
+    case ExecRuleActionType::Failed:
+        if (!has_required_field(action, "message")) {
+            throw std::runtime_error("failed action requires field 'message'.");
+        }
+        break;
+    case ExecRuleActionType::Event:
+        if (!has_required_field(action, "name")) {
+            throw std::runtime_error("event action requires field 'name'.");
+        }
+        break;
+    case ExecRuleActionType::Artifact:
+        if (!has_required_field(action, "payload")) {
+            throw std::runtime_error("artifact action requires field 'payload'.");
+        }
+        break;
+    case ExecRuleActionType::Success:
+        break;
     }
 }
 
 ExecRuleAction parse_action(const sol::object& object, std::size_t ruleIndex, std::size_t actionIndex) {
     if (!object.valid() || object.get_type() != sol::type::table) {
-        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "] must be a table.");
+        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) +
+                                 "] must be a table.");
     }
 
     const sol::table table = object.as<sol::table>();
@@ -182,13 +181,15 @@ ExecRuleAction parse_action(const sol::object& object, std::size_t ruleIndex, st
 
     for (const auto& [key, value] : table) {
         if (!key.is<std::string>()) {
-            throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "] keys must be strings.");
+            throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) +
+                                     "] keys must be strings.");
         }
 
         const std::string name = key.as<std::string>();
         if (name == "type") {
             if (!value.is<std::string>()) {
-                throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "].type must be a string.");
+                throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" +
+                                         std::to_string(actionIndex) + "].type must be a string.");
             }
             action.type = parse_action_type(value.as<std::string>());
             hasType = true;
@@ -199,21 +200,26 @@ ExecRuleAction parse_action(const sol::object& object, std::size_t ruleIndex, st
             continue;
         }
 
-        if (value.get_type() == sol::type::table || value.get_type() == sol::type::userdata || value.get_type() == sol::type::function || value.get_type() == sol::type::thread || value.get_type() == sol::type::lightuserdata) {
-            throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "] contains unsupported nested value for field '" + name + "'.");
+        if (value.get_type() == sol::type::table || value.get_type() == sol::type::userdata ||
+            value.get_type() == sol::type::function || value.get_type() == sol::type::thread ||
+            value.get_type() == sol::type::lightuserdata) {
+            throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) +
+                                     "] contains unsupported nested value for field '" + name + "'.");
         }
 
         action.fields[name] = scalar_to_string(value);
     }
 
     if (!hasType) {
-        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "] is missing field 'type'.");
+        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) +
+                                 "] is missing field 'type'.");
     }
 
     try {
         validate_action_fields(action);
     } catch (const std::exception& error) {
-        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) + "]: " + error.what());
+        throw std::runtime_error("rule[" + std::to_string(ruleIndex) + "].actions[" + std::to_string(actionIndex) +
+                                 "]: " + error.what());
     }
 
     return action;
@@ -255,7 +261,8 @@ ExecRule parse_rule(const sol::object& object, std::size_t ruleIndex, bool& requ
                 rule.source = ExecRuleSource::Screen;
                 requiresPty = true;
             } else {
-                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) + "].source must be 'line' or 'screen'.");
+                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) +
+                                         "].source must be 'line' or 'screen'.");
             }
             hasSource = true;
             continue;
@@ -269,7 +276,8 @@ ExecRule parse_rule(const sol::object& object, std::size_t ruleIndex, bool& requ
             try {
                 rule.regex = std::regex(rule.regexText, std::regex::ECMAScript);
             } catch (const std::regex_error& error) {
-                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) + "].regex failed to compile: " + std::string(error.what()));
+                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) +
+                                         "].regex failed to compile: " + std::string(error.what()));
             }
             hasRegex = true;
             continue;
@@ -277,9 +285,11 @@ ExecRule parse_rule(const sol::object& object, std::size_t ruleIndex, bool& requ
 
         if (name == "actions") {
             if (!value.valid() || value.get_type() != sol::type::table) {
-                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) + "].actions must be an array-style table.");
+                throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) +
+                                         "].actions must be an array-style table.");
             }
-            const std::vector<sol::object> actionObjects = read_array_table(value.as<sol::table>(), "rules.rules[" + std::to_string(ruleIndex) + "].actions");
+            const std::vector<sol::object> actionObjects =
+                read_array_table(value.as<sol::table>(), "rules.rules[" + std::to_string(ruleIndex) + "].actions");
             if (actionObjects.empty()) {
                 throw std::runtime_error("rules.rules[" + std::to_string(ruleIndex) + "].actions must not be empty.");
             }
@@ -327,7 +337,8 @@ ExecRule parse_rule(const sol::object& object, std::size_t ruleIndex, bool& requ
     return rule;
 }
 
-std::string substitute_placeholders(const std::string& input, const std::match_results<std::string::const_iterator>& match) {
+std::string substitute_placeholders(const std::string& input,
+                                    const std::match_results<std::string::const_iterator>& match) {
     std::string result;
     result.reserve(input.size());
 
@@ -353,7 +364,9 @@ std::string substitute_placeholders(const std::string& input, const std::match_r
     return result;
 }
 
-std::string resolve_field(const ExecRuleAction& action, const std::string& name, const std::match_results<std::string::const_iterator>& match, const std::string& fallback = {}) {
+std::string resolve_field(const ExecRuleAction& action, const std::string& name,
+                          const std::match_results<std::string::const_iterator>& match,
+                          const std::string& fallback = {}) {
     const auto it = action.fields.find(name);
     if (it == action.fields.end()) {
         return fallback;
@@ -368,7 +381,8 @@ bool rule_active(const ExecRule& rule, const ExecRuleRuntimeState& runtime, std:
     return !rule.state.has_value() || rule.state.value() == runtime.currentState;
 }
 
-ResolvedExecRuleAction resolve_action(const ExecRuleAction& action, const std::match_results<std::string::const_iterator>& match) {
+ResolvedExecRuleAction resolve_action(const ExecRuleAction& action,
+                                      const std::match_results<std::string::const_iterator>& match) {
     ResolvedExecRuleAction resolved;
     resolved.type = action.type;
     for (const auto& [key, value] : action.fields) {
@@ -378,11 +392,9 @@ ResolvedExecRuleAction resolve_action(const ExecRuleAction& action, const std::m
 }
 
 ExecRuleEvaluationResult evaluate_rules_for_source(
-    ExecRuleSource source,
-    const ExecRuleset& ruleset,
-    ExecRuleRuntimeState& runtime,
-    const std::function<bool(std::size_t, const ExecRule&, std::match_results<std::string::const_iterator>&)>& tryMatch
-) {
+    ExecRuleSource source, const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,
+    const std::function<bool(std::size_t, const ExecRule&, std::match_results<std::string::const_iterator>&)>&
+        tryMatch) {
     ExecRuleEvaluationResult result;
 
     for (std::size_t ruleIndex = 0; ruleIndex < ruleset.rules.size(); ++ruleIndex) {
@@ -419,7 +431,7 @@ ExecRuleEvaluationResult evaluate_rules_for_source(
     return result;
 }
 
-}  // namespace
+} // namespace
 
 ExecRuleset parse_exec_rules(const sol::object& rulesObject) {
     if (!rulesObject.valid() || rulesObject.get_type() != sol::type::table) {
@@ -544,36 +556,33 @@ std::string normalize_exec_rule_pty_chunk(const std::string& chunk) {
 }
 
 ExecRuleRuntimeState make_exec_rule_runtime_state(const ExecRuleset& ruleset) {
-    return ExecRuleRuntimeState{
-        .currentState = ruleset.initialState,
-        .disabled = std::vector<bool>(ruleset.rules.size(), false),
-        .screenCursor = std::vector<std::size_t>(ruleset.rules.size(), 0)
-    };
+    return ExecRuleRuntimeState{.currentState = ruleset.initialState,
+                                .disabled = std::vector<bool>(ruleset.rules.size(), false),
+                                .screenCursor = std::vector<std::size_t>(ruleset.rules.size(), 0)};
 }
 
-ExecRuleEvaluationResult evaluate_exec_rule_line_input(
-    const ExecRuleset& ruleset,
-    ExecRuleRuntimeState& runtime,
-    const std::string& line
-) {
-    return evaluate_rules_for_source(ExecRuleSource::Line, ruleset, runtime, [&](std::size_t, const ExecRule& rule, std::match_results<std::string::const_iterator>& match) {
-        return std::regex_search(line.begin(), line.end(), match, rule.regex);
-    });
+ExecRuleEvaluationResult evaluate_exec_rule_line_input(const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,
+                                                       const std::string& line) {
+    return evaluate_rules_for_source(
+        ExecRuleSource::Line, ruleset, runtime,
+        [&](std::size_t, const ExecRule& rule, std::match_results<std::string::const_iterator>& match) {
+            return std::regex_search(line.begin(), line.end(), match, rule.regex);
+        });
 }
 
-ExecRuleEvaluationResult evaluate_exec_rule_screen_input(
-    const ExecRuleset& ruleset,
-    ExecRuleRuntimeState& runtime,
-    const std::string& transcript
-) {
-    return evaluate_rules_for_source(ExecRuleSource::Screen, ruleset, runtime, [&](std::size_t ruleIndex, const ExecRule& rule, std::match_results<std::string::const_iterator>& match) {
-        const std::size_t cursor = std::min(runtime.screenCursor[ruleIndex], transcript.size());
-        const auto begin = transcript.cbegin() + static_cast<std::ptrdiff_t>(cursor);
-        if (!std::regex_search(begin, transcript.cend(), match, rule.regex)) {
-            return false;
-        }
-        const std::size_t consumed = static_cast<std::size_t>(match.position()) + static_cast<std::size_t>(match.length());
-        runtime.screenCursor[ruleIndex] = cursor + consumed;
-        return true;
-    });
+ExecRuleEvaluationResult evaluate_exec_rule_screen_input(const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,
+                                                         const std::string& transcript) {
+    return evaluate_rules_for_source(
+        ExecRuleSource::Screen, ruleset, runtime,
+        [&](std::size_t ruleIndex, const ExecRule& rule, std::match_results<std::string::const_iterator>& match) {
+            const std::size_t cursor = std::min(runtime.screenCursor[ruleIndex], transcript.size());
+            const auto begin = transcript.cbegin() + static_cast<std::ptrdiff_t>(cursor);
+            if (!std::regex_search(begin, transcript.cend(), match, rule.regex)) {
+                return false;
+            }
+            const std::size_t consumed =
+                static_cast<std::size_t>(match.position()) + static_cast<std::size_t>(match.length());
+            runtime.screenCursor[ruleIndex] = cursor + consumed;
+            return true;
+        });
 }

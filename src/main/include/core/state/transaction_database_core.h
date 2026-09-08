@@ -13,6 +13,8 @@ std::string transaction_database_item_key(const std::string& runId, const Packag
 std::string transaction_database_escape_field(const std::string& value);
 std::string transaction_database_unescape_field(const std::string& value);
 std::string transaction_database_serialize_run(const TransactionRunRecord& run);
-std::optional<TransactionRunRecord> transaction_database_deserialize_run(const std::string& runId, const std::string& payload);
+std::optional<TransactionRunRecord> transaction_database_deserialize_run(const std::string& runId,
+                                                                         const std::string& payload);
 std::string transaction_database_serialize_item(const TransactionItemRecord& item);
-std::optional<TransactionItemRecord> transaction_database_deserialize_item(const std::string& key, const std::string& payload);
+std::optional<TransactionItemRecord> transaction_database_deserialize_item(const std::string& key,
+                                                                           const std::string& payload);

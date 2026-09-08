@@ -24,9 +24,8 @@ namespace {
 
 std::string to_lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
@@ -122,9 +121,8 @@ struct PluginTestRuntimeCaseResult {
 };
 
 class PluginTestError : public std::runtime_error {
-public:
-    explicit PluginTestError(const std::string& message)
-        : std::runtime_error(message) {}
+  public:
+    explicit PluginTestError(const std::string& message) : std::runtime_error(message) {}
 };
 
 std::filesystem::path default_fixture_root_for_case(const std::filesystem::path& casePath) {
@@ -145,7 +143,8 @@ std::filesystem::path default_fixture_root_for_case(const std::filesystem::path&
     const std::size_t pathHash = std::hash<std::string>{}(casePath.string());
     std::ostringstream suffix;
     suffix << std::hex << pathHash;
-    return (std::filesystem::temp_directory_path() / ("reqpack-plugin-test-" + sanitized + "-" + suffix.str())).lexically_normal();
+    return (std::filesystem::temp_directory_path() / ("reqpack-plugin-test-" + sanitized + "-" + suffix.str()))
+        .lexically_normal();
 }
 
 std::map<std::string, std::string> string_map_from_table(const sol::object& object) {
@@ -163,7 +162,8 @@ std::map<std::string, std::string> string_map_from_table(const sol::object& obje
     return values;
 }
 
-std::vector<PluginTestFixtureFile> fixture_files_from_table(const sol::object& object, const std::filesystem::path& path) {
+std::vector<PluginTestFixtureFile> fixture_files_from_table(const sol::object& object,
+                                                            const std::filesystem::path& path) {
     if (!object.valid() || object.is<sol::lua_nil_t>() || object.get_type() != sol::type::table) {
         return {};
     }
@@ -291,13 +291,12 @@ void prepare_case_fixture_files(const PluginTestCase& testCase) {
     for (const PluginTestFixtureFile& file : testCase.fixtureFiles) {
         write_fixture_file(
             resolve_fixture_path(testCase, file.path),
-            replace_all(replace_all(file.content, "${fixtureRoot}", fixtureRoot), "${caseDir}", caseDirectory)
-        );
+            replace_all(replace_all(file.content, "${fixtureRoot}", fixtureRoot), "${caseDir}", caseDirectory));
     }
 }
 
 class PreparedCaseFixtures {
-public:
+  public:
     explicit PreparedCaseFixtures(const std::vector<PluginTestCase>& cases) {
         roots_.reserve(cases.size());
         for (const PluginTestCase& testCase : cases) {
@@ -315,7 +314,7 @@ public:
         }
     }
 
-private:
+  private:
     std::vector<std::filesystem::path> roots_{};
 };
 
@@ -340,7 +339,7 @@ void set_environment_value(const std::string& name, const std::optional<std::str
 }
 
 class ScopedEnvironmentOverride {
-public:
+  public:
     explicit ScopedEnvironmentOverride(const std::map<std::string, std::string>& values) {
         previous_.reserve(values.size());
         for (const auto& [name, value] : values) {
@@ -355,14 +354,13 @@ public:
         }
     }
 
-private:
+  private:
     std::vector<std::pair<std::string, std::optional<std::string>>> previous_{};
 };
 
 class FakeExecHost : public LuaBridge {
-public:
-    FakeExecHost(const std::string& scriptPath, const ReqPackConfig& config)
-        : LuaBridge(scriptPath, config) {}
+  public:
+    FakeExecHost(const std::string& scriptPath, const ReqPackConfig& config) : LuaBridge(scriptPath, config) {}
 
     void setCaseResponses(std::vector<FakeExecResponse> responses) {
         responses_ = std::move(responses);
@@ -419,7 +417,7 @@ public:
         return events;
     }
 
-private:
+  private:
     ExecResult handleExecute(const std::string& sourceId, const std::string& command) {
         (void)sourceId;
         commands_.push_back(command);
@@ -451,7 +449,8 @@ private:
     std::vector<PluginEventRecord> recentEvents_{};
 };
 
-std::vector<std::filesystem::path> builtin_case_files_for_preset(const std::string& preset, const std::filesystem::path& pluginScript) {
+std::vector<std::filesystem::path> builtin_case_files_for_preset(const std::string& preset,
+                                                                 const std::filesystem::path& pluginScript) {
     const std::string normalized = to_lower_copy(preset);
     if (normalized != "core") {
         throw PluginTestError("unknown plugin test preset: " + preset);
@@ -479,7 +478,8 @@ std::vector<std::filesystem::path> builtin_case_files_for_preset(const std::stri
     return files;
 }
 
-std::vector<std::filesystem::path> collect_case_files(const PluginTestInvocation& invocation, const std::filesystem::path& pluginScript) {
+std::vector<std::filesystem::path> collect_case_files(const PluginTestInvocation& invocation,
+                                                      const std::filesystem::path& pluginScript) {
     std::set<std::filesystem::path> uniquePaths;
 
     for (const std::string& preset : invocation.presets) {
@@ -493,7 +493,8 @@ std::vector<std::filesystem::path> collect_case_files(const PluginTestInvocation
     }
 
     for (const std::string& raw : invocation.caseDirectories) {
-        const std::filesystem::path directory = std::filesystem::absolute(std::filesystem::path(raw)).lexically_normal();
+        const std::filesystem::path directory =
+            std::filesystem::absolute(std::filesystem::path(raw)).lexically_normal();
         std::error_code error;
         if (!std::filesystem::exists(directory, error) || !std::filesystem::is_directory(directory, error)) {
             throw PluginTestError("case directory not found: " + directory.string());
@@ -534,7 +535,8 @@ std::filesystem::path resolve_plugin_script(const ReqPackConfig& config, const s
         throw PluginTestError("plugin directory does not contain run.lua: " + scriptPath.string());
     }
 
-    const std::filesystem::path byId = std::filesystem::path(config.registry.pluginDirectory) / pluginArgument / "run.lua";
+    const std::filesystem::path byId =
+        std::filesystem::path(config.registry.pluginDirectory) / pluginArgument / "run.lua";
     error.clear();
     if (std::filesystem::is_regular_file(byId, error) && !error) {
         return std::filesystem::absolute(byId).lexically_normal();
@@ -543,7 +545,8 @@ std::filesystem::path resolve_plugin_script(const ReqPackConfig& config, const s
     throw PluginTestError("plugin not found: " + pluginArgument);
 }
 
-Package package_from_case_table(const sol::table& table, const std::string& fallbackSystem, const std::string& fallbackAction) {
+Package package_from_case_table(const sol::table& table, const std::string& fallbackSystem,
+                                const std::string& fallbackAction) {
     Package package;
     package.action = action_from_string(optional_string_field(table, "action").value_or(fallbackAction));
     package.system = optional_string_field(table, "system").value_or(fallbackSystem);
@@ -603,7 +606,8 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
             if (entry.get_type() != sol::type::table) {
                 continue;
             }
-            testCase.packages.push_back(package_from_case_table(entry.as<sol::table>(), testCase.system, testCase.actionName));
+            testCase.packages.push_back(
+                package_from_case_table(entry.as<sol::table>(), testCase.system, testCase.actionName));
         }
     }
 
@@ -634,11 +638,11 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
         }
     }
 
-    if (const sol::optional<std::string> fixtureRoot = root["fixtureRoot"]; fixtureRoot.has_value() && !fixtureRoot->empty()) {
+    if (const sol::optional<std::string> fixtureRoot = root["fixtureRoot"];
+        fixtureRoot.has_value() && !fixtureRoot->empty()) {
         const std::filesystem::path customRoot(fixtureRoot.value());
-        testCase.fixtureRoot = customRoot.is_absolute()
-            ? customRoot.lexically_normal()
-            : (path.parent_path() / customRoot).lexically_normal();
+        testCase.fixtureRoot = customRoot.is_absolute() ? customRoot.lexically_normal()
+                                                        : (path.parent_path() / customRoot).lexically_normal();
     }
     testCase.fixtureDirs = string_list_from_table(root["fixtureDirs"]);
     testCase.fixtureFiles = fixture_files_from_table(root["fixtureFiles"], path);
@@ -697,7 +701,8 @@ std::string package_display_name(const PackageInfo& info) {
     return info.packageId;
 }
 
-PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackConfig& config, const PluginTestCase& testCase) {
+PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackConfig& config,
+                                            const PluginTestCase& testCase) {
     plugin.setCaseResponses(testCase.fakeExec);
     ScopedEnvironmentOverride environmentOverride(resolved_case_environment(testCase));
 
@@ -715,37 +720,38 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
     PackageInfo infoResult;
 
     switch (action) {
-        case ActionType::INSTALL:
-            if (!testCase.localPath.empty()) {
-                callSuccess = plugin.installLocal(context, testCase.localPath);
-            } else {
-                callSuccess = plugin.install(context, testCase.packages);
-            }
-            break;
-        case ActionType::REMOVE:
-            callSuccess = plugin.remove(context, testCase.packages);
-            break;
-        case ActionType::UPDATE:
-            callSuccess = plugin.update(context, testCase.packages);
-            break;
-        case ActionType::LIST:
-            listResult = plugin.list(context);
-            callSuccess = true;
-            break;
-        case ActionType::SEARCH:
-            listResult = plugin.search(context, testCase.prompt);
-            callSuccess = true;
-            break;
-        case ActionType::OUTDATED:
-            listResult = plugin.outdated(context);
-            callSuccess = true;
-            break;
-        case ActionType::INFO:
-            infoResult = plugin.info(context, testCase.prompt);
-            callSuccess = !package_display_name(infoResult).empty() || !infoResult.version.empty() || !infoResult.description.empty();
-            break;
-        default:
-            throw PluginTestError("unsupported test action in case '" + testCase.name + "': " + testCase.actionName);
+    case ActionType::INSTALL:
+        if (!testCase.localPath.empty()) {
+            callSuccess = plugin.installLocal(context, testCase.localPath);
+        } else {
+            callSuccess = plugin.install(context, testCase.packages);
+        }
+        break;
+    case ActionType::REMOVE:
+        callSuccess = plugin.remove(context, testCase.packages);
+        break;
+    case ActionType::UPDATE:
+        callSuccess = plugin.update(context, testCase.packages);
+        break;
+    case ActionType::LIST:
+        listResult = plugin.list(context);
+        callSuccess = true;
+        break;
+    case ActionType::SEARCH:
+        listResult = plugin.search(context, testCase.prompt);
+        callSuccess = true;
+        break;
+    case ActionType::OUTDATED:
+        listResult = plugin.outdated(context);
+        callSuccess = true;
+        break;
+    case ActionType::INFO:
+        infoResult = plugin.info(context, testCase.prompt);
+        callSuccess =
+            !package_display_name(infoResult).empty() || !infoResult.version.empty() || !infoResult.description.empty();
+        break;
+    default:
+        throw PluginTestError("unsupported test action in case '" + testCase.name + "': " + testCase.actionName);
     }
 
     result.events = plugin.takeRecentEvents();
@@ -755,7 +761,8 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
     result.summary.artifacts = plugin.artifacts();
     for (const PluginEventRecord& event : result.events) {
         result.summary.events.push_back(event.name);
-        result.summary.eventRecords.push_back(PluginTestCaseSummary::EventRecord{.name = event.name, .payload = event.payload});
+        result.summary.eventRecords.push_back(
+            PluginTestCaseSummary::EventRecord{.name = event.name, .payload = event.payload});
     }
 
     std::vector<std::string> failures;
@@ -795,25 +802,27 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
     }
 
     for (const auto& [name, payload] : testCase.expectEventPayloads) {
-        const auto eventIt = std::find_if(result.summary.eventRecords.begin(), result.summary.eventRecords.end(), [&](const PluginTestCaseSummary::EventRecord& event) {
-            return event.name == name;
-        });
+        const auto eventIt =
+            std::find_if(result.summary.eventRecords.begin(), result.summary.eventRecords.end(),
+                         [&](const PluginTestCaseSummary::EventRecord& event) { return event.name == name; });
         if (eventIt == result.summary.eventRecords.end() || eventIt->payload != payload) {
             failures.push_back("event payload mismatch for " + name);
         }
     }
 
     if (testCase.expectResultCount.has_value()) {
-        const int actualCount = action == ActionType::INFO ? (callSuccess ? 1 : 0) : static_cast<int>(listResult.size());
+        const int actualCount =
+            action == ActionType::INFO ? (callSuccess ? 1 : 0) : static_cast<int>(listResult.size());
         if (actualCount != testCase.expectResultCount.value()) {
             failures.push_back("resultCount mismatch");
         }
     }
 
     if (testCase.expectResultName.has_value()) {
-        const std::string actualName = action == ActionType::INFO
-            ? package_display_name(infoResult)
-            : (!listResult.empty() ? package_display_name(listResult.front()) : std::string{});
+        const std::string actualName =
+            action == ActionType::INFO
+                ? package_display_name(infoResult)
+                : (!listResult.empty() ? package_display_name(listResult.front()) : std::string{});
         if (actualName != testCase.expectResultName.value()) {
             failures.push_back("resultName mismatch");
         }
@@ -821,8 +830,8 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
 
     if (testCase.expectResultVersion.has_value()) {
         const std::string actualVersion = action == ActionType::INFO
-            ? infoResult.version
-            : (!listResult.empty() ? listResult.front().version : std::string{});
+                                              ? infoResult.version
+                                              : (!listResult.empty() ? listResult.front().version : std::string{});
         if (actualVersion != testCase.expectResultVersion.value()) {
             failures.push_back("resultVersion mismatch");
         }
@@ -847,7 +856,8 @@ void write_report_if_requested(const PluginTestInvocation& invocation, const Plu
     if (!invocation.reportPath.has_value()) {
         return;
     }
-    const std::filesystem::path reportPath = std::filesystem::absolute(std::filesystem::path(invocation.reportPath.value())).lexically_normal();
+    const std::filesystem::path reportPath =
+        std::filesystem::absolute(std::filesystem::path(invocation.reportPath.value())).lexically_normal();
     std::filesystem::create_directories(reportPath.parent_path());
     std::ofstream output(reportPath, std::ios::binary);
     if (!output.is_open()) {
@@ -856,7 +866,7 @@ void write_report_if_requested(const PluginTestInvocation& invocation, const Plu
     output << plugin_test_report_to_json(report);
 }
 
-}  // namespace
+} // namespace
 
 namespace plugin_test_runner_internal {
 
@@ -895,7 +905,8 @@ PluginTestRunReport run_plugin_test_cases_impl(const ReqPackConfig& config, cons
         try {
             caseResult = run_single_case(plugin, config, testCase);
         } catch (const std::exception& error) {
-            caseResult.summary.name = testCase.name.empty() ? std::filesystem::path(testCase.sourcePath).stem().string() : testCase.name;
+            caseResult.summary.name =
+                testCase.name.empty() ? std::filesystem::path(testCase.sourcePath).stem().string() : testCase.name;
             caseResult.summary.success = false;
             caseResult.summary.message = error.what();
         }
@@ -913,4 +924,4 @@ PluginTestRunReport run_plugin_test_cases_impl(const ReqPackConfig& config, cons
     return report;
 }
 
-}  // namespace plugin_test_runner_internal
+} // namespace plugin_test_runner_internal

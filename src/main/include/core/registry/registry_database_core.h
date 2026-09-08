@@ -26,11 +26,9 @@ bool registry_database_is_git_source(const std::string& source);
 std::string registry_database_git_source_url(const std::string& source);
 std::string registry_database_git_source_ref(const std::string& source);
 std::string registry_database_git_source_with_ref(const std::string& source, const std::string& ref);
-std::filesystem::path registry_database_git_repository_cache_path(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-);
+std::filesystem::path registry_database_git_repository_cache_path(const ReqPackConfig& config,
+                                                                  const std::string& source,
+                                                                  const std::string& pluginName);
 std::vector<std::string> registry_database_extract_git_tags(const std::string& output);
 std::string registry_database_escape_field(const std::string& value);
 std::string registry_database_unescape_field(const std::string& value);

@@ -13,7 +13,7 @@ sol::state make_lua_state() {
     return lua;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("LuaBridgeValueMapper toLowerCopy normalizes case", "[unit][lua_bridge_value_mapper]") {
     CHECK(LuaBridgeValueMapper::toLowerCopy("Install") == "install");
@@ -47,7 +47,8 @@ TEST_CASE("LuaBridgeValueMapper stringArrayFromObject parses lua string arrays",
     table[1] = "one";
     table[2] = "two";
 
-    const std::optional<std::vector<std::string>> parsed = LuaBridgeValueMapper::stringArrayFromObject(sol::make_object(lua, table));
+    const std::optional<std::vector<std::string>> parsed =
+        LuaBridgeValueMapper::stringArrayFromObject(sol::make_object(lua, table));
     REQUIRE(parsed.has_value());
     CHECK(parsed.value() == std::vector<std::string>{"one", "two"});
     CHECK_FALSE(LuaBridgeValueMapper::stringArrayFromObject(sol::make_object(lua, 7)).has_value());
@@ -85,7 +86,8 @@ TEST_CASE("LuaBridgeValueMapper packagesFromObject parses package tables", "[uni
     sol::table list = lua.create_table();
     list[1] = packageTable;
 
-    const std::optional<std::vector<Package>> parsed = LuaBridgeValueMapper::packagesFromObject(sol::make_object(lua, list));
+    const std::optional<std::vector<Package>> parsed =
+        LuaBridgeValueMapper::packagesFromObject(sol::make_object(lua, list));
     REQUIRE(parsed.has_value());
     REQUIRE(parsed->size() == 1);
     CHECK(parsed->front().action == ActionType::UPDATE);
@@ -130,9 +132,7 @@ TEST_CASE("LuaBridgeValueMapper packageInfoFromObject maps nested fields", "[uni
     info["summary"] = "short";
     info["description"] = "long";
     info["dependencies"] = lua.create_table_with(1, "lib-a", 2, "lib-b");
-    info["extraFields"] = lua.create_table_with(
-        1, lua.create_table_with("key", "license", "value", "MIT")
-    );
+    info["extraFields"] = lua.create_table_with(1, lua.create_table_with("key", "license", "value", "MIT"));
 
     const PackageInfo parsed = LuaBridgeValueMapper::packageInfoFromObject(sol::make_object(lua, info));
     CHECK(parsed.name == "demo");
@@ -150,7 +150,8 @@ TEST_CASE("LuaBridgeValueMapper packageInfoListFromObject parses table entries",
     const sol::table entry = lua.create_table_with("name", "alpha", "version", "2.0.0");
     const sol::table list = lua.create_table_with(1, entry);
 
-    const std::vector<PackageInfo> parsed = LuaBridgeValueMapper::packageInfoListFromObject(sol::make_object(lua, list));
+    const std::vector<PackageInfo> parsed =
+        LuaBridgeValueMapper::packageInfoListFromObject(sol::make_object(lua, list));
     REQUIRE(parsed.size() == 1);
     CHECK(parsed.front().name == "alpha");
     CHECK(parsed.front().version == "2.0.0");
@@ -164,7 +165,8 @@ TEST_CASE("LuaBridgeValueMapper proxyResolutionFromObject parses proxy tables", 
     table["localPath"] = "/tmp/demo";
     table["flags"] = lua.create_table_with(1, "--offline");
 
-    const std::optional<ProxyResolution> parsed = LuaBridgeValueMapper::proxyResolutionFromObject(sol::make_object(lua, table));
+    const std::optional<ProxyResolution> parsed =
+        LuaBridgeValueMapper::proxyResolutionFromObject(sol::make_object(lua, table));
     REQUIRE(parsed.has_value());
     CHECK(parsed->targetSystem == "maven");
     CHECK(parsed->packages == std::vector<std::string>{"org.demo:artifact"});
@@ -172,18 +174,16 @@ TEST_CASE("LuaBridgeValueMapper proxyResolutionFromObject parses proxy tables", 
     CHECK(parsed->flags == std::vector<std::string>{"--offline"});
 }
 
-TEST_CASE("LuaBridgeValueMapper pluginSecurityMetadataFromObject normalizes metadata", "[unit][lua_bridge_value_mapper]") {
+TEST_CASE("LuaBridgeValueMapper pluginSecurityMetadataFromObject normalizes metadata",
+          "[unit][lua_bridge_value_mapper]") {
     sol::state lua = make_lua_state();
     sol::table metadata = lua.create_table();
     metadata["role"] = "Security-Provider";
     metadata["capabilities"] = lua.create_table_with(1, "Network");
     metadata["ecosystemScopes"] = lua.create_table_with(1, "demo-osv");
-    metadata["writeScopes"] = lua.create_table_with(
-        1, lua.create_table_with("kind", "Temp")
-    );
-    metadata["networkScopes"] = lua.create_table_with(
-        1, lua.create_table_with("host", "API.OSV.DEV", "scheme", "HTTPS", "pathPrefix", "/v1")
-    );
+    metadata["writeScopes"] = lua.create_table_with(1, lua.create_table_with("kind", "Temp"));
+    metadata["networkScopes"] =
+        lua.create_table_with(1, lua.create_table_with("host", "API.OSV.DEV", "scheme", "HTTPS", "pathPrefix", "/v1"));
     metadata["privilegeLevel"] = "None";
     metadata["osvEcosystem"] = "demo-osv";
     metadata["purlType"] = "generic";
@@ -211,7 +211,8 @@ TEST_CASE("LuaBridgeValueMapper pluginSecurityMetadataFromObject normalizes meta
     CHECK(parsed->versionComparator.caseInsensitive);
 }
 
-TEST_CASE("LuaBridgeValueMapper fileExtensionsFromPluginTable reads extension list", "[unit][lua_bridge_value_mapper]") {
+TEST_CASE("LuaBridgeValueMapper fileExtensionsFromPluginTable reads extension list",
+          "[unit][lua_bridge_value_mapper]") {
     sol::state lua = make_lua_state();
     sol::table pluginTable = lua.create_table();
     pluginTable["fileExtensions"] = lua.create_table_with(1, ".rqp", 2, ".rqpack");

@@ -30,39 +30,27 @@ struct RegistryDiffEntry {
 
 std::optional<std::string> git_repository_head_commit(const std::filesystem::path& repositoryPath);
 bool git_commit_exists(const std::filesystem::path& repositoryPath, const std::string& commit);
-std::optional<std::vector<RegistryDiffEntry>> git_registry_diff(
-    const std::filesystem::path& repositoryPath,
-    const std::string& oldCommit,
-    const std::string& newCommit,
-    const std::string& pluginsPath
-);
+std::optional<std::vector<RegistryDiffEntry>> git_registry_diff(const std::filesystem::path& repositoryPath,
+                                                                const std::string& oldCommit,
+                                                                const std::string& newCommit,
+                                                                const std::string& pluginsPath);
 std::optional<std::string> latest_git_tag_for_source(const std::string& source);
-bool sync_git_repository(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName,
-    std::string* errorDetails = nullptr
-);
+bool sync_git_repository(const ReqPackConfig& config, const std::string& source, const std::string& pluginName,
+                         std::string* errorDetails = nullptr);
 
-std::optional<std::pair<std::string, std::string>> fetch_plugin_payload(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-);
-std::optional<std::filesystem::path> resolve_bundle_path(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-);
-std::optional<RegistryRecord> refreshed_record_payload(
-    const ReqPackConfig& config,
-    RegistryRecord record,
-    bool preferLatestTag
-);
+std::optional<std::pair<std::string, std::string>>
+fetch_plugin_payload(const ReqPackConfig& config, const std::string& source, const std::string& pluginName);
+std::optional<std::filesystem::path> resolve_bundle_path(const ReqPackConfig& config, const std::string& source,
+                                                         const std::string& pluginName);
+std::optional<RegistryRecord> refreshed_record_payload(const ReqPackConfig& config, RegistryRecord record,
+                                                       bool preferLatestTag);
 
-std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& name);
+std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, MDB_dbi database,
+                                                          const std::string& name);
 bool put_record_into_transaction(MDB_txn* transaction, MDB_dbi database, const RegistryRecord& record);
 bool delete_record_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& name);
 std::optional<std::string> get_string_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key);
-bool put_string_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key, const std::string& value);
-bool put_meta_values_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::map<std::string, std::string>& values);
+bool put_string_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key,
+                                 const std::string& value);
+bool put_meta_values_into_transaction(MDB_txn* transaction, MDB_dbi database,
+                                      const std::map<std::string, std::string>& values);

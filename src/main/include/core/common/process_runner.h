@@ -14,10 +14,7 @@ struct ReqpackProcessResult {
     }
 };
 
-bool reqpack_run_process(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory = {});
+bool reqpack_run_process(const std::vector<std::string>& arguments, const std::filesystem::path& workingDirectory = {});
 
-ReqpackProcessResult reqpack_run_process_capture(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory = {});
+ReqpackProcessResult reqpack_run_process_capture(const std::vector<std::string>& arguments,
+                                                 const std::filesystem::path& workingDirectory = {});

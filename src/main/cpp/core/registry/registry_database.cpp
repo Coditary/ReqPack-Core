@@ -100,7 +100,8 @@ std::optional<RegistryRecord> RegistryDatabase::refreshRecord(const std::string&
         ++guard;
     }
 
-    const std::optional<RegistryRecord> refreshed = refreshed_record_payload(this->config, record.value(), preferLatestTag);
+    const std::optional<RegistryRecord> refreshed =
+        refreshed_record_payload(this->config, record.value(), preferLatestTag);
     if (!refreshed.has_value()) {
         return std::nullopt;
     }

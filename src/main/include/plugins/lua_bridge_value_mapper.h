@@ -10,7 +10,7 @@
 #include "plugins/iplugin.h"
 
 class LuaBridgeValueMapper {
-public:
+  public:
     static std::string toLowerCopy(const std::string& value);
     static std::string valueToString(const sol::object& value);
     static std::string serializeLuaPayload(const sol::object& value);

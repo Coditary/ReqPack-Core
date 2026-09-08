@@ -79,12 +79,11 @@ std::optional<std::string> normalize_git_tag_for_compare(const std::string& tag)
     return normalized;
 }
 
-}  // namespace
+} // namespace
 
 std::optional<std::string> git_repository_head_commit(const std::filesystem::path& repositoryPath) {
-    const std::optional<std::string> output = run_process_capture_stdout({
-        "git", "-C", repositoryPath.string(), "rev-parse", "--verify", "HEAD"
-    });
+    const std::optional<std::string> output =
+        run_process_capture_stdout({"git", "-C", repositoryPath.string(), "rev-parse", "--verify", "HEAD"});
     if (!output.has_value()) {
         return std::nullopt;
     }
@@ -95,27 +94,17 @@ bool git_commit_exists(const std::filesystem::path& repositoryPath, const std::s
     if (commit.empty()) {
         return false;
     }
-    return run_process_quiet({
-        "git", "-C", repositoryPath.string(), "rev-parse", "--verify", "--quiet", commit + "^{commit}"
-    });
+    return run_process_quiet(
+        {"git", "-C", repositoryPath.string(), "rev-parse", "--verify", "--quiet", commit + "^{commit}"});
 }
 
-std::optional<std::vector<RegistryDiffEntry>> git_registry_diff(
-    const std::filesystem::path& repositoryPath,
-    const std::string& oldCommit,
-    const std::string& newCommit,
-    const std::string& pluginsPath
-) {
-    const std::optional<std::string> output = run_process_capture_stdout({
-        "git",
-        "-C",
-        repositoryPath.string(),
-        "diff",
-        "--name-status",
-        oldCommit + ".." + newCommit,
-        "--",
-        pluginsPath
-    });
+std::optional<std::vector<RegistryDiffEntry>> git_registry_diff(const std::filesystem::path& repositoryPath,
+                                                                const std::string& oldCommit,
+                                                                const std::string& newCommit,
+                                                                const std::string& pluginsPath) {
+    const std::optional<std::string> output =
+        run_process_capture_stdout({"git", "-C", repositoryPath.string(), "diff", "--name-status",
+                                    oldCommit + ".." + newCommit, "--", pluginsPath});
     if (!output.has_value()) {
         return std::nullopt;
     }
@@ -164,9 +153,8 @@ std::optional<std::string> latest_git_tag_for_source(const std::string& source) 
         return std::nullopt;
     }
 
-    const std::optional<std::string> output = run_process_capture_stdout({
-        "git", "ls-remote", "--tags", "--refs", registry_database_git_source_url(source)
-    });
+    const std::optional<std::string> output =
+        run_process_capture_stdout({"git", "ls-remote", "--tags", "--refs", registry_database_git_source_url(source)});
     if (!output.has_value()) {
         return std::nullopt;
     }
@@ -179,7 +167,8 @@ std::optional<std::string> latest_git_tag_for_source(const std::string& source) 
         if (!normalized.has_value()) {
             continue;
         }
-        if (!bestNormalized.has_value() || version_compare_values(normalized.value(), bestNormalized.value(), VersionComparatorSpec{.profile = "semver"}) > 0) {
+        if (!bestNormalized.has_value() || version_compare_values(normalized.value(), bestNormalized.value(),
+                                                                  VersionComparatorSpec{.profile = "semver"}) > 0) {
             bestTag = tag;
             bestNormalized = normalized;
         }
@@ -188,8 +177,10 @@ std::optional<std::string> latest_git_tag_for_source(const std::string& source) 
     return bestTag;
 }
 
-bool sync_git_repository(const ReqPackConfig& config, const std::string& source, const std::string& pluginName, std::string* errorDetails) {
-    const std::filesystem::path repositoryPath = registry_database_git_repository_cache_path(config, source, pluginName);
+bool sync_git_repository(const ReqPackConfig& config, const std::string& source, const std::string& pluginName,
+                         std::string* errorDetails) {
+    const std::filesystem::path repositoryPath =
+        registry_database_git_repository_cache_path(config, source, pluginName);
     const std::string repositoryUrl = registry_database_git_source_url(source);
     const std::string requestedRef = registry_database_git_source_ref(source);
 
@@ -219,7 +210,8 @@ bool sync_git_repository(const ReqPackConfig& config, const std::string& source,
     std::filesystem::create_directories(repositoryPath.parent_path(), directoryError);
     if (directoryError) {
         if (errorDetails != nullptr) {
-            *errorDetails = "create_directories failed for '" + repositoryPath.parent_path().string() + "': " + directoryError.message();
+            *errorDetails = "create_directories failed for '" + repositoryPath.parent_path().string() +
+                            "': " + directoryError.message();
         }
         return false;
     }
@@ -227,28 +219,34 @@ bool sync_git_repository(const ReqPackConfig& config, const std::string& source,
     const std::filesystem::path gitDirectory = repositoryPath / ".git";
     if (std::filesystem::exists(gitDirectory)) {
         if (requestedRef.empty()) {
-            const ProcessResult pullResult = run_process_capture({"git", "-C", repositoryPath.string(), "pull", "--ff-only", "--quiet"});
+            const ProcessResult pullResult =
+                run_process_capture({"git", "-C", repositoryPath.string(), "pull", "--ff-only", "--quiet"});
             if (pullResult.exitCode == 0) {
                 return true;
             }
             set_error("git pull", pullResult);
         } else {
-            const ProcessResult fetchResult = run_process_capture({"git", "-C", repositoryPath.string(), "fetch", "--tags", "--quiet", "origin"});
+            const ProcessResult fetchResult =
+                run_process_capture({"git", "-C", repositoryPath.string(), "fetch", "--tags", "--quiet", "origin"});
             const bool fetched = fetchResult.exitCode == 0;
             ProcessResult checkoutResult;
             ProcessResult checkoutOriginResult;
             bool checkedOut = false;
             if (fetched) {
-                checkoutResult = run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", requestedRef});
+                checkoutResult =
+                    run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", requestedRef});
                 checkedOut = checkoutResult.exitCode == 0;
                 if (!checkedOut) {
-                    checkoutOriginResult = run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", "origin/" + requestedRef});
+                    checkoutOriginResult = run_process_capture(
+                        {"git", "-C", repositoryPath.string(), "checkout", "--quiet", "origin/" + requestedRef});
                     checkedOut = checkoutOriginResult.exitCode == 0;
                 }
             }
             if (checkedOut) {
-                if (run_process_quiet({"git", "-C", repositoryPath.string(), "rev-parse", "--verify", "--quiet", "origin/" + requestedRef})) {
-                    (void)run_process_quiet({"git", "-C", repositoryPath.string(), "reset", "--hard", "origin/" + requestedRef});
+                if (run_process_quiet({"git", "-C", repositoryPath.string(), "rev-parse", "--verify", "--quiet",
+                                       "origin/" + requestedRef})) {
+                    (void)run_process_quiet(
+                        {"git", "-C", repositoryPath.string(), "reset", "--hard", "origin/" + requestedRef});
                 }
                 return true;
             }
@@ -269,7 +267,8 @@ bool sync_git_repository(const ReqPackConfig& config, const std::string& source,
         std::filesystem::remove_all(repositoryPath, removeError);
         if (removeError) {
             if (errorDetails != nullptr) {
-                *errorDetails = "remove_all failed for stale repository '" + repositoryPath.string() + "': " + removeError.message();
+                *errorDetails = "remove_all failed for stale repository '" + repositoryPath.string() +
+                                "': " + removeError.message();
             }
             return false;
         }
@@ -278,19 +277,15 @@ bool sync_git_repository(const ReqPackConfig& config, const std::string& source,
         std::filesystem::remove_all(repositoryPath, removeError);
         if (removeError) {
             if (errorDetails != nullptr) {
-                *errorDetails = "remove_all failed for existing path '" + repositoryPath.string() + "': " + removeError.message();
+                *errorDetails =
+                    "remove_all failed for existing path '" + repositoryPath.string() + "': " + removeError.message();
             }
             return false;
         }
     }
 
-    const ProcessResult cloneResult = run_process_capture({
-        "git",
-        "clone",
-        "--quiet",
-        repositoryUrl,
-        repositoryPath.string()
-    });
+    const ProcessResult cloneResult =
+        run_process_capture({"git", "clone", "--quiet", repositoryUrl, repositoryPath.string()});
     if (cloneResult.exitCode != 0) {
         set_error("git clone", cloneResult);
         return false;
@@ -300,12 +295,14 @@ bool sync_git_repository(const ReqPackConfig& config, const std::string& source,
         return true;
     }
 
-    const ProcessResult checkoutResult = run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", requestedRef});
+    const ProcessResult checkoutResult =
+        run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", requestedRef});
     if (checkoutResult.exitCode == 0) {
         return true;
     }
 
-    const ProcessResult checkoutOriginResult = run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", "origin/" + requestedRef});
+    const ProcessResult checkoutOriginResult =
+        run_process_capture({"git", "-C", repositoryPath.string(), "checkout", "--quiet", "origin/" + requestedRef});
     if (checkoutOriginResult.exitCode == 0) {
         return true;
     }

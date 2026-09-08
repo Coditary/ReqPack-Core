@@ -56,7 +56,7 @@ bool installed_version_matches(const RqpInstalledPackage& installed, const std::
     return installed.metadata.version.rfind(version, 0) == 0 || installed.identity.rfind(version, 0) == 0;
 }
 
-}  // namespace
+} // namespace
 
 RqpStateStore::RqpStateStore(const ReqPackConfig& config) : config_(config) {}
 
@@ -82,20 +82,19 @@ std::vector<RqpInstalledPackage> RqpStateStore::listInstalled() const {
         }
     }
 
-    std::sort(installed.begin(), installed.end(), [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
-        if (left.metadata.name != right.metadata.name) {
-            return left.metadata.name < right.metadata.name;
-        }
-        return left.identity < right.identity;
-    });
+    std::sort(installed.begin(), installed.end(),
+              [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
+                  if (left.metadata.name != right.metadata.name) {
+                      return left.metadata.name < right.metadata.name;
+                  }
+                  return left.identity < right.identity;
+              });
     return installed;
 }
 
-std::vector<RqpInstalledPackage> RqpStateStore::findInstalledAmong(
-    const std::vector<RqpInstalledPackage>& installed,
-    const std::string& name,
-    const std::string& version
-) const {
+std::vector<RqpInstalledPackage> RqpStateStore::findInstalledAmong(const std::vector<RqpInstalledPackage>& installed,
+                                                                   const std::string& name,
+                                                                   const std::string& version) const {
     std::vector<RqpInstalledPackage> matches;
     for (const RqpInstalledPackage& candidate : installed) {
         if (!installed_name_matches(candidate, name)) {
@@ -109,7 +108,8 @@ std::vector<RqpInstalledPackage> RqpStateStore::findInstalledAmong(
     return matches;
 }
 
-std::vector<RqpInstalledPackage> RqpStateStore::findInstalled(const std::string& name, const std::string& version) const {
+std::vector<RqpInstalledPackage> RqpStateStore::findInstalled(const std::string& name,
+                                                              const std::string& version) const {
     return this->findInstalledAmong(this->listInstalled(), name, version);
 }
 

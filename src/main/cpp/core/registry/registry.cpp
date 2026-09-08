@@ -32,9 +32,8 @@ const RegistryDatabase* Registry::getDatabase() const {
 
 std::string Registry::resolvePluginName(const std::string& name) const {
     auto normalized = name;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
     if (normalized == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
         return normalized;

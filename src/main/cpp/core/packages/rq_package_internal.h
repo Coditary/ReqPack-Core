@@ -59,18 +59,15 @@ std::string tar_bytes_from_entries(std::vector<TarWriteEntry> entries);
 std::string sha256_hex(const std::string& bytes);
 std::string load_payload_hash(const std::string& hashFileContent);
 std::string zstd_decompress(const std::string& compressed);
-void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::filesystem::path& root, const std::filesystem::path& relativeRoot);
+void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::filesystem::path& root,
+                               const std::filesystem::path& relativeRoot);
 void extract_tar_to_directory(const std::string& tarContent, const std::filesystem::path& targetRoot);
 PayloadBuildArtifacts build_payload_from_prebuilt(const RqMetadata& metadata, const std::filesystem::path& projectRoot);
 PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& payloadRoot);
 
-RqPackageLayout load_package_layout_impl(
-    const std::filesystem::path& packagePath,
-    const std::filesystem::path& workRoot,
-    const std::filesystem::path& stateRoot,
-    const ReqPackConfig& config,
-    bool validateHostCompatibility
-);
+RqPackageLayout load_package_layout_impl(const std::filesystem::path& packagePath,
+                                         const std::filesystem::path& workRoot, const std::filesystem::path& stateRoot,
+                                         const ReqPackConfig& config, bool validateHostCompatibility);
 RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, const ReqPackConfig& config);
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal

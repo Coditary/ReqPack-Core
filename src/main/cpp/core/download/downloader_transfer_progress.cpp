@@ -26,8 +26,8 @@ int forward_download_progress(void* userp, curl_off_t downloadTotal, curl_off_t 
         const std::uint64_t currentBytes = static_cast<std::uint64_t>(downloadNow);
         if (elapsed.count() > 0 && currentBytes >= state->lastBytes) {
             const std::uint64_t deltaBytes = currentBytes - state->lastBytes;
-            const long double bytesPerSecond = (static_cast<long double>(deltaBytes) * 1000.0L) /
-                                              static_cast<long double>(elapsed.count());
+            const long double bytesPerSecond =
+                (static_cast<long double>(deltaBytes) * 1000.0L) / static_cast<long double>(elapsed.count());
             if (bytesPerSecond >= 0.0L) {
                 snapshot.bytesPerSecond = static_cast<std::uint64_t>(bytesPerSecond);
             }
@@ -36,7 +36,8 @@ int forward_download_progress(void* userp, curl_off_t downloadTotal, curl_off_t 
 
     bool shouldEmit = false;
     if (snapshot.percent.has_value()) {
-        shouldEmit = snapshot.percent.value() >= 100 || state->lastPercent < 0 || snapshot.percent.value() >= state->lastPercent + 1;
+        shouldEmit = snapshot.percent.value() >= 100 || state->lastPercent < 0 ||
+                     snapshot.percent.value() >= state->lastPercent + 1;
     } else if (snapshot.currentBytes.has_value()) {
         shouldEmit = state->lastTime == std::chrono::steady_clock::time_point{} ||
                      now - state->lastTime >= std::chrono::milliseconds(250);
@@ -67,12 +68,8 @@ void reset_download_failure(DownloadFailureDetails* failureDetails, const std::s
     failureDetails->message.clear();
 }
 
-void set_download_failure(DownloadFailureDetails* failureDetails,
-                          const std::string& source,
-                          bool remote,
-                          const std::string& message,
-                          CURLcode curlCode,
-                          long httpStatus) {
+void set_download_failure(DownloadFailureDetails* failureDetails, const std::string& source, bool remote,
+                          const std::string& message, CURLcode curlCode, long httpStatus) {
     if (failureDetails == nullptr) {
         return;
     }
@@ -84,4 +81,4 @@ void set_download_failure(DownloadFailureDetails* failureDetails,
     failureDetails->message = message;
 }
 
-}  // namespace downloader_transfer_internal
+} // namespace downloader_transfer_internal

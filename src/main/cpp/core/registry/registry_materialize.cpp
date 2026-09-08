@@ -16,12 +16,24 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size());
     for (const char ch : value) {
         switch (ch) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default: escaped.push_back(ch); break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(ch);
+            break;
         }
     }
     return escaped;
@@ -66,7 +78,8 @@ void copy_directory_contents(const std::filesystem::path& source, const std::fil
         return;
     }
 
-    for (auto it = std::filesystem::recursive_directory_iterator(source, error); it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
+    for (auto it = std::filesystem::recursive_directory_iterator(source, error);
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error) {
             return;
         }
@@ -109,22 +122,27 @@ void copy_directory_contents(const std::filesystem::path& source, const std::fil
 void materialize_script_bundle(const std::filesystem::path& targetDirectory, const RegistryRecord& record) {
     const std::string summary = record.description.empty() ? record.name : record.description;
     remove_directory_contents(targetDirectory);
-    (void)write_text_file(targetDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + json_escape(record.name) + "\",\n"
-        "  \"version\": \"0.0.0\",\n"
-        "  \"summary\": \"" + json_escape(summary) + "\",\n"
-        "  \"description\": \"" + json_escape(summary) + "\",\n"
-        "  \"license\": \"unknown\"\n"
-        "}\n");
+    (void)write_text_file(targetDirectory / "metadata.json", "{\n"
+                                                             "  \"formatVersion\": 1,\n"
+                                                             "  \"name\": \"" +
+                                                                 json_escape(record.name) +
+                                                                 "\",\n"
+                                                                 "  \"version\": \"0.0.0\",\n"
+                                                                 "  \"summary\": \"" +
+                                                                 json_escape(summary) +
+                                                                 "\",\n"
+                                                                 "  \"description\": \"" +
+                                                                 json_escape(summary) +
+                                                                 "\",\n"
+                                                                 "  \"license\": \"unknown\"\n"
+                                                                 "}\n");
     (void)write_text_file(targetDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     (void)write_text_file(targetDirectory / "run.lua", record.script);
     (void)write_text_file(targetDirectory / "scripts" / "install.lua", "return true\n");
     (void)write_text_file(targetDirectory / "scripts" / "remove.lua", "return true\n");
 }
 
-}  // namespace
+} // namespace
 
 void Registry::materializePluginScript(const RegistryRecord& record) const {
     if (record.name == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
@@ -135,9 +153,11 @@ void Registry::materializePluginScript(const RegistryRecord& record) const {
         return;
     }
 
-    const std::filesystem::path targetDirectory = std::filesystem::path(this->config.registry.pluginDirectory) / record.name;
+    const std::filesystem::path targetDirectory =
+        std::filesystem::path(this->config.registry.pluginDirectory) / record.name;
     if (record.bundleSource && !record.bundlePath.empty()) {
-        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(record.bundlePath, record.name); layout.has_value()) {
+        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(record.bundlePath, record.name);
+            layout.has_value()) {
             remove_directory_contents(targetDirectory);
             copy_directory_contents(layout->rootDir, targetDirectory);
             return;
@@ -192,7 +212,8 @@ void Registry::ensurePluginsDiscovered(const std::vector<std::string>& pluginIds
 
         std::error_code error;
         const std::filesystem::path workspaceDirectory = std::filesystem::current_path(error) / "plugins" / pluginId;
-        const std::filesystem::path configuredPluginDirectory = std::filesystem::path(this->config.registry.pluginDirectory);
+        const std::filesystem::path configuredPluginDirectory =
+            std::filesystem::path(this->config.registry.pluginDirectory);
         if (!error && workspaceDirectory != configuredPluginDirectory / pluginId) {
             registerProbe(workspaceDirectory);
         }

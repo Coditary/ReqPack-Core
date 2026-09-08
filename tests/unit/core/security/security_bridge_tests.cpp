@@ -15,10 +15,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -31,7 +31,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -42,7 +42,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("security bridge maps reqpack config into security settings", "[unit][security][bridge]") {
     ReqPackConfig config;
@@ -88,7 +88,9 @@ TEST_CASE("security bridge archive extract callback is configured", "[unit][secu
     TempDir tempDir{"reqpack-security-bridge-archive"};
     const std::filesystem::path archivePath = tempDir.path() / "demo.tar";
     write_file(tempDir.path() / "payload.txt", "hello");
-    REQUIRE(std::system(("tar -C " + escape_shell_arg(tempDir.path().string()) + " -cf " + escape_shell_arg(archivePath.string()) + " payload.txt").c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(tempDir.path().string()) + " -cf " +
+                         escape_shell_arg(archivePath.string()) + " payload.txt")
+                            .c_str()) == 0);
 
     const SecurityArchiveResolution resolution = settings.archive.extractToTemp(archivePath);
     CHECK(std::filesystem::exists(resolution.installPath / "payload.txt"));

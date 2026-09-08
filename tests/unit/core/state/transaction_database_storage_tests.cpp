@@ -9,10 +9,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -25,7 +25,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -35,7 +35,7 @@ ReqPackConfig make_transaction_config(const std::filesystem::path& root) {
     return config;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("transaction database initializes storage and creates active run", "[unit][transaction_database][storage]") {
     TempDir tempDir{"reqpack-transaction-db-init"};
@@ -197,7 +197,8 @@ TEST_CASE("transaction database markRunState returns false for unknown run", "[u
     CHECK_FALSE(database.markRunState("missing-run-id", "open"));
 }
 
-TEST_CASE("transaction database updateItemStatus returns false for unknown run", "[unit][transaction_database][storage]") {
+TEST_CASE("transaction database updateItemStatus returns false for unknown run",
+          "[unit][transaction_database][storage]") {
     TempDir tempDir{"reqpack-transaction-db-update-missing"};
     ReqPackConfig config = make_transaction_config(tempDir.path());
     TransactionDatabase database(config);

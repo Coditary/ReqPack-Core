@@ -17,16 +17,13 @@ bool RqpPlugin::install(const PluginCallContext& context, const std::vector<Pack
 
     bool allInstalled = true;
     for (const Package& package : packages) {
-        const std::optional<RqRepositoryPackage> resolvedPackage = rq_repository_resolve_package(
-            indexes,
-            package.name,
-            package.version,
-            rq_host_architecture(),
-            rq_host_system_tokens(*HostInfoService::currentSnapshot()),
-            config_
-        );
+        const std::optional<RqRepositoryPackage> resolvedPackage =
+            rq_repository_resolve_package(indexes, package.name, package.version, rq_host_architecture(),
+                                          rq_host_system_tokens(*HostInfoService::currentSnapshot()), config_);
         if (!resolvedPackage.has_value()) {
-            recentEvents_.push_back(PluginEventRecord{.name = "unavailable", .payload = package.version.empty() ? package.name : package.name + "@" + package.version});
+            recentEvents_.push_back(PluginEventRecord{
+                .name = "unavailable",
+                .payload = package.version.empty() ? package.name : package.name + "@" + package.version});
             context.emitFailure("package not found in rqp repositories: " + package.name);
             allInstalled = false;
             continue;
@@ -46,7 +43,8 @@ bool RqpPlugin::installLocal(const PluginCallContext& context, const std::string
     std::error_code error;
     if (std::filesystem::is_directory(sourcePath, error) && !error) {
         if (!std::filesystem::exists(sourcePath / "reqpack.lua", error) || error) {
-            const std::optional<std::filesystem::path> nestedPackage = rqp_plugin_unique_nested_file_with_extension(sourcePath, ".rqp");
+            const std::optional<std::filesystem::path> nestedPackage =
+                rqp_plugin_unique_nested_file_with_extension(sourcePath, ".rqp");
             if (!nestedPackage.has_value()) {
                 context.emitFailure("no installable rqp file found in extracted archive");
                 return false;
@@ -71,9 +69,10 @@ bool RqpPlugin::remove(const PluginCallContext& context, const std::vector<Packa
             allRemoved = false;
             continue;
         }
-        std::sort(matches.begin(), matches.end(), [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
-            return compareInstalledVersions(left, right) > 0;
-        });
+        std::sort(matches.begin(), matches.end(),
+                  [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
+                      return compareInstalledVersions(left, right) > 0;
+                  });
         if (!removeInstalledPackage(context, matches.front())) {
             allRemoved = false;
         }
@@ -104,14 +103,9 @@ bool RqpPlugin::update(const PluginCallContext& context, const std::vector<Packa
         if (indexes.empty()) {
             continue;
         }
-        const std::optional<RqRepositoryPackage> candidate = rq_repository_resolve_package(
-            indexes,
-            installed.metadata.name,
-            {},
-            rq_host_architecture(),
-            rq_host_system_tokens(*HostInfoService::currentSnapshot()),
-            config_
-        );
+        const std::optional<RqRepositoryPackage> candidate =
+            rq_repository_resolve_package(indexes, installed.metadata.name, {}, rq_host_architecture(),
+                                          rq_host_system_tokens(*HostInfoService::currentSnapshot()), config_);
         if (!candidate.has_value() || !repositoryCandidateIsNewer(installed, candidate.value())) {
             continue;
         }
@@ -129,14 +123,9 @@ bool RqpPlugin::update(const PluginCallContext& context, const std::vector<Packa
     return allUpdated;
 }
 
-bool RqpPlugin::installPackagePath(
-    const PluginCallContext& context,
-    const std::filesystem::path& path,
-    const std::string& sourceType,
-    const std::string& sourceValue,
-    const std::string& repository,
-    const std::string& requestName
-) {
+bool RqpPlugin::installPackagePath(const PluginCallContext& context, const std::filesystem::path& path,
+                                   const std::string& sourceType, const std::string& sourceValue,
+                                   const std::string& repository, const std::string& requestName) {
     try {
         pendingManifest_.clear();
         context.emitBeginStep("load rqp package");
@@ -163,7 +152,8 @@ bool RqpPlugin::installPackagePath(
     }
 }
 
-bool RqpPlugin::installResolvedPackage(const PluginCallContext& context, const Package& package, const RqRepositoryPackage& resolvedPackage) {
+bool RqpPlugin::installResolvedPackage(const PluginCallContext& context, const Package& package,
+                                       const RqRepositoryPackage& resolvedPackage) {
     RqpStateStore stateStore(config_);
     if (!stateStore.findInstalled(package.name, package.version).empty()) {
         context.emitBeginStep("already installed");
@@ -188,7 +178,8 @@ bool RqpPlugin::installResolvedPackage(const PluginCallContext& context, const P
     }
 
     const std::string sourceValue = resolvedPackage.name + "@" + resolvedPackage.version;
-    return installPackagePath(context, localArtifactPath, "repository", sourceValue, resolvedPackage.repository, package.name);
+    return installPackagePath(context, localArtifactPath, "repository", sourceValue, resolvedPackage.repository,
+                              package.name);
 }
 
 bool RqpPlugin::removeInstalledPackage(const PluginCallContext& context, const RqpInstalledPackage& installed) {

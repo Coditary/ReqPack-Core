@@ -25,7 +25,7 @@ std::string env_value_if_non_empty(const char* name) {
     return value;
 }
 
-}  // namespace
+} // namespace
 
 std::string reqpack_ca_bundle_path() {
     for (const char* envName : {"SSL_CERT_FILE", "CURL_CA_BUNDLE", "GIT_SSL_CAINFO"}) {

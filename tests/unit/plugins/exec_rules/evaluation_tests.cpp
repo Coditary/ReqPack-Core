@@ -66,7 +66,7 @@ ExecRuleset make_screen_ruleset() {
     return ruleset;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("line evaluation applies stop, repeat, and state transitions", "[unit][exec_rules][evaluation]") {
     const ExecRuleset ruleset = make_control_ruleset();
@@ -91,20 +91,31 @@ TEST_CASE("evaluation resolves placeholders", "[unit][exec_rules][evaluation]") 
     rule.regexText = "^Progress:\\s+(\\d+)% loaded=(\\d+\\.\\d+) total=(\\d+\\.\\d+) speed=(\\d+\\.\\d+)$";
     rule.regex = std::regex(rule.regexText, std::regex::ECMAScript);
     rule.actions = {
-        ExecRuleAction{.type = ExecRuleActionType::Progress, .fields = {{"percent", "${1}"}, {"current", "${2}"}, {"currentUnit", "MiB"}, {"total", "${3}"}, {"totalUnit", "MiB"}, {"speed", "${4}"}, {"speedUnit", "MiB/s"}}},
-        ExecRuleAction{.type = ExecRuleActionType::Event, .fields = {{"name", "progress"}, {"payload", "match=${0};value=${1};current=${2};total=${3};speed=${4}"}}},
+        ExecRuleAction{.type = ExecRuleActionType::Progress,
+                       .fields = {{"percent", "${1}"},
+                                  {"current", "${2}"},
+                                  {"currentUnit", "MiB"},
+                                  {"total", "${3}"},
+                                  {"totalUnit", "MiB"},
+                                  {"speed", "${4}"},
+                                  {"speedUnit", "MiB/s"}}},
+        ExecRuleAction{
+            .type = ExecRuleActionType::Event,
+            .fields = {{"name", "progress"}, {"payload", "match=${0};value=${1};current=${2};total=${3};speed=${4}"}}},
     };
     ruleset.rules = {rule};
 
     ExecRuleRuntimeState runtime = make_exec_rule_runtime_state(ruleset);
-    const ExecRuleEvaluationResult result = evaluate_exec_rule_line_input(ruleset, runtime, "Progress: 42% loaded=16.4 total=40.0 speed=2.5");
+    const ExecRuleEvaluationResult result =
+        evaluate_exec_rule_line_input(ruleset, runtime, "Progress: 42% loaded=16.4 total=40.0 speed=2.5");
 
     REQUIRE(result.actions.size() == 2);
     CHECK(result.actions[0].fields.at("percent") == "42");
     CHECK(result.actions[0].fields.at("current") == "16.4");
     CHECK(result.actions[0].fields.at("total") == "40.0");
     CHECK(result.actions[0].fields.at("speed") == "2.5");
-    CHECK(result.actions[1].fields.at("payload") == "match=Progress: 42% loaded=16.4 total=40.0 speed=2.5;value=42;current=16.4;total=40.0;speed=2.5");
+    CHECK(result.actions[1].fields.at("payload") ==
+          "match=Progress: 42% loaded=16.4 total=40.0 speed=2.5;value=42;current=16.4;total=40.0;speed=2.5");
 }
 
 TEST_CASE("screen evaluation advances cursor and enables later line rules", "[unit][exec_rules][evaluation]") {
@@ -117,7 +128,8 @@ TEST_CASE("screen evaluation advances cursor and enables later line rules", "[un
     CHECK(runtime.currentState == "running");
     CHECK(runtime.disabled[0]);
 
-    const ExecRuleEvaluationResult screenSecond = evaluate_exec_rule_screen_input(ruleset, runtime, "Continue? [y/N]: ");
+    const ExecRuleEvaluationResult screenSecond =
+        evaluate_exec_rule_screen_input(ruleset, runtime, "Continue? [y/N]: ");
     CHECK(screenSecond.actions.empty());
 
     const ExecRuleEvaluationResult lineResult = evaluate_exec_rule_line_input(ruleset, runtime, "ACK=y");

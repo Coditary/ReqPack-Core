@@ -5,13 +5,7 @@
 #include <string>
 #include <vector>
 
-enum class RemoteProfileProtocol {
-    AUTO,
-    TEXT,
-    JSON,
-    HTTP,
-    HTTPS
-};
+enum class RemoteProfileProtocol { AUTO, TEXT, JSON, HTTP, HTTPS };
 
 struct RemoteProfile {
     std::string name;
@@ -36,7 +30,5 @@ inline const std::string REMOTE_PROFILES_FILENAME = "remote.lua";
 std::filesystem::path default_remote_profiles_path();
 std::vector<RemoteProfile> load_remote_profiles(const std::filesystem::path& profilePath);
 std::vector<RemoteUser> load_remote_users(const std::filesystem::path& profilePath);
-std::optional<RemoteProfile> find_remote_profile(
-    const std::filesystem::path& profilePath,
-    const std::string& profileName
-);
+std::optional<RemoteProfile> find_remote_profile(const std::filesystem::path& profilePath,
+                                                 const std::string& profileName);

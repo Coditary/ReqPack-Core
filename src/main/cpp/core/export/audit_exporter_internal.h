@@ -11,4 +11,4 @@ std::string package_component_ref(const Package& package);
 std::string package_display_name(const Package& package);
 bool table_colors_enabled();
 
-}  // namespace audit_exporter_internal
+} // namespace audit_exporter_internal

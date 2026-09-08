@@ -11,8 +11,8 @@ inline const std::string MANIFEST_FILENAME = "reqpack.lua";
 struct ManifestEntry {
     std::string system;
     std::string name;
-    std::string version;  // optional
-    std::vector<std::string> flags;  // optional per-entry flags
+    std::string version;            // optional
+    std::vector<std::string> flags; // optional per-entry flags
 };
 
 /// Loads and parses reqpack.lua manifest files.
@@ -37,7 +37,7 @@ struct ManifestEntry {
 /// Each entry must have a "system" and "name" field.
 /// "version" and "flags" are optional.
 class ManifestLoader {
-public:
+  public:
     /// Loads and parses the given reqpack.lua file.
     /// @throws std::runtime_error if the file is missing, cannot be parsed,
     ///         or contains invalid entries.

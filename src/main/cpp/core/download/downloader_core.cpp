@@ -9,24 +9,19 @@
 
 std::string downloader_to_lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
 bool downloader_has_non_whitespace(const std::string& value) {
-    return std::any_of(value.begin(), value.end(), [](unsigned char c) {
-        return !std::isspace(c);
-    });
+    return std::any_of(value.begin(), value.end(), [](unsigned char c) { return !std::isspace(c); });
 }
 
 bool downloader_looks_like_html_document(const std::string& value) {
     const std::string prefix = downloader_to_lower_copy(value.substr(0, std::min<std::size_t>(value.size(), 512)));
-    return prefix.find("<!doctype html") != std::string::npos ||
-           prefix.find("<html") != std::string::npos ||
-           prefix.find("<head") != std::string::npos ||
-           prefix.find("<body") != std::string::npos;
+    return prefix.find("<!doctype html") != std::string::npos || prefix.find("<html") != std::string::npos ||
+           prefix.find("<head") != std::string::npos || prefix.find("<body") != std::string::npos;
 }
 
 bool downloader_is_valid_plugin_script(const std::string& script) {

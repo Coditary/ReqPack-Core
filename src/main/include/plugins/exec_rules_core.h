@@ -9,29 +9,11 @@
 
 #include <sol/sol.hpp>
 
-enum class ExecRuleSource {
-    Line,
-    Screen
-};
+enum class ExecRuleSource { Line, Screen };
 
-enum class ExecRuleRunnerMode {
-    Plain,
-    Line,
-    Pty
-};
+enum class ExecRuleRunnerMode { Plain, Line, Pty };
 
-enum class ExecRuleActionType {
-    Send,
-    State,
-    Log,
-    Status,
-    Progress,
-    BeginStep,
-    Success,
-    Failed,
-    Event,
-    Artifact
-};
+enum class ExecRuleActionType { Send, State, Log, Status, Progress, BeginStep, Success, Failed, Event, Artifact };
 
 struct ExecRuleAction {
     ExecRuleActionType type{ExecRuleActionType::Log};
@@ -74,13 +56,7 @@ ExecRuleset parse_exec_rules(const sol::object& rulesObject);
 ExecRuleRunnerMode determine_exec_rule_runner_mode(const ExecRuleset& ruleset);
 std::string normalize_exec_rule_pty_chunk(const std::string& chunk);
 ExecRuleRuntimeState make_exec_rule_runtime_state(const ExecRuleset& ruleset);
-ExecRuleEvaluationResult evaluate_exec_rule_line_input(
-    const ExecRuleset& ruleset,
-    ExecRuleRuntimeState& runtime,
-    const std::string& line
-);
-ExecRuleEvaluationResult evaluate_exec_rule_screen_input(
-    const ExecRuleset& ruleset,
-    ExecRuleRuntimeState& runtime,
-    const std::string& transcript
-);
+ExecRuleEvaluationResult evaluate_exec_rule_line_input(const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,
+                                                       const std::string& line);
+ExecRuleEvaluationResult evaluate_exec_rule_screen_input(const ExecRuleset& ruleset, ExecRuleRuntimeState& runtime,
+                                                         const std::string& transcript);

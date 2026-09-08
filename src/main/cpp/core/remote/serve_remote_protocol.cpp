@@ -10,12 +10,24 @@ std::string escape_json(const std::string& s) {
     out.reserve(s.size());
     for (const char c : s) {
         switch (c) {
-            case '"': out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\n': out += "\\n"; break;
-            case '\r': out += "\\r"; break;
-            case '\t': out += "\\t"; break;
-            default: out += c; break;
+        case '"':
+            out += "\\\"";
+            break;
+        case '\\':
+            out += "\\\\";
+            break;
+        case '\n':
+            out += "\\n";
+            break;
+        case '\r':
+            out += "\\r";
+            break;
+        case '\t':
+            out += "\\t";
+            break;
+        default:
+            out += c;
+            break;
         }
     }
     return out;
@@ -38,12 +50,24 @@ std::optional<std::string> extract_json_string_field(const std::string& json, co
         const char c = json[i];
         if (escaped) {
             switch (c) {
-                case '"': value += '"'; break;
-                case '\\': value += '\\'; break;
-                case 'n': value += '\n'; break;
-                case 'r': value += '\r'; break;
-                case 't': value += '\t'; break;
-                default: value += c; break;
+            case '"':
+                value += '"';
+                break;
+            case '\\':
+                value += '\\';
+                break;
+            case 'n':
+                value += '\n';
+                break;
+            case 'r':
+                value += '\r';
+                break;
+            case 't':
+                value += '\t';
+                break;
+            default:
+                value += c;
+                break;
             }
             escaped = false;
             continue;
@@ -60,7 +84,7 @@ std::optional<std::string> extract_json_string_field(const std::string& json, co
     return std::nullopt;
 }
 
-}  // namespace
+} // namespace
 
 std::optional<JsonCommand> parse_json_command(const std::string& line) {
     const std::string trimmed = trim_copy(line);
@@ -89,16 +113,8 @@ std::string text_response(bool ok, const CommandOutput& output) {
     return std::string(ok ? "OK " : "ERR ") + std::to_string(body.size()) + "\n" + body;
 }
 
-void handle_text_client(
-    ReqpackSocket clientFd,
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    int sessionId,
-    std::mutex& commandMutex,
-    std::optional<std::string> pendingLine
-) {
+void handle_text_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state, Logger& logger, IDisplay* display,
+                        int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine) {
     SessionIdentity identity;
     if (!auth_required(snapshot_remote_state(state))) {
         identity = SessionIdentity{.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
@@ -134,16 +150,8 @@ void handle_text_client(
 
         const std::vector<std::string> commandTokens = tokenize_command_line(trim_copy(line.value()));
         if (!commandTokens.empty() && commandTokens[0] == REMOTE_UPLOAD_INSTALL_COMMAND) {
-            response = execute_upload_install_command(
-                clientFd,
-                cli,
-                state,
-                logger,
-                display,
-                identity,
-                commandTokens,
-                commandMutex
-            );
+            response = execute_upload_install_command(clientFd, cli, state, logger, display, identity, commandTokens,
+                                                      commandMutex);
         } else {
             response = execute_command(cli, state, logger, display, identity, line.value(), commandMutex);
         }
@@ -159,16 +167,8 @@ void handle_text_client(
     }
 }
 
-void handle_json_client(
-    ReqpackSocket clientFd,
-    Cli& cli,
-    RemoteServerState& state,
-    Logger& logger,
-    IDisplay* display,
-    int sessionId,
-    std::mutex& commandMutex,
-    std::optional<std::string> pendingLine
-) {
+void handle_json_client(ReqpackSocket clientFd, Cli& cli, RemoteServerState& state, Logger& logger, IDisplay* display,
+                        int sessionId, std::mutex& commandMutex, std::optional<std::string> pendingLine) {
     SessionIdentity identity;
     if (!auth_required(snapshot_remote_state(state))) {
         identity = SessionIdentity{.authenticated = true, .userId = "anonymous", .isAdmin = false, .authType = "none"};
@@ -189,7 +189,8 @@ void handle_json_client(
 
         const std::optional<JsonCommand> request = parse_json_command(line.value());
         if (!request.has_value()) {
-            if (!send_all(clientFd, json_response(false, command_output_message(DisplayMode::REMOTE, "invalid json request", false)))) {
+            if (!send_all(clientFd, json_response(false, command_output_message(DisplayMode::REMOTE,
+                                                                                "invalid json request", false)))) {
                 return;
             }
             continue;

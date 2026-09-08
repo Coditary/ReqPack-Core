@@ -4,25 +4,19 @@
 #include "core/plugins/plugin_metadata_provider.h"
 #include "core/registry/registry_database.h"
 
-#include <vector>
-#include <memory>
-#include <string>
-#include <map>
-#include <optional>
 #include "plugins/iplugin.h"
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
 #include "core/common/windows_macro_guards.h"
 
-enum class PluginState {
-    NOT_FOUND,
-    REGISTERED,
-    ACTIVE,
-    FAILED,
-    SHUTDOWN
-};
+enum class PluginState { NOT_FOUND, REGISTERED, ACTIVE, FAILED, SHUTDOWN };
 
 class Registry : public PluginMetadataProvider {
-private:
+  private:
     ReqPackConfig config;
     RegistryDatabase database;
     std::map<std::string, std::string> m_pluginPaths;
@@ -35,7 +29,7 @@ private:
     void registerBuiltInPlugins();
     bool ensurePluginConstructed(const std::string& name);
 
-public:
+  public:
     Registry(const ReqPackConfig& config = default_reqpack_config());
     ~Registry();
 
@@ -53,7 +47,6 @@ public:
     void loadAll();
     void shutdownAll();
 
-    
     bool isLoaded(const std::string& name) const;
     PluginState getState(const std::string& name) const;
     std::vector<std::string> findByCategory(const std::string& category) const;

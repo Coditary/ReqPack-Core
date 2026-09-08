@@ -28,11 +28,8 @@ struct RqRepositoryIndex {
 
 RqRepositoryIndex rq_repository_parse_index(const std::string& content, const std::string& source);
 
-std::optional<RqRepositoryPackage> rq_repository_resolve_package(
-    const std::vector<RqRepositoryIndex>& indexes,
-    const std::string& name,
-    const std::string& version,
-    const std::string& hostArchitecture,
-    const std::set<std::string>& hostSystems,
-    const ReqPackConfig& config = default_reqpack_config()
-);
+std::optional<RqRepositoryPackage>
+rq_repository_resolve_package(const std::vector<RqRepositoryIndex>& indexes, const std::string& name,
+                              const std::string& version, const std::string& hostArchitecture,
+                              const std::set<std::string>& hostSystems,
+                              const ReqPackConfig& config = default_reqpack_config());

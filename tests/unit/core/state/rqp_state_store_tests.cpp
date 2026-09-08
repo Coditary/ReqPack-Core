@@ -10,10 +10,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -26,7 +26,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -37,24 +37,35 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-void write_installed_state(const std::filesystem::path& root, const std::string& name, const std::string& version, int release, int revision) {
-    const std::filesystem::path stateDir = root / name / (name + "@" + version + "-" + std::to_string(release) + "+r" + std::to_string(revision));
-    write_file(stateDir / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + name + "\",\n"
-        "  \"version\": \"" + version + "\",\n"
-        "  \"release\": " + std::to_string(release) + ",\n"
-        "  \"revision\": " + std::to_string(revision) + ",\n"
-        "  \"summary\": \"summary\",\n"
-        "  \"description\": \"description\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"tags\": [\"test\"],\n"
-        "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-        "}\n");
+void write_installed_state(const std::filesystem::path& root, const std::string& name, const std::string& version,
+                           int release, int revision) {
+    const std::filesystem::path stateDir =
+        root / name / (name + "@" + version + "-" + std::to_string(release) + "+r" + std::to_string(revision));
+    write_file(stateDir / "metadata.json", "{\n"
+                                           "  \"formatVersion\": 1,\n"
+                                           "  \"name\": \"" +
+                                               name +
+                                               "\",\n"
+                                               "  \"version\": \"" +
+                                               version +
+                                               "\",\n"
+                                               "  \"release\": " +
+                                               std::to_string(release) +
+                                               ",\n"
+                                               "  \"revision\": " +
+                                               std::to_string(revision) +
+                                               ",\n"
+                                               "  \"summary\": \"summary\",\n"
+                                               "  \"description\": \"description\",\n"
+                                               "  \"license\": \"MIT\",\n"
+                                               "  \"architecture\": \"noarch\",\n"
+                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                               "  \"tags\": [\"test\"],\n"
+                                               "  \"url\": \"https://example.test/" +
+                                               name +
+                                               ".rqp\"\n"
+                                               "}\n");
     write_file(stateDir / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -62,19 +73,23 @@ return {
     install = "scripts/install.lua"
   }
 }
-)" );
+)");
     write_file(stateDir / "scripts" / "install.lua", "return true\n");
-    write_file(stateDir / "source.json",
-        "{\n"
-        "  \"source\": \"repository\",\n"
-        "  \"path\": \"" + name + "@" + version + "\",\n"
-        "  \"repository\": \"file:///tmp/index.json\",\n"
-        "  \"identity\": \"" + name + "@" + version + "-" + std::to_string(release) + "+r" + std::to_string(revision) + "\"\n"
-        "}\n");
+    write_file(stateDir / "source.json", "{\n"
+                                         "  \"source\": \"repository\",\n"
+                                         "  \"path\": \"" +
+                                             name + "@" + version +
+                                             "\",\n"
+                                             "  \"repository\": \"file:///tmp/index.json\",\n"
+                                             "  \"identity\": \"" +
+                                             name + "@" + version + "-" + std::to_string(release) + "+r" +
+                                             std::to_string(revision) +
+                                             "\"\n"
+                                             "}\n");
     write_file(stateDir / "manifest.json", "[]\n");
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("rqp state store lists installed packages in stable order", "[unit][rqp_state_store][core]") {
     TempDir tempDir{"reqpack-rqp-state-list"};
@@ -111,7 +126,7 @@ TEST_CASE("rqp state store finds installed package by registry request name", "[
 
     const std::filesystem::path stateDir = tempDir.path() / "ycallr" / "ycallr@0.1.1-1+r0";
     write_file(stateDir / "metadata.json",
-        R"({
+               R"({
   "formatVersion": 1,
   "name": "ycallr",
   "version": "0.1.1-1+r0",
@@ -137,7 +152,7 @@ return {
 )");
     write_file(stateDir / "scripts" / "install.lua", "return true\n");
     write_file(stateDir / "source.json",
-        R"({
+               R"({
   "source": "repository",
   "path": "ycallr-cli@0.1.1",
   "repository": "https://example.test/ycallr-cli-index.json",
@@ -177,7 +192,8 @@ TEST_CASE("rqp state store finds installed package among cached list", "[unit][r
     CHECK(matches.front().metadata.version == "1.0.0");
 }
 
-TEST_CASE("rqp state store removes installed state and prunes empty package directory", "[unit][rqp_state_store][core]") {
+TEST_CASE("rqp state store removes installed state and prunes empty package directory",
+          "[unit][rqp_state_store][core]") {
     TempDir tempDir{"reqpack-rqp-state-remove"};
     ReqPackConfig config = default_reqpack_config();
     config.rqp.statePath = tempDir.path().string();

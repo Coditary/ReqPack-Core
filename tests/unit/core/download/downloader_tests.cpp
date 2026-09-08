@@ -6,17 +6,17 @@
 #include <system_error>
 
 #include "core/download/downloader.h"
+#include "core/download/downloader_core.h"
 #include "core/registry/registry_database.h"
 #include "core/registry/registry_database_core.h"
-#include "core/download/downloader_core.h"
 
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -29,7 +29,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -58,21 +58,23 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-std::filesystem::path write_plugin_bundle(
-    const std::filesystem::path& root,
-    const std::string& pluginName,
-    const std::string& runScript
-) {
+std::filesystem::path write_plugin_bundle(const std::filesystem::path& root, const std::string& pluginName,
+                                          const std::string& runScript) {
     const std::filesystem::path pluginDirectory = root / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", runScript);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -88,7 +90,7 @@ ReqPackConfig make_downloader_test_config(const std::filesystem::path& root) {
     return config;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("downloader validates plugin payload and rejects HTML or empty content", "[unit][downloader][payload]") {
     CHECK(downloader_is_valid_plugin_script("return { getName = function() return 'x' end }"));
@@ -132,7 +134,8 @@ TEST_CASE("downloader local copy branch fails for missing file", "[unit][downloa
     CHECK_FALSE(std::filesystem::exists(target));
 }
 
-TEST_CASE("downloader materializes cached registry plugin when thin-layer metadata passes", "[unit][downloader][service]") {
+TEST_CASE("downloader materializes cached registry plugin when thin-layer metadata passes",
+          "[unit][downloader][service]") {
     TempDir tempDir{"reqpack-downloader-trust-pass"};
     const std::string script = "return { getName = function() return 'dnf' end }\n";
     const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf", script);
@@ -159,13 +162,11 @@ TEST_CASE("downloader materializes cached registry plugin when thin-layer metada
     CHECK(read_file(target) == script);
 }
 
-TEST_CASE("downloader blocks registry plugin materialization when thin-layer metadata is missing", "[unit][downloader][service]") {
+TEST_CASE("downloader blocks registry plugin materialization when thin-layer metadata is missing",
+          "[unit][downloader][service]") {
     TempDir tempDir{"reqpack-downloader-trust-block"};
-    const std::filesystem::path source = write_plugin_bundle(
-        tempDir.path() / "remote-source",
-        "dnf",
-        "return { getName = function() return 'dnf' end }\n"
-    );
+    const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf",
+                                                             "return { getName = function() return 'dnf' end }\n");
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
@@ -184,13 +185,11 @@ TEST_CASE("downloader blocks registry plugin materialization when thin-layer met
     CHECK_FALSE(std::filesystem::exists(target));
 }
 
-TEST_CASE("downloader blocks registry plugin materialization when script hash mismatches", "[unit][downloader][service]") {
+TEST_CASE("downloader blocks registry plugin materialization when script hash mismatches",
+          "[unit][downloader][service]") {
     TempDir tempDir{"reqpack-downloader-hash-block"};
-    const std::filesystem::path source = write_plugin_bundle(
-        tempDir.path() / "remote-source",
-        "dnf",
-        "return { getName = function() return 'dnf' end }\n"
-    );
+    const std::filesystem::path source = write_plugin_bundle(tempDir.path() / "remote-source", "dnf",
+                                                             "return { getName = function() return 'dnf' end }\n");
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());
@@ -213,7 +212,8 @@ TEST_CASE("downloader blocks registry plugin materialization when script hash mi
     CHECK_FALSE(std::filesystem::exists(target));
 }
 
-TEST_CASE("downloader blocks unpinned git registry plugin when thin-layer trust is required", "[unit][downloader][service]") {
+TEST_CASE("downloader blocks unpinned git registry plugin when thin-layer trust is required",
+          "[unit][downloader][service]") {
     TempDir tempDir{"reqpack-downloader-git-unpinned-block"};
     const std::filesystem::path target = tempDir.path() / "plugins" / "dnf" / "run.lua";
 
@@ -348,7 +348,8 @@ TEST_CASE("downloader copies bundled plugin from repo root letter-grouped layout
     TempDir tempDir{"reqpack-downloader-grouped-bundle-copy"};
     const std::string script = "return { getName = function() return 'huggingface' end }\n";
     const std::filesystem::path repositoryRoot = tempDir.path() / "repo";
-    const std::filesystem::path bundleRoot = write_plugin_bundle(repositoryRoot / "rqp-plugins" / "h", "huggingface", script);
+    const std::filesystem::path bundleRoot =
+        write_plugin_bundle(repositoryRoot / "rqp-plugins" / "h", "huggingface", script);
     write_file(bundleRoot / "lib" / "helper.txt", "helper\n");
 
     ReqPackConfig config = make_downloader_test_config(tempDir.path());

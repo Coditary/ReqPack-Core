@@ -11,10 +11,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -27,12 +27,12 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class ScopedCurrentPath {
-public:
+  public:
     explicit ScopedCurrentPath(const std::filesystem::path& target) : original_(std::filesystem::current_path()) {
         std::filesystem::current_path(target);
     }
@@ -42,7 +42,7 @@ public:
         std::filesystem::current_path(original_, error);
     }
 
-private:
+  private:
     std::filesystem::path original_;
 };
 
@@ -76,12 +76,9 @@ ReqPackConfig make_executor_test_config(const std::filesystem::path& root) {
     return config;
 }
 
-std::filesystem::path add_plugin_script(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content,
-    const std::vector<std::string>& dependencySpecs = {}
-) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content,
+                                        const std::vector<std::string>& dependencySpecs = {}) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
     std::string manifest = "return {\n  apiVersion = 1,\n  depends = {";
     if (!dependencySpecs.empty()) {
@@ -92,15 +89,20 @@ std::filesystem::path add_plugin_script(
         manifest += "  ";
     }
     manifest += "}\n}\n";
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", manifest);
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -130,12 +132,8 @@ const TransactionItemRecord* find_item(const std::vector<TransactionItemRecord>&
     return nullptr;
 }
 
-const InstalledEntry* find_installed(
-    const std::vector<InstalledEntry>& entries,
-    const std::string& system,
-    const std::string& name,
-    const std::string& version
-) {
+const InstalledEntry* find_installed(const std::vector<InstalledEntry>& entries, const std::string& system,
+                                     const std::string& name, const std::string& version) {
     for (const InstalledEntry& entry : entries) {
         if (entry.system == system && entry.name == name && entry.version == version) {
             return &entry;
@@ -682,7 +680,7 @@ function plugin.info(context, package) return { name = package, version = "1.0.0
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
 TEST_CASE("executor list dispatches flags and plugin context", "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-list"};
@@ -920,7 +918,8 @@ TEST_CASE("executor resolves proxy plugin requests before query dispatch", "[int
     CHECK(packages[0].description == scriptPath.string());
 }
 
-TEST_CASE("executor read operations return empty values when plugin is unavailable", "[integration][executor][service]") {
+TEST_CASE("executor read operations return empty values when plugin is unavailable",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-missing"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
 
@@ -940,7 +939,8 @@ TEST_CASE("executor read operations return empty values when plugin is unavailab
     CHECK(info.description.empty());
 }
 
-TEST_CASE("executor records transactional package results and leaves failed run active", "[integration][executor][service]") {
+TEST_CASE("executor records transactional package results and leaves failed run active",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-transaction"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
@@ -984,7 +984,8 @@ TEST_CASE("executor records transactional package results and leaves failed run 
     CHECK(failItem->errorMessage == "plugin action failed");
 }
 
-TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled items", "[integration][executor][service]") {
+TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled items",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-recovery"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
@@ -1025,7 +1026,8 @@ TEST_CASE("executor recovers active run, reapplies flags, and commits reconciled
     CHECK(recoverItem->errorMessage.empty());
 }
 
-TEST_CASE("executor continues with current graph after recovering stale active run", "[integration][executor][service]") {
+TEST_CASE("executor continues with current graph after recovering stale active run",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-recovery-continue"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
@@ -1119,8 +1121,10 @@ TEST_CASE("executor stopOnFirstFailure prevents later task groups from running",
     Executer executer(&registry, config);
 
     Graph graph;
-    const Graph::vertex_descriptor stopperVertex = boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "stopper", .name = "first"}, graph);
-    const Graph::vertex_descriptor followerVertex = boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "follower", .name = "second"}, graph);
+    const Graph::vertex_descriptor stopperVertex =
+        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "stopper", .name = "first"}, graph);
+    const Graph::vertex_descriptor followerVertex =
+        boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "follower", .name = "second"}, graph);
     boost::add_edge(stopperVertex, followerVertex, graph);
 
     executer.execute(&graph);
@@ -1146,7 +1150,8 @@ TEST_CASE("executor stopOnFirstFailure prevents later task groups from running",
     CHECK(secondItem->errorMessage.empty());
 }
 
-TEST_CASE("executor keeps partial batch success and marks unavailable packages precisely", "[integration][executor][service]") {
+TEST_CASE("executor keeps partial batch success and marks unavailable packages precisely",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-partial-batch"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = true;
@@ -1213,7 +1218,8 @@ TEST_CASE("executor refreshes history snapshot from authoritative plugin list", 
     CHECK(find_installed(entries, "history", "tool", "2.0.0") != nullptr);
 }
 
-TEST_CASE("executor keeps shared dependency installed until last owner is removed", "[integration][executor][service]") {
+TEST_CASE("executor keeps shared dependency installed until last owner is removed",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-owner-shared"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
@@ -1239,9 +1245,9 @@ TEST_CASE("executor keeps shared dependency installed until last owner is remove
     REQUIRE(dep != nullptr);
     CHECK(dep->installMethod == "dependency");
     CHECK(dep->owners == std::vector<std::string>{
-        installed_package_owner_id("app", "alpha"),
-        installed_package_owner_id("other", "beta"),
-    });
+                             installed_package_owner_id("app", "alpha"),
+                             installed_package_owner_id("other", "beta"),
+                         });
 
     Graph removeOneGraph = make_linear_graph({
         Package{.action = ActionType::REMOVE, .system = "app", .name = "alpha", .directRequest = true},
@@ -1294,7 +1300,8 @@ TEST_CASE("executor records explicit owner for already installed direct request"
     CHECK(dep->owners == std::vector<std::string>{installed_root_owner_id("dep", "maven")});
 }
 
-TEST_CASE("executor runs independent task groups in parallel when jobs exceed one", "[integration][executor][service]") {
+TEST_CASE("executor runs independent task groups in parallel when jobs exceed one",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-parallel-independent"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
@@ -1308,7 +1315,8 @@ TEST_CASE("executor runs independent task groups in parallel when jobs exceed on
     Executer executer(&registry, config);
 
     Graph graph;
-    boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.4"}, graph);
+    boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.4"},
+                      graph);
     boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "beta", .name = "two", .version = "0.4"}, graph);
 
     REQUIRE(executer.execute(&graph));
@@ -1338,7 +1346,8 @@ TEST_CASE("executor runs independent task groups in parallel when jobs exceed on
     CHECK(betaStart < std::min(alphaEnd, betaEnd));
 }
 
-TEST_CASE("executor keeps same-system task groups serialized even when jobs exceed one", "[integration][executor][service]") {
+TEST_CASE("executor keeps same-system task groups serialized even when jobs exceed one",
+          "[integration][executor][service]") {
     TempDir tempDir{"reqpack-executor-parallel-serialized"};
     ReqPackConfig config = make_executor_test_config(tempDir.path());
     config.execution.useTransactionDb = false;
@@ -1351,8 +1360,10 @@ TEST_CASE("executor keeps same-system task groups serialized even when jobs exce
     Executer executer(&registry, config);
 
     Graph graph;
-    const Graph::vertex_descriptor first = boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.25"}, graph);
-    const Graph::vertex_descriptor second = boost::add_vertex(Package{.action = ActionType::INSTALL, .system = "alpha", .name = "two", .version = "0.25"}, graph);
+    const Graph::vertex_descriptor first = boost::add_vertex(
+        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "one", .version = "0.25"}, graph);
+    const Graph::vertex_descriptor second = boost::add_vertex(
+        Package{.action = ActionType::INSTALL, .system = "alpha", .name = "two", .version = "0.25"}, graph);
     boost::add_edge(first, second, graph);
 
     REQUIRE(executer.execute(&graph));

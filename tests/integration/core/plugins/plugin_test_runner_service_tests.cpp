@@ -13,10 +13,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -29,7 +29,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -48,12 +48,9 @@ std::string read_file(const std::filesystem::path& path) {
     return buffer.str();
 }
 
-std::filesystem::path write_plugin_bundle(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content,
-    const std::vector<std::string>& dependencySpecs = {}
-) {
+std::filesystem::path write_plugin_bundle(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                          const std::string& content,
+                                          const std::vector<std::string>& dependencySpecs = {}) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
     std::string manifest = "return {\n  apiVersion = 1,\n  depends = {";
     if (!dependencySpecs.empty()) {
@@ -65,15 +62,20 @@ std::filesystem::path write_plugin_bundle(
     }
     manifest += "}\n}\n";
 
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", manifest);
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -83,34 +85,40 @@ std::filesystem::path write_plugin_bundle(
 
 std::filesystem::path write_config(const std::filesystem::path& root, const std::filesystem::path& pluginDirectory) {
     const std::filesystem::path configPath = root / "config.lua";
-    write_file(configPath,
-        "return {\n"
-        "  security = { autoFetch = false },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (root / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (root / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = { interactive = false },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = { autoFetch = false },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (root / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (root / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = { interactive = false },\n"
+                               "}\n");
     return configPath;
 }
 
-std::string run_reqpack(const std::filesystem::path& workspace, const std::filesystem::path& configPath, const std::vector<std::string>& arguments) {
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+std::string run_reqpack(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                        const std::vector<std::string>& arguments) {
+    std::string command = "cd " + escape_shell_arg(workspace.string()) + " && " +
+                          escape_shell_arg((build_root() / "rqp").string()) + " --config " +
+                          escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -957,7 +965,8 @@ return {
 }
 )";
 
-void write_preset_cases(const std::filesystem::path& pluginRoot, const std::string& pluginName, const std::vector<std::pair<std::string, std::string>>& cases) {
+void write_preset_cases(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                        const std::vector<std::pair<std::string, std::string>>& cases) {
     const std::filesystem::path presetDirectory = pluginRoot / pluginName / ".reqpack-test" / "core";
     for (const auto& [fileName, content] : cases) {
         write_file(presetDirectory / fileName, content);
@@ -984,7 +993,7 @@ void write_java_plugin_fixture(const std::filesystem::path& pluginRoot) {
     write_preset_cases(pluginRoot, "java", {{"proxy.lua", JAVA_PROXY_CASE}});
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("plugin test command runs hermetic case and writes report", "[integration][plugin-test][service]") {
     TempDir tempDir{"reqpack-plugin-test-pass"};
@@ -995,9 +1004,9 @@ TEST_CASE("plugin test command runs hermetic case and writes report", "[integrat
     write_file(cases / "install_pass.lua", PASS_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "demo", "--case", (cases / "install_pass.lua").string(), "--report", reportPath.string()
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {"test-plugin", "--plugin", "demo", "--case",
+                                            (cases / "install_pass.lua").string(), "--report", reportPath.string()});
 
     CHECK(output.find("[PASS] install success") != std::string::npos);
     CHECK(output.find("Cases: 1, Passed: 1, Failed: 0") != std::string::npos);
@@ -1008,7 +1017,8 @@ TEST_CASE("plugin test command runs hermetic case and writes report", "[integrat
     CHECK(report.find("\"eventRecords\": [{\"name\":\"installed\",\"payload\":\"{name=curl}\"}") != std::string::npos);
 }
 
-TEST_CASE("plugin test command treats zero-exit stderr output as success by default", "[integration][plugin-test][service]") {
+TEST_CASE("plugin test command treats zero-exit stderr output as success by default",
+          "[integration][plugin-test][service]") {
     TempDir tempDir{"reqpack-plugin-test-stderr-success"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
@@ -1016,15 +1026,16 @@ TEST_CASE("plugin test command treats zero-exit stderr output as success by defa
     write_file(cases / "install_stderr_success.lua", STDERR_SUCCESS_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "demo", "--case", (cases / "install_stderr_success.lua").string()
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath,
+                    {"test-plugin", "--plugin", "demo", "--case", (cases / "install_stderr_success.lua").string()});
 
     CHECK(output.find("[PASS] install success with stderr output") != std::string::npos);
     CHECK(output.find("Cases: 1, Passed: 1, Failed: 0") != std::string::npos);
 }
 
-TEST_CASE("plugin test command loads cases from directory and returns failures", "[integration][plugin-test][service]") {
+TEST_CASE("plugin test command loads cases from directory and returns failures",
+          "[integration][plugin-test][service]") {
     TempDir tempDir{"reqpack-plugin-test-dir"};
     const std::filesystem::path plugins = tempDir.path() / "plugins";
     const std::filesystem::path cases = tempDir.path() / "cases";
@@ -1033,12 +1044,10 @@ TEST_CASE("plugin test command loads cases from directory and returns failures",
     write_file(cases / "b-fail.lua", FAIL_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string command =
-        "cd " + escape_shell_arg(tempDir.path().string()) +
-        " && " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string()) +
-        " test-plugin --plugin demo --cases " + escape_shell_arg(cases.string()) +
-        " 2>&1; printf '\nEXIT:%s' \"$?\"";
+    const std::string command = "cd " + escape_shell_arg(tempDir.path().string()) + " && " +
+                                escape_shell_arg((build_root() / "rqp").string()) + " --config " +
+                                escape_shell_arg(configPath.string()) + " test-plugin --plugin demo --cases " +
+                                escape_shell_arg(cases.string()) + " 2>&1; printf '\nEXIT:%s' \"$?\"";
     const std::string output = run_command_capture(command);
     const bool reportedCaseName = output.find("install expectation mismatch") != std::string::npos;
     const bool reportedFileName = output.find("b-fail") != std::string::npos;
@@ -1061,9 +1070,9 @@ TEST_CASE("plugin test command supports query cases and help", "[integration][pl
     write_file(cases / "list.lua", LIST_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", (plugins / "demo").string(), "--case", (cases / "list.lua").string()
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath,
+                    {"test-plugin", "--plugin", (plugins / "demo").string(), "--case", (cases / "list.lua").string()});
     CHECK(output.find("[PASS] list success") != std::string::npos);
 
     const std::string helpOutput = run_reqpack(tempDir.path(), configPath, {"test-plugin", "--help"});
@@ -1080,9 +1089,9 @@ TEST_CASE("plugin test command supports filesystem fixtures", "[integration][plu
     write_file(cases / "fixture-info.lua", FIXTURE_INFO_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "fixture-demo", "--case", (cases / "fixture-info.lua").string()
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath,
+                    {"test-plugin", "--plugin", "fixture-demo", "--case", (cases / "fixture-info.lua").string()});
 
     INFO(output);
     CHECK(output.find("[PASS] fixture-backed info") != std::string::npos);
@@ -1099,9 +1108,9 @@ TEST_CASE("plugin test command validates artifacts and supports presets", "[inte
     write_file(presetDir / "list.lua", PRESET_LIST_CASE);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "demo", "--preset", "core", "--case", (cases / "search.lua").string()
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath,
+                    {"test-plugin", "--plugin", "demo", "--preset", "core", "--case", (cases / "search.lua").string()});
 
     CHECK(output.find("[PASS] core list preset") != std::string::npos);
     CHECK(output.find("[PASS] search artifact and payload") != std::string::npos);
@@ -1114,9 +1123,8 @@ TEST_CASE("plugin test command runs repo dnf preset cases", "[integration][plugi
     write_dnf_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "dnf", "--preset", "core"
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath, {"test-plugin", "--plugin", "dnf", "--preset", "core"});
 
     CHECK(output.find("Cases: 2, Passed: 2, Failed: 0") != std::string::npos);
 }
@@ -1127,9 +1135,8 @@ TEST_CASE("plugin test command runs repo maven preset cases", "[integration][plu
     write_maven_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "maven", "--preset", "core"
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath, {"test-plugin", "--plugin", "maven", "--preset", "core"});
 
     CHECK(output.find("Cases: 2, Passed: 2, Failed: 0") != std::string::npos);
 }
@@ -1140,9 +1147,8 @@ TEST_CASE("plugin test command runs repo sys preset cases", "[integration][plugi
     write_sys_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "sys", "--preset", "core"
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath, {"test-plugin", "--plugin", "sys", "--preset", "core"});
 
     CHECK(output.find("Cases: 2, Passed: 2, Failed: 0") != std::string::npos);
 }
@@ -1153,9 +1159,8 @@ TEST_CASE("plugin test command runs repo java preset case", "[integration][plugi
     write_java_plugin_fixture(plugins);
     const std::filesystem::path configPath = write_config(tempDir.path(), plugins);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "test-plugin", "--plugin", "java", "--preset", "core"
-    });
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath, {"test-plugin", "--plugin", "java", "--preset", "core"});
 
     CHECK(output.find("Cases: 1, Passed: 1, Failed: 0") != std::string::npos);
 }

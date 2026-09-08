@@ -12,11 +12,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-              (prefix + "-" +
-               std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -25,11 +24,15 @@ public:
         std::filesystem::remove_all(path_, error);
     }
 
-    const std::filesystem::path& path() const { return path_; }
+    const std::filesystem::path& path() const {
+        return path_;
+    }
 
-    std::filesystem::path manifest() const { return path_ / MANIFEST_FILENAME; }
+    std::filesystem::path manifest() const {
+        return path_ / MANIFEST_FILENAME;
+    }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -39,7 +42,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     out << content;
 }
 
-}  // namespace
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Happy-path: return-table form
@@ -60,16 +63,16 @@ TEST_CASE("manifest loads packages from returned table", "[unit][manifest][load]
     const std::vector<ManifestEntry> entries = ManifestLoader::load(dir.manifest());
     REQUIRE(entries.size() == 3);
 
-    CHECK(entries[0].system  == "dnf");
-    CHECK(entries[0].name    == "curl");
+    CHECK(entries[0].system == "dnf");
+    CHECK(entries[0].name == "curl");
     CHECK(entries[0].version == "");
 
-    CHECK(entries[1].system  == "dnf");
-    CHECK(entries[1].name    == "git");
+    CHECK(entries[1].system == "dnf");
+    CHECK(entries[1].name == "git");
     CHECK(entries[1].version == "2.40.0");
 
-    CHECK(entries[2].system  == "npm");
-    CHECK(entries[2].name    == "express");
+    CHECK(entries[2].system == "npm");
+    CHECK(entries[2].name == "express");
     CHECK(entries[2].version == "4.18.0");
 }
 
@@ -89,12 +92,12 @@ TEST_CASE("manifest loads packages from global variable", "[unit][manifest][load
     const std::vector<ManifestEntry> entries = ManifestLoader::load(dir.manifest());
     REQUIRE(entries.size() == 2);
 
-    CHECK(entries[0].system  == "apt");
-    CHECK(entries[0].name    == "htop");
+    CHECK(entries[0].system == "apt");
+    CHECK(entries[0].name == "htop");
     CHECK(entries[0].version == "");
 
-    CHECK(entries[1].system  == "apt");
-    CHECK(entries[1].name    == "wget");
+    CHECK(entries[1].system == "apt");
+    CHECK(entries[1].name == "wget");
     CHECK(entries[1].version == "1.21");
 }
 
@@ -118,7 +121,7 @@ TEST_CASE("manifest prefers returned table over global variable", "[unit][manife
     const std::vector<ManifestEntry> entries = ManifestLoader::load(dir.manifest());
     REQUIRE(entries.size() == 1);
     CHECK(entries[0].system == "dnf");
-    CHECK(entries[0].name   == "curl");
+    CHECK(entries[0].name == "curl");
 }
 
 // ---------------------------------------------------------------------------
@@ -208,10 +211,14 @@ TEST_CASE("manifest preserves declaration order across mixed systems", "[unit][m
 
     const std::vector<ManifestEntry> entries = ManifestLoader::load(dir.manifest());
     REQUIRE(entries.size() == 4);
-    CHECK(entries[0].system == "dnf");   CHECK(entries[0].name == "curl");
-    CHECK(entries[1].system == "npm");   CHECK(entries[1].name == "express");
-    CHECK(entries[2].system == "dnf");   CHECK(entries[2].name == "git");
-    CHECK(entries[3].system == "brew");  CHECK(entries[3].name == "jq");
+    CHECK(entries[0].system == "dnf");
+    CHECK(entries[0].name == "curl");
+    CHECK(entries[1].system == "npm");
+    CHECK(entries[1].name == "express");
+    CHECK(entries[2].system == "dnf");
+    CHECK(entries[2].name == "git");
+    CHECK(entries[3].system == "brew");
+    CHECK(entries[3].name == "jq");
 }
 
 // ---------------------------------------------------------------------------

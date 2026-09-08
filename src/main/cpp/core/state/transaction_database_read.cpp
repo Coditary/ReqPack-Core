@@ -1,10 +1,11 @@
-#include "transaction_database_internal.h"
 #include "core/state/transaction_database_core.h"
+#include "transaction_database_internal.h"
 
 #include <algorithm>
 
 std::optional<TransactionRunRecord> TransactionDatabase::getActiveRun() const {
-    const std::optional<std::string> activeRunId = this->loadString(std::string(transaction_database_internal::ACTIVE_RUN_KEY));
+    const std::optional<std::string> activeRunId =
+        this->loadString(std::string(transaction_database_internal::ACTIVE_RUN_KEY));
     if (!activeRunId.has_value() || activeRunId->empty()) {
         return std::nullopt;
     }

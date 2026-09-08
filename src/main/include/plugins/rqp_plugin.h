@@ -14,7 +14,7 @@
 #include <vector>
 
 class RqpPlugin final : public IPlugin {
-public:
+  public:
     explicit RqpPlugin(const ReqPackConfig& config = default_reqpack_config());
 
     bool init() override;
@@ -38,7 +38,8 @@ public:
     bool installLocal(const PluginCallContext& context, const std::string& path) override;
     bool remove(const PluginCallContext& context, const std::vector<Package>& packages) override;
     bool update(const PluginCallContext& context, const std::vector<Package>& packages) override;
-    bool pack(const PluginCallContext& context, const std::string& projectPath, const std::string& outputPath, const std::vector<std::string>& flags) override;
+    bool pack(const PluginCallContext& context, const std::string& projectPath, const std::string& outputPath,
+              const std::vector<std::string>& flags) override;
 
     std::vector<PackageInfo> list(const PluginCallContext& context) override;
     std::vector<PackageInfo> outdated(const PluginCallContext& context) override;
@@ -48,7 +49,7 @@ public:
     std::vector<PluginEventRecord> takeRecentEvents() override;
     std::vector<std::string> takeRecentArtifacts() override;
 
-private:
+  private:
     struct ManifestEntry {
         std::string type;
         std::string path;
@@ -58,25 +59,18 @@ private:
     std::vector<PluginEventRecord> recentEvents_{};
     std::vector<std::string> recentArtifacts_{};
     mutable std::vector<ManifestEntry> pendingManifest_{};
-    bool persistInstalledState(
-        const RqPackageLayout& layout,
-        const std::string& sourceType,
-        const std::string& sourceValue,
-        const std::string& repository = {},
-        const std::string& requestName = {}
-    ) const;
-    bool installPackagePath(
-        const PluginCallContext& context,
-        const std::filesystem::path& path,
-        const std::string& sourceType,
-        const std::string& sourceValue,
-        const std::string& repository = {},
-        const std::string& requestName = {}
-    );
-    bool installResolvedPackage(const PluginCallContext& context, const Package& package, const RqRepositoryPackage& resolvedPackage);
+    bool persistInstalledState(const RqPackageLayout& layout, const std::string& sourceType,
+                               const std::string& sourceValue, const std::string& repository = {},
+                               const std::string& requestName = {}) const;
+    bool installPackagePath(const PluginCallContext& context, const std::filesystem::path& path,
+                            const std::string& sourceType, const std::string& sourceValue,
+                            const std::string& repository = {}, const std::string& requestName = {});
+    bool installResolvedPackage(const PluginCallContext& context, const Package& package,
+                                const RqRepositoryPackage& resolvedPackage);
     bool removeInstalledPackage(const PluginCallContext& context, const RqpInstalledPackage& installed);
     bool runHook(const PluginCallContext& context, const RqPackageLayout& layout, const std::string& hookKey) const;
-    bool runInstalledHook(const PluginCallContext& context, const RqpInstalledPackage& installed, const std::string& hookKey) const;
+    bool runInstalledHook(const PluginCallContext& context, const RqpInstalledPackage& installed,
+                          const std::string& hookKey) const;
     bool removeManifestArtifacts(const RqpInstalledPackage& installed) const;
     static std::vector<ManifestEntry> parseManifestJson(const std::string& content);
     static std::string manifestJson(const std::vector<ManifestEntry>& manifest);

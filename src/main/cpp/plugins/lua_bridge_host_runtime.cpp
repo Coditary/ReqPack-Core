@@ -12,17 +12,12 @@ namespace {
 
 constexpr const char* SILENT_RUNTIME_FLAG = "__reqpack-internal-silent-runtime";
 
-}  // namespace
+} // namespace
 
-LuaBridgeHostRuntime::LuaBridgeHostRuntime(Logger& logger,
-                                           const ReqPackConfig& config,
-                                           const std::string& pluginId,
+LuaBridgeHostRuntime::LuaBridgeHostRuntime(Logger& logger, const ReqPackConfig& config, const std::string& pluginId,
                                            const std::string& pluginDirectory,
                                            const std::optional<PluginSecurityMetadata>* securityMetadata)
-    : m_logger(logger),
-      m_config(config),
-      m_pluginId(pluginId),
-      m_pluginDirectory(pluginDirectory),
+    : m_logger(logger), m_config(config), m_pluginId(pluginId), m_pluginDirectory(pluginDirectory),
       m_securityMetadata(securityMetadata) {}
 
 std::uint64_t LuaBridgeHostRuntime::retainRuntimeBindingContext(const PluginCallContext& context) {

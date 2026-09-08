@@ -1,5 +1,5 @@
-#include "transaction_database_internal.h"
 #include "core/state/transaction_database_core.h"
+#include "transaction_database_internal.h"
 
 #include <chrono>
 
@@ -11,20 +11,23 @@ std::string now_timestamp() {
     return std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
 }
 
-}  // namespace transaction_database_internal
+} // namespace transaction_database_internal
 
-std::string TransactionDatabase::createRun(const std::vector<Package>& packages, const std::vector<std::string>& flags) const {
+std::string TransactionDatabase::createRun(const std::vector<Package>& packages,
+                                           const std::vector<std::string>& flags) const {
     if (!this->ensureReady()) {
         return {};
     }
 
-    if (const auto activeRun = this->loadString(std::string(transaction_database_internal::ACTIVE_RUN_KEY)); activeRun.has_value() && !activeRun->empty()) {
+    if (const auto activeRun = this->loadString(std::string(transaction_database_internal::ACTIVE_RUN_KEY));
+        activeRun.has_value() && !activeRun->empty()) {
         return {};
     }
 
     const std::string timestamp = transaction_database_internal::now_timestamp();
     const std::string runId = timestamp + "-" + std::to_string(packages.size());
-    TransactionRunRecord run{.id = runId, .state = "open", .createdAt = timestamp, .updatedAt = timestamp, .flags = flags};
+    TransactionRunRecord run{
+        .id = runId, .state = "open", .createdAt = timestamp, .updatedAt = timestamp, .flags = flags};
 
     std::lock_guard<std::mutex> lock(this->mutex);
     MDB_txn* transaction = nullptr;
@@ -32,8 +35,10 @@ std::string TransactionDatabase::createRun(const std::vector<Package>& packages,
         return {};
     }
 
-    if (!transaction_database_internal::put_value(transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY), runId) ||
-        !transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId), transaction_database_serialize_run(run))) {
+    if (!transaction_database_internal::put_value(transaction, this->dbi,
+                                                  std::string(transaction_database_internal::ACTIVE_RUN_KEY), runId) ||
+        !transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                  transaction_database_serialize_run(run))) {
         mdb_txn_abort(transaction);
         return {};
     }
@@ -46,7 +51,9 @@ std::string TransactionDatabase::createRun(const std::vector<Package>& packages,
         item.sequence = index;
         item.package = package;
         item.status = "planned";
-        if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_item_key(runId, package), transaction_database_serialize_item(item))) {
+        if (!transaction_database_internal::put_value(transaction, this->dbi,
+                                                      transaction_database_item_key(runId, package),
+                                                      transaction_database_serialize_item(item))) {
             mdb_txn_abort(transaction);
             return {};
         }
@@ -59,11 +66,13 @@ std::string TransactionDatabase::createRun(const std::vector<Package>& packages,
     return runId;
 }
 
-bool TransactionDatabase::updateItemStatus(const std::string& runId, const Package& package, const std::string& status, const std::string& errorMessage) const {
+bool TransactionDatabase::updateItemStatus(const std::string& runId, const Package& package, const std::string& status,
+                                           const std::string& errorMessage) const {
     return this->updateItemsStatus(runId, {package}, status, errorMessage);
 }
 
-bool TransactionDatabase::updateItemsStatus(const std::string& runId, const std::vector<Package>& packages, const std::string& status, const std::string& errorMessage) const {
+bool TransactionDatabase::updateItemsStatus(const std::string& runId, const std::vector<Package>& packages,
+                                            const std::string& status, const std::string& errorMessage) const {
     if (!this->ensureReady()) {
         return false;
     }
@@ -91,18 +100,21 @@ bool TransactionDatabase::updateItemsStatus(const std::string& runId, const std:
         TransactionItemRecord updated = item.value();
         updated.status = status;
         updated.errorMessage = errorMessage;
-        if (!transaction_database_internal::put_value(transaction, this->dbi, key, transaction_database_serialize_item(updated))) {
+        if (!transaction_database_internal::put_value(transaction, this->dbi, key,
+                                                      transaction_database_serialize_item(updated))) {
             mdb_txn_abort(transaction);
             return false;
         }
     }
 
     std::string runPayload;
-    if (transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId), runPayload)) {
+    if (transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                  runPayload)) {
         if (const auto run = transaction_database_deserialize_run(runId, runPayload)) {
             TransactionRunRecord updatedRun = run.value();
             updatedRun.updatedAt = transaction_database_internal::now_timestamp();
-            if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId), transaction_database_serialize_run(updatedRun))) {
+            if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                          transaction_database_serialize_run(updatedRun))) {
                 mdb_txn_abort(transaction);
                 return false;
             }
@@ -124,7 +136,8 @@ bool TransactionDatabase::markRunState(const std::string& runId, const std::stri
     }
 
     std::string payload;
-    if (!transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId), payload)) {
+    if (!transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                   payload)) {
         mdb_txn_abort(transaction);
         return false;
     }
@@ -138,7 +151,8 @@ bool TransactionDatabase::markRunState(const std::string& runId, const std::stri
     TransactionRunRecord updatedRun = run.value();
     updatedRun.state = state;
     updatedRun.updatedAt = transaction_database_internal::now_timestamp();
-    if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId), transaction_database_serialize_run(updatedRun))) {
+    if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                  transaction_database_serialize_run(updatedRun))) {
         mdb_txn_abort(transaction);
         return false;
     }
@@ -162,7 +176,9 @@ bool TransactionDatabase::markRunCommitted(const std::string& runId) const {
         TransactionItemRecord updatedItem = item;
         updatedItem.status = "committed";
         updatedItem.errorMessage.clear();
-        if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_item_key(runId, item.package), transaction_database_serialize_item(updatedItem))) {
+        if (!transaction_database_internal::put_value(transaction, this->dbi,
+                                                      transaction_database_item_key(runId, item.package),
+                                                      transaction_database_serialize_item(updatedItem))) {
             mdb_txn_abort(transaction);
             return false;
         }
@@ -171,7 +187,8 @@ bool TransactionDatabase::markRunCommitted(const std::string& runId) const {
     const std::string timestamp = transaction_database_internal::now_timestamp();
     TransactionRunRecord run{.id = runId, .state = "committed", .createdAt = timestamp, .updatedAt = timestamp};
     std::string runPayload;
-    if (transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId), runPayload)) {
+    if (transaction_database_internal::load_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                  runPayload)) {
         if (const auto existingRun = transaction_database_deserialize_run(runId, runPayload)) {
             run = existingRun.value();
             run.state = "committed";
@@ -179,21 +196,26 @@ bool TransactionDatabase::markRunCommitted(const std::string& runId) const {
         }
     }
 
-    if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId), transaction_database_serialize_run(run))) {
+    if (!transaction_database_internal::put_value(transaction, this->dbi, transaction_database_run_key(runId),
+                                                  transaction_database_serialize_run(run))) {
         mdb_txn_abort(transaction);
         return false;
     }
 
     std::string activeRunId;
-    if (transaction_database_internal::load_value(transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY), activeRunId) && activeRunId == runId) {
-        (void)transaction_database_internal::delete_value(transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY));
+    if (transaction_database_internal::load_value(
+            transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY), activeRunId) &&
+        activeRunId == runId) {
+        (void)transaction_database_internal::delete_value(transaction, this->dbi,
+                                                          std::string(transaction_database_internal::ACTIVE_RUN_KEY));
     }
 
     return mdb_txn_commit(transaction) == MDB_SUCCESS;
 }
 
 bool TransactionDatabase::deleteRun(const std::string& runId) const {
-    const std::vector<std::pair<std::string, std::string>> entries = this->loadPrefixedEntries(transaction_database_item_prefix(runId));
+    const std::vector<std::pair<std::string, std::string>> entries =
+        this->loadPrefixedEntries(transaction_database_item_prefix(runId));
     if (!this->ensureReady()) {
         return false;
     }
@@ -217,8 +239,11 @@ bool TransactionDatabase::deleteRun(const std::string& runId) const {
     }
 
     std::string activeRunId;
-    if (transaction_database_internal::load_value(transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY), activeRunId) && activeRunId == runId) {
-        (void)transaction_database_internal::delete_value(transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY));
+    if (transaction_database_internal::load_value(
+            transaction, this->dbi, std::string(transaction_database_internal::ACTIVE_RUN_KEY), activeRunId) &&
+        activeRunId == runId) {
+        (void)transaction_database_internal::delete_value(transaction, this->dbi,
+                                                          std::string(transaction_database_internal::ACTIVE_RUN_KEY));
     }
 
     return mdb_txn_commit(transaction) == MDB_SUCCESS;

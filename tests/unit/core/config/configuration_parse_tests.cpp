@@ -14,10 +14,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -30,7 +30,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -62,13 +62,18 @@ TEST_CASE("configuration resolves XDG directories with standard fallbacks", "[un
     CHECK(default_reqpack_plugin_directory() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "plugins");
     CHECK(default_reqpack_repo_cache_path() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "repos");
     CHECK(default_reqpack_history_path() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "history");
-    CHECK(default_reqpack_rqp_state_path() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "rqp" / "state");
-    CHECK(default_reqpack_self_update_binary_directory() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "self" / "bin");
+    CHECK(default_reqpack_rqp_state_path() ==
+          tempDir.path() / "home" / ".local" / "share" / "reqpack" / "rqp" / "state");
+    CHECK(default_reqpack_self_update_binary_directory() ==
+          tempDir.path() / "home" / ".local" / "share" / "reqpack" / "self" / "bin");
     CHECK(default_reqpack_self_update_link_path() == tempDir.path() / "home" / ".local" / "bin" / "rqp");
-    CHECK(default_reqpack_security_index_path() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "security" / "index");
-    CHECK(default_reqpack_osv_database_path() == tempDir.path() / "home" / ".local" / "share" / "reqpack" / "security" / "osv");
+    CHECK(default_reqpack_security_index_path() ==
+          tempDir.path() / "home" / ".local" / "share" / "reqpack" / "security" / "index");
+    CHECK(default_reqpack_osv_database_path() ==
+          tempDir.path() / "home" / ".local" / "share" / "reqpack" / "security" / "osv");
     CHECK(default_reqpack_transaction_path() == tempDir.path() / "home" / ".cache" / "reqpack" / "transactions");
-    CHECK(default_reqpack_security_cache_path() == tempDir.path() / "home" / ".cache" / "reqpack" / "security" / "cache");
+    CHECK(default_reqpack_security_cache_path() ==
+          tempDir.path() / "home" / ".cache" / "reqpack" / "security" / "cache");
     CHECK(default_remote_profiles_path() == tempDir.path() / "home" / ".config" / "reqpack" / "remote.lua");
 }
 
@@ -92,15 +97,20 @@ TEST_CASE("configuration honors explicit XDG directories", "[unit][configuration
     CHECK_FALSE(config.security.enabled);
     CHECK(std::filesystem::path(config.history.historyPath) == tempDir.path() / "data" / "reqpack" / "history");
     CHECK(std::filesystem::path(config.rqp.statePath) == tempDir.path() / "data" / "reqpack" / "rqp" / "state");
-    CHECK(std::filesystem::path(config.selfUpdate.binaryDirectory) == tempDir.path() / "data" / "reqpack" / "self" / "bin");
+    CHECK(std::filesystem::path(config.selfUpdate.binaryDirectory) ==
+          tempDir.path() / "data" / "reqpack" / "self" / "bin");
     CHECK(std::filesystem::path(config.selfUpdate.linkPath) == reqpack_user_home() / ".local" / "bin" / "rqp");
-    CHECK(std::filesystem::path(config.security.indexPath) == tempDir.path() / "data" / "reqpack" / "security" / "index");
-    CHECK(std::filesystem::path(config.security.osvDatabasePath) == tempDir.path() / "data" / "reqpack" / "security" / "osv");
-    CHECK(std::filesystem::path(config.execution.transactionDatabasePath) == tempDir.path() / "cache" / "reqpack" / "transactions");
-    CHECK(std::filesystem::path(config.security.cachePath) == tempDir.path() / "cache" / "reqpack" / "security" / "cache");
+    CHECK(std::filesystem::path(config.security.indexPath) ==
+          tempDir.path() / "data" / "reqpack" / "security" / "index");
+    CHECK(std::filesystem::path(config.security.osvDatabasePath) ==
+          tempDir.path() / "data" / "reqpack" / "security" / "osv");
+    CHECK(std::filesystem::path(config.execution.transactionDatabasePath) ==
+          tempDir.path() / "cache" / "reqpack" / "transactions");
+    CHECK(std::filesystem::path(config.security.cachePath) ==
+          tempDir.path() / "cache" / "reqpack" / "security" / "cache");
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("configuration parses known enum strings and rejects invalid values", "[unit][configuration][parse]") {
     REQUIRE(severity_level_from_string("HiGh").has_value());
@@ -148,7 +158,8 @@ TEST_CASE("configuration resolves registry paths for directories and files", "[u
     CHECK(registry_database_directory("/tmp/reqpack/registry.lua") == std::filesystem::path("/tmp/reqpack"));
     CHECK(registry_source_file_path("/tmp/reqpack/registry.lua") == std::filesystem::path("/tmp/reqpack/registry.lua"));
     CHECK(registry_database_directory("/tmp/reqpack/registry") == std::filesystem::path("/tmp/reqpack/registry"));
-    CHECK(registry_source_file_path("/tmp/reqpack/registry") == std::filesystem::path("/tmp/reqpack/registry/registry.lua"));
+    CHECK(registry_source_file_path("/tmp/reqpack/registry") ==
+          std::filesystem::path("/tmp/reqpack/registry/registry.lua"));
 
     CHECK(registry_database_directory("~/registry") == home / "registry");
     CHECK(registry_source_file_path("~/registry") == home / "registry" / "registry.lua");
@@ -251,7 +262,8 @@ TEST_CASE("configuration loads structured logging settings from lua", "[unit][co
     CHECK(config.logging.enabledCategories == std::vector<std::string>({"network", "plugin"}));
 }
 
-TEST_CASE("configuration merges downloader, registry, database, and overlay sources in order", "[unit][configuration][merge]") {
+TEST_CASE("configuration merges downloader, registry, database, and overlay sources in order",
+          "[unit][configuration][merge]") {
     TempDir tempDir{"reqpack-config-registry-merge"};
     const std::filesystem::path registryDir = tempDir.path() / "registry-db";
     const std::filesystem::path overlayPath = tempDir.path() / "overlay.lua";
@@ -296,7 +308,8 @@ TEST_CASE("configuration merges downloader, registry, database, and overlay sour
     CHECK(sources.at("brew").source == "https://overlay.test/brew.lua");
 }
 
-TEST_CASE("configuration loads lua config, expands paths, and preserves fallback on invalid fields", "[unit][configuration][load]") {
+TEST_CASE("configuration loads lua config, expands paths, and preserves fallback on invalid fields",
+          "[unit][configuration][load]") {
     TempDir tempDir{"reqpack-config-load"};
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path home = reqpack_user_home();
@@ -480,14 +493,15 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK(config.security.backends.at("snyk").dataset == "issues");
     REQUIRE(config.security.backends.contains("trivy"));
     CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string>{
-        "mirror.gcr.io/aquasec/trivy-db:2",
-        "ghcr.io/aquasecurity/trivy-db:2",
-    });
+                                                                     "mirror.gcr.io/aquasec/trivy-db:2",
+                                                                     "ghcr.io/aquasecurity/trivy-db:2",
+                                                                 });
     CHECK(std::filesystem::path(config.security.backends.at("trivy").helperPath) == home / "bin/trivydb-exporter");
     CHECK(config.security.backends.at("trivy").refreshMode == OsvRefreshMode::PERIODIC);
     CHECK(config.security.backends.at("trivy").refreshIntervalSeconds == 321);
     REQUIRE(config.security.backends.contains("gh-advisory"));
-    CHECK(config.security.backends.at("gh-advisory").feedUrl == "https://codeload.github.com/github/advisory-database/tar.gz/refs/heads/main");
+    CHECK(config.security.backends.at("gh-advisory").feedUrl ==
+          "https://codeload.github.com/github/advisory-database/tar.gz/refs/heads/main");
     CHECK(config.security.backends.at("gh-advisory").refreshMode == OsvRefreshMode::ALWAYS);
     CHECK(config.security.backends.at("gh-advisory").refreshIntervalSeconds == 654);
     CHECK(config.reports.enabled);
@@ -521,9 +535,9 @@ TEST_CASE("configuration loads lua config, expands paths, and preserves fallback
     CHECK_FALSE(config.sbom.includeDependencyEdges);
     CHECK(config.sbom.skipMissingPackages);
     CHECK(config.rqp.repositories == std::vector<std::string>{
-        "https://packages.example.test/rqp/index.json",
-        "file:///srv/rqp/index.json",
-    });
+                                         "https://packages.example.test/rqp/index.json",
+                                         "file:///srv/rqp/index.json",
+                                     });
     REQUIRE(config.rqp.systemAliases.contains("debian-family"));
     CHECK(config.rqp.systemAliases.at("debian-family") == std::vector<std::string>({"debian", "ubuntu"}));
     REQUIRE(config.rqp.systemAliases.contains("lab-linux"));
@@ -582,9 +596,9 @@ TEST_CASE("configuration defaults build version and user agent from release id",
     CHECK(config.downloader.userAgent == reqpack_user_agent());
     REQUIRE(config.security.backends.contains("trivy"));
     CHECK(config.security.backends.at("trivy").dbRepositories == std::vector<std::string>{
-        "mirror.gcr.io/aquasec/trivy-db:2",
-        "ghcr.io/aquasecurity/trivy-db:2",
-    });
+                                                                     "mirror.gcr.io/aquasec/trivy-db:2",
+                                                                     "ghcr.io/aquasecurity/trivy-db:2",
+                                                                 });
 }
 
 TEST_CASE("configuration resolves execution jobs from fixed and max modes", "[unit][configuration][execution]") {
@@ -748,17 +762,15 @@ TEST_CASE("remote user loader parses users and defaults admin flag", "[unit][con
     const std::vector<RemoteUser> users = load_remote_users(remotePath);
     REQUIRE(users.size() == 2);
 
-    const auto alice = std::find_if(users.begin(), users.end(), [](const RemoteUser& user) {
-        return user.id == "alice";
-    });
+    const auto alice =
+        std::find_if(users.begin(), users.end(), [](const RemoteUser& user) { return user.id == "alice"; });
     REQUIRE(alice != users.end());
     REQUIRE(alice->token.has_value());
     CHECK(alice->token.value() == "user-token");
     CHECK_FALSE(alice->isAdmin);
 
-    const auto root = std::find_if(users.begin(), users.end(), [](const RemoteUser& user) {
-        return user.id == "root";
-    });
+    const auto root =
+        std::find_if(users.begin(), users.end(), [](const RemoteUser& user) { return user.id == "root"; });
     REQUIRE(root != users.end());
     REQUIRE(root->username.has_value());
     CHECK(root->username.value() == "root");

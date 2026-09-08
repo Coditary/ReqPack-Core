@@ -13,13 +13,7 @@ std::vector<ManifestEntry> ManifestLoader::load(const std::filesystem::path& man
     }
 
     sol::state lua;
-    lua.open_libraries(
-        sol::lib::base,
-        sol::lib::package,
-        sol::lib::table,
-        sol::lib::string,
-        sol::lib::math
-    );
+    lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::table, sol::lib::string, sol::lib::math);
     ensure_ffi_available(lua);
 
     sol::load_result loadResult = lua.load_file(manifestPath.string());
@@ -55,9 +49,7 @@ std::vector<ManifestEntry> ManifestLoader::load(const std::filesystem::path& man
     }
 
     if (!packagesTable.has_value()) {
-        throw std::runtime_error(
-            "manifest '" + manifestPath.string() + "' has no 'packages' table"
-        );
+        throw std::runtime_error("manifest '" + manifestPath.string() + "' has no 'packages' table");
     }
 
     std::vector<ManifestEntry> entries;
@@ -67,30 +59,24 @@ std::vector<ManifestEntry> ManifestLoader::load(const std::filesystem::path& man
         ++entryIndex;
 
         if (value.get_type() != sol::type::table) {
-            throw std::runtime_error(
-                "manifest entry #" + std::to_string(entryIndex) + " is not a table"
-            );
+            throw std::runtime_error("manifest entry #" + std::to_string(entryIndex) + " is not a table");
         }
 
         const sol::table pkg = value.as<sol::table>();
 
         const sol::optional<std::string> system = pkg["system"];
         if (!system.has_value() || system.value().empty()) {
-            throw std::runtime_error(
-                "manifest entry #" + std::to_string(entryIndex) + " is missing 'system'"
-            );
+            throw std::runtime_error("manifest entry #" + std::to_string(entryIndex) + " is missing 'system'");
         }
 
         const sol::optional<std::string> name = pkg["name"];
         if (!name.has_value() || name.value().empty()) {
-            throw std::runtime_error(
-                "manifest entry #" + std::to_string(entryIndex) + " is missing 'name'"
-            );
+            throw std::runtime_error("manifest entry #" + std::to_string(entryIndex) + " is missing 'name'");
         }
 
         ManifestEntry entry;
         entry.system = system.value();
-        entry.name   = name.value();
+        entry.name = name.value();
 
         const sol::optional<std::string> version = pkg["version"];
         if (version.has_value() && !version.value().empty()) {

@@ -11,7 +11,7 @@ bool request_has_flag(const Request& request, const std::string& name) {
     return std::find(request.flags.begin(), request.flags.end(), name) != request.flags.end();
 }
 
-}  // namespace
+} // namespace
 
 SbomExporter::SbomExporter(PluginMetadataProvider* metadataProvider, const ReqPackConfig& config)
     : config(config), metadataProvider(metadataProvider) {}
@@ -41,17 +41,13 @@ std::string SbomExporter::resolveOutputPath(const Request& request) const {
 
 std::string SbomExporter::renderGraph(const Graph& graph, const Request& request) const {
     switch (resolveFormat(request)) {
-        case SbomOutputFormat::JSON:
-            return renderJson(graph, false);
-        case SbomOutputFormat::CYCLONEDX_JSON:
-            return renderJson(graph, true);
-        case SbomOutputFormat::TABLE:
-        default:
-            return renderTable(
-                graph,
-                request.outputPath.empty() && sbom_exporter_internal::table_colors_enabled(),
-                request_has_flag(request, "no-wrap"),
-                request_has_flag(request, "wide")
-            );
+    case SbomOutputFormat::JSON:
+        return renderJson(graph, false);
+    case SbomOutputFormat::CYCLONEDX_JSON:
+        return renderJson(graph, true);
+    case SbomOutputFormat::TABLE:
+    default:
+        return renderTable(graph, request.outputPath.empty() && sbom_exporter_internal::table_colors_enabled(),
+                           request_has_flag(request, "no-wrap"), request_has_flag(request, "wide"));
     }
 }

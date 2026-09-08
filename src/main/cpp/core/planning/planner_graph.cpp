@@ -23,7 +23,7 @@ Graph::vertex_descriptor find_or_add_package_vertex(Graph& graph, const Package&
     return boost::add_vertex(package, graph);
 }
 
-}  // namespace planner_internal
+} // namespace planner_internal
 
 Graph* Planner::buildDag(const std::vector<Request>& requests) const {
     Graph* graph = new Graph();
@@ -58,7 +58,8 @@ Graph* Planner::buildDependencyDag(const std::vector<Package>& dependencies) con
     return graph;
 }
 
-void Planner::addRequestToGraph(Graph& graph, const Request& request, bool includeDependencies, bool directRequest) const {
+void Planner::addRequestToGraph(Graph& graph, const Request& request, bool includeDependencies,
+                                bool directRequest) const {
     if (request.packages.empty()) {
         if (request.usesLocalTarget) {
             Package package = this->makeLocalRequestedPackage(request);
@@ -86,8 +87,10 @@ void Planner::addRequestToGraph(Graph& graph, const Request& request, bool inclu
 
 void Planner::addPackageToGraph(Graph& graph, const Package& package) const {
     std::function<Graph::vertex_descriptor(const Package&, std::vector<std::string>&)> addPackageWithDependencies;
-    addPackageWithDependencies = [&](const Package& currentPackage, std::vector<std::string>& activeSystems) -> Graph::vertex_descriptor {
-        const Graph::vertex_descriptor packageVertex = planner_internal::find_or_add_package_vertex(graph, currentPackage);
+    addPackageWithDependencies = [&](const Package& currentPackage,
+                                     std::vector<std::string>& activeSystems) -> Graph::vertex_descriptor {
+        const Graph::vertex_descriptor packageVertex =
+            planner_internal::find_or_add_package_vertex(graph, currentPackage);
 
         if (std::find(activeSystems.begin(), activeSystems.end(), currentPackage.system) != activeSystems.end()) {
             return packageVertex;
@@ -110,9 +113,7 @@ void Planner::addPackageToGraph(Graph& graph, const Package& package) const {
             std::vector<Package> normalizedDependencies;
             for (Package dependency : plugin_bundle_dependency_packages(layout.value())) {
                 Package normalizedDependency = planner_internal::resolve_dependency_system(
-                    planner_normalize_dependency(std::move(dependency), currentPackage.system),
-                    this->registry
-                );
+                    planner_normalize_dependency(std::move(dependency), currentPackage.system), this->registry);
                 if (currentPackage.action == ActionType::ENSURE) {
                     normalizedDependency.action = ActionType::ENSURE;
                     planner_internal::propagate_internal_ensure_order_flag(currentPackage, normalizedDependency);
@@ -122,7 +123,8 @@ void Planner::addPackageToGraph(Graph& graph, const Package& package) const {
             }
 
             for (const Package& missingDependency : this->filterMissingDependencies(normalizedDependencies)) {
-                const Graph::vertex_descriptor dependencyVertex = addPackageWithDependencies(missingDependency, activeSystems);
+                const Graph::vertex_descriptor dependencyVertex =
+                    addPackageWithDependencies(missingDependency, activeSystems);
                 if (dependencyVertex != packageVertex && !boost::edge(dependencyVertex, packageVertex, graph).second) {
                     boost::add_edge(dependencyVertex, packageVertex, graph);
                 }

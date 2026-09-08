@@ -35,33 +35,42 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size());
     for (char ch : value) {
         switch (ch) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default: escaped.push_back(ch); break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(ch);
+            break;
         }
     }
     return escaped;
 }
 
-}  // namespace
+} // namespace
 
-bool RqpPlugin::persistInstalledState(
-    const RqPackageLayout& layout,
-    const std::string& sourceType,
-    const std::string& sourceValue,
-    const std::string& repository,
-    const std::string& requestName
-) const {
+bool RqpPlugin::persistInstalledState(const RqPackageLayout& layout, const std::string& sourceType,
+                                      const std::string& sourceValue, const std::string& repository,
+                                      const std::string& requestName) const {
     std::filesystem::create_directories(layout.stateDir / "scripts");
     std::ofstream metadataFile(layout.stateDir / "metadata.json", std::ios::binary | std::ios::trunc);
     if (!metadataFile.is_open()) {
         return false;
     }
     metadataFile << rq_metadata_json(layout.metadata);
-    std::filesystem::copy_file(layout.controlDir / "reqpack.lua", layout.stateDir / "reqpack.lua", std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(layout.controlDir / "reqpack.lua", layout.stateDir / "reqpack.lua",
+                               std::filesystem::copy_options::overwrite_existing);
 
     const std::filesystem::path scriptsDir = layout.controlDir / "scripts";
     if (std::filesystem::exists(scriptsDir)) {
@@ -69,7 +78,8 @@ bool RqpPlugin::persistInstalledState(
             if (!entry.is_regular_file()) {
                 continue;
             }
-            std::filesystem::copy_file(entry.path(), layout.stateDir / "scripts" / entry.path().filename(), std::filesystem::copy_options::overwrite_existing);
+            std::filesystem::copy_file(entry.path(), layout.stateDir / "scripts" / entry.path().filename(),
+                                       std::filesystem::copy_options::overwrite_existing);
         }
     }
 
@@ -135,7 +145,8 @@ std::string RqpPlugin::manifestJson(const std::vector<ManifestEntry>& manifest) 
     stream << "[\n";
     for (std::size_t index = 0; index < manifest.size(); ++index) {
         const ManifestEntry& entry = manifest[index];
-        stream << "  {\"type\": \"" << json_escape(entry.type) << "\", \"path\": \"" << json_escape(entry.path) << "\"}";
+        stream << "  {\"type\": \"" << json_escape(entry.type) << "\", \"path\": \"" << json_escape(entry.path)
+               << "\"}";
         if (index + 1 < manifest.size()) {
             stream << ',';
         }

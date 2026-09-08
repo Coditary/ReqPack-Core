@@ -1,8 +1,8 @@
 #pragma once
 
+#include "core/common/types.h"
 #include "core/config/configuration.h"
 #include "core/history/history_manager.h"
-#include "core/common/types.h"
 #include "output/command_output.h"
 
 #include <string>
@@ -16,11 +16,11 @@ class SnapshotExporter {
     std::string resolveOutputPath(const Request& request) const;
     std::string render(const std::vector<InstalledEntry>& entries) const;
 
-public:
+  public:
     explicit SnapshotExporter(const ReqPackConfig& config = default_reqpack_config());
 
     // Read history, render reqpack.lua, write to file or stdout.
     // Returns true on success.
     bool exportSnapshot(const Request& request) const;
-	CommandOutput buildSnapshotOutput(const Request& request) const;
+    CommandOutput buildSnapshotOutput(const Request& request) const;
 };

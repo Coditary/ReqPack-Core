@@ -12,10 +12,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -28,7 +28,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -39,7 +39,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("load_remote_profiles parses host port protocol and credentials", "[unit][remote_profiles]") {
     TempDir tempDir{"reqpack-remote-profiles"};
@@ -97,17 +97,15 @@ TEST_CASE("load_remote_profiles parses ipv6 endpoints and url aliases", "[unit][
     const std::vector<RemoteProfile> profiles = load_remote_profiles(remotePath);
     REQUIRE(profiles.size() == 2);
 
-    const auto ipv6 = std::find_if(profiles.begin(), profiles.end(), [](const RemoteProfile& profile) {
-        return profile.name == "ipv6";
-    });
+    const auto ipv6 = std::find_if(profiles.begin(), profiles.end(),
+                                   [](const RemoteProfile& profile) { return profile.name == "ipv6"; });
     REQUIRE(ipv6 != profiles.end());
     CHECK(ipv6->host == "2001:db8::1");
     CHECK(ipv6->port == 4545);
     CHECK(ipv6->protocol == RemoteProfileProtocol::TEXT);
 
-    const auto loopback = std::find_if(profiles.begin(), profiles.end(), [](const RemoteProfile& profile) {
-        return profile.name == "loopback";
-    });
+    const auto loopback = std::find_if(profiles.begin(), profiles.end(),
+                                       [](const RemoteProfile& profile) { return profile.name == "loopback"; });
     REQUIRE(loopback != profiles.end());
     CHECK(loopback->host == "127.0.0.1");
     CHECK(loopback->port == 4545);

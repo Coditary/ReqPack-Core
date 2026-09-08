@@ -2,55 +2,50 @@
 
 namespace {
 
-std::optional<SessionIdentity> resolve_remote_user_by_token(
-    const RemoteStateSnapshot& snapshot,
-    const std::string& token
-) {
+std::optional<SessionIdentity> resolve_remote_user_by_token(const RemoteStateSnapshot& snapshot,
+                                                            const std::string& token) {
     for (const RemoteUser& user : snapshot.users) {
         if (user.token.has_value() && user.token.value() == token) {
-            return SessionIdentity{.authenticated = true, .userId = user.id, .isAdmin = user.isAdmin, .authType = "token"};
+            return SessionIdentity{
+                .authenticated = true, .userId = user.id, .isAdmin = user.isAdmin, .authType = "token"};
         }
     }
     return std::nullopt;
 }
 
-std::optional<SessionIdentity> resolve_remote_user_by_basic(
-    const RemoteStateSnapshot& snapshot,
-    const std::string& username,
-    const std::string& password
-) {
+std::optional<SessionIdentity> resolve_remote_user_by_basic(const RemoteStateSnapshot& snapshot,
+                                                            const std::string& username, const std::string& password) {
     for (const RemoteUser& user : snapshot.users) {
         const std::string loginName = user.username.value_or(user.id);
         if (user.password.has_value() && loginName == username && user.password.value() == password) {
-            return SessionIdentity{.authenticated = true, .userId = user.id, .isAdmin = user.isAdmin, .authType = "basic"};
+            return SessionIdentity{
+                .authenticated = true, .userId = user.id, .isAdmin = user.isAdmin, .authType = "basic"};
         }
     }
     return std::nullopt;
 }
 
-std::optional<SessionIdentity> resolve_fallback_identity_by_token(
-    const RemoteStateSnapshot& snapshot,
-    const std::string& token
-) {
+std::optional<SessionIdentity> resolve_fallback_identity_by_token(const RemoteStateSnapshot& snapshot,
+                                                                  const std::string& token) {
     if (snapshot.options.token.has_value() && snapshot.options.token.value() == token) {
-        return SessionIdentity{.authenticated = true, .userId = "remote", .isAdmin = false, .authType = "fallback-token"};
+        return SessionIdentity{
+            .authenticated = true, .userId = "remote", .isAdmin = false, .authType = "fallback-token"};
     }
     return std::nullopt;
 }
 
-std::optional<SessionIdentity> resolve_fallback_identity_by_basic(
-    const RemoteStateSnapshot& snapshot,
-    const std::string& username,
-    const std::string& password
-) {
+std::optional<SessionIdentity> resolve_fallback_identity_by_basic(const RemoteStateSnapshot& snapshot,
+                                                                  const std::string& username,
+                                                                  const std::string& password) {
     if (snapshot.options.username.has_value() && snapshot.options.password.has_value() &&
         snapshot.options.username.value() == username && snapshot.options.password.value() == password) {
-        return SessionIdentity{.authenticated = true, .userId = username, .isAdmin = false, .authType = "fallback-basic"};
+        return SessionIdentity{
+            .authenticated = true, .userId = username, .isAdmin = false, .authType = "fallback-basic"};
     }
     return std::nullopt;
 }
 
-}  // namespace
+} // namespace
 
 bool has_user_registry(const RemoteStateSnapshot& snapshot) {
     return !snapshot.users.empty();
@@ -58,16 +53,11 @@ bool has_user_registry(const RemoteStateSnapshot& snapshot) {
 
 bool auth_required(const RemoteStateSnapshot& snapshot) {
     return has_user_registry(snapshot) || snapshot.options.token.has_value() ||
-        (snapshot.options.username.has_value() && snapshot.options.password.has_value());
+           (snapshot.options.username.has_value() && snapshot.options.password.has_value());
 }
 
-bool authenticate_text_command(
-    RemoteServerState& state,
-    int sessionId,
-    const std::string& line,
-    SessionIdentity& identity,
-    RemoteResponse& response
-) {
+bool authenticate_text_command(RemoteServerState& state, int sessionId, const std::string& line,
+                               SessionIdentity& identity, RemoteResponse& response) {
     if (identity.authenticated) {
         return true;
     }
@@ -93,7 +83,8 @@ bool authenticate_text_command(
             response = RemoteResponse{.ok = true, .output = command_output_message(DisplayMode::REMOTE, {})};
             return false;
         }
-        response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
+        response = RemoteResponse{
+            .ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
         return false;
     }
 
@@ -110,21 +101,18 @@ bool authenticate_text_command(
             response = RemoteResponse{.ok = true, .output = command_output_message(DisplayMode::REMOTE, {})};
             return false;
         }
-        response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
+        response = RemoteResponse{
+            .ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
         return false;
     }
 
-    response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication required", false)};
+    response = RemoteResponse{.ok = false,
+                              .output = command_output_message(DisplayMode::REMOTE, "authentication required", false)};
     return false;
 }
 
-bool authenticate_json_command(
-    RemoteServerState& state,
-    int sessionId,
-    const JsonCommand& command,
-    SessionIdentity& identity,
-    RemoteResponse& response
-) {
+bool authenticate_json_command(RemoteServerState& state, int sessionId, const JsonCommand& command,
+                               SessionIdentity& identity, RemoteResponse& response) {
     if (identity.authenticated) {
         return true;
     }
@@ -148,7 +136,8 @@ bool authenticate_json_command(
             update_session_identity(state, sessionId, identity);
             return true;
         }
-        response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
+        response = RemoteResponse{
+            .ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
         return false;
     }
 
@@ -164,10 +153,12 @@ bool authenticate_json_command(
             update_session_identity(state, sessionId, identity);
             return true;
         }
-        response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
+        response = RemoteResponse{
+            .ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication failed", false)};
         return false;
     }
 
-    response = RemoteResponse{.ok = false, .output = command_output_message(DisplayMode::REMOTE, "authentication required", false)};
+    response = RemoteResponse{.ok = false,
+                              .output = command_output_message(DisplayMode::REMOTE, "authentication required", false)};
     return false;
 }

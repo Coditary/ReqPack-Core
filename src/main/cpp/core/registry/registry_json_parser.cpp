@@ -36,9 +36,8 @@ ptree parse_json_tree(const std::string& json, const std::filesystem::path& path
 }
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -147,12 +146,8 @@ RegistryRecord build_main_record(const ptree& tree, const std::filesystem::path&
     return record;
 }
 
-std::vector<RegistryRecord> build_alias_records(
-    const ptree& tree,
-    const RegistryRecord& mainRecord,
-    const std::filesystem::path& path,
-    const std::string& originPath
-) {
+std::vector<RegistryRecord> build_alias_records(const ptree& tree, const RegistryRecord& mainRecord,
+                                                const std::filesystem::path& path, const std::string& originPath) {
     std::vector<RegistryRecord> aliases;
     const auto aliasNodes = tree.get_child_optional("aliases");
     if (!aliasNodes.has_value()) {
@@ -183,7 +178,7 @@ std::vector<RegistryRecord> build_alias_records(
     return aliases;
 }
 
-}  // namespace
+} // namespace
 
 RegistryJsonParseResult parse_registry_json_file(const std::filesystem::path& path) {
     if (path.extension() != ".json") {

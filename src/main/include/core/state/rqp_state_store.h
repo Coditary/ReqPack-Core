@@ -22,20 +22,17 @@ struct RqpInstalledPackage {
 };
 
 class RqpStateStore {
-public:
+  public:
     explicit RqpStateStore(const ReqPackConfig& config = default_reqpack_config());
 
     std::vector<RqpInstalledPackage> listInstalled() const;
     std::vector<RqpInstalledPackage> findInstalled(const std::string& name, const std::string& version = {}) const;
-    std::vector<RqpInstalledPackage> findInstalledAmong(
-        const std::vector<RqpInstalledPackage>& installed,
-        const std::string& name,
-        const std::string& version = {}
-    ) const;
+    std::vector<RqpInstalledPackage> findInstalledAmong(const std::vector<RqpInstalledPackage>& installed,
+                                                        const std::string& name, const std::string& version = {}) const;
     std::optional<RqpInstalledPackage> loadInstalled(const std::filesystem::path& stateDir) const;
     bool removeInstalledState(const RqpInstalledPackage& installed) const;
 
-private:
+  private:
     ReqPackConfig config_{};
     static RqStateSource parseSourceJson(const std::string& content);
     static std::string readTextFile(const std::filesystem::path& path);

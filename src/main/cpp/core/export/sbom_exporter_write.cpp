@@ -11,28 +11,17 @@
 
 namespace {
 
-DiagnosticMessage sbom_output_diagnostic(const std::string& summary, const std::string& cause, const std::string& recommendation) {
-    return make_error_diagnostic(
-        "sbom",
-        summary,
-        cause,
-        recommendation,
-        {},
-        "sbom",
-        "output"
-    );
+DiagnosticMessage sbom_output_diagnostic(const std::string& summary, const std::string& cause,
+                                         const std::string& recommendation) {
+    return make_error_diagnostic("sbom", summary, cause, recommendation, {}, "sbom", "output");
 }
 
 bool request_has_flag(const Request& request, const std::string& name) {
     return std::find(request.flags.begin(), request.flags.end(), name) != request.flags.end();
 }
 
-bool write_output_file(
-    const std::string& rendered,
-    const Request& request,
-    const std::string& outputPath,
-    const bool interactive
-) {
+bool write_output_file(const std::string& rendered, const Request& request, const std::string& outputPath,
+                       const bool interactive) {
     std::filesystem::path filePath(outputPath);
     if (filePath.is_relative()) {
         filePath = std::filesystem::current_path() / filePath;
@@ -62,11 +51,10 @@ bool write_output_file(
     if (!parentPath.empty()) {
         std::filesystem::create_directories(parentPath, error);
         if (error) {
-            Logger::instance().diagnostic(sbom_output_diagnostic(
-                "failed to create sbom output directory: " + resolvedOutputPath,
-                "ReqPack could not create parent directory for SBOM export output.",
-                "Check target path permissions and parent directory state, then retry."
-            ));
+            Logger::instance().diagnostic(
+                sbom_output_diagnostic("failed to create sbom output directory: " + resolvedOutputPath,
+                                       "ReqPack could not create parent directory for SBOM export output.",
+                                       "Check target path permissions and parent directory state, then retry."));
             Logger::instance().flushSync();
             return false;
         }
@@ -74,22 +62,20 @@ bool write_output_file(
 
     std::ofstream output(resolvedOutputPath, std::ios::binary | std::ios::trunc);
     if (!output.is_open()) {
-        Logger::instance().diagnostic(sbom_output_diagnostic(
-            "failed to open sbom output path: " + resolvedOutputPath,
-            "ReqPack could not open requested SBOM output file for writing.",
-            "Check whether path points to writable file location and retry."
-        ));
+        Logger::instance().diagnostic(
+            sbom_output_diagnostic("failed to open sbom output path: " + resolvedOutputPath,
+                                   "ReqPack could not open requested SBOM output file for writing.",
+                                   "Check whether path points to writable file location and retry."));
         Logger::instance().flushSync();
         return false;
     }
 
     output << rendered;
     if (!output.good()) {
-        Logger::instance().diagnostic(sbom_output_diagnostic(
-            "failed to write sbom output path: " + resolvedOutputPath,
-            "ReqPack could not finish writing SBOM export to output file.",
-            "Check disk space, filesystem health, and write permissions, then retry."
-        ));
+        Logger::instance().diagnostic(
+            sbom_output_diagnostic("failed to write sbom output path: " + resolvedOutputPath,
+                                   "ReqPack could not finish writing SBOM export to output file.",
+                                   "Check disk space, filesystem health, and write permissions, then retry."));
         Logger::instance().flushSync();
         return false;
     }
@@ -99,7 +85,7 @@ bool write_output_file(
     return true;
 }
 
-}  // namespace
+} // namespace
 
 bool SbomExporter::exportGraph(const Graph& graph, const Request& request) const {
     const std::string rendered = renderGraph(graph, request);

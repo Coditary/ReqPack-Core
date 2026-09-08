@@ -10,7 +10,7 @@ bool ffi_table_present(sol::state& lua) {
     return existing.valid() && existing.get_type() == sol::type::table;
 }
 
-}  // namespace
+} // namespace
 
 void ensure_ffi_available(sol::state& lua) {
     // LuaJIT ships its own ffi module; never shadow it with the vendored one.

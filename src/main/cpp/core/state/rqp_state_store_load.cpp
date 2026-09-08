@@ -34,7 +34,7 @@ std::string required_string(const ptree& tree, const std::string& key) {
     return value.value();
 }
 
-}  // namespace
+} // namespace
 
 std::optional<RqpInstalledPackage> RqpStateStore::loadInstalled(const std::filesystem::path& stateDir) const {
     const std::filesystem::path metadataPath = stateDir / "metadata.json";

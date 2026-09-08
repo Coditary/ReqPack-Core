@@ -47,7 +47,8 @@ std::vector<Package> LuaBridge::getMissingPackages(const std::vector<Package>& p
     auto result = func(packages);
     if (result.valid()) {
         if (result.return_count() == 0) {
-            log_lua_error(m_logger, m_pluginId, "[Lua API Error] getMissingPackages(packages) must return a package list.");
+            log_lua_error(m_logger, m_pluginId,
+                          "[Lua API Error] getMissingPackages(packages) must return a package list.");
             return packages;
         }
 
@@ -152,9 +153,7 @@ bool LuaBridge::update(const PluginCallContext& context, const std::vector<Packa
     return result.return_count() == 0 ? true : result.get<bool>();
 }
 
-bool LuaBridge::pack(const PluginCallContext& context,
-                     const std::string& projectPath,
-                     const std::string& outputPath,
+bool LuaBridge::pack(const PluginCallContext& context, const std::string& projectPath, const std::string& outputPath,
                      const std::vector<std::string>& flags) {
     m_hostRuntime.clearRecentEvents();
     m_hostRuntime.clearRecentArtifacts();
@@ -165,7 +164,8 @@ bool LuaBridge::pack(const PluginCallContext& context,
     }
 
     m_hostRuntime.beginPackRuntime(projectPath, outputPath);
-    const bool silentRuntime = m_hostRuntime.hasSilentRuntimeFlag(context.flags) || m_hostRuntime.hasSilentRuntimeFlag(flags);
+    const bool silentRuntime =
+        m_hostRuntime.hasSilentRuntimeFlag(context.flags) || m_hostRuntime.hasSilentRuntimeFlag(flags);
     m_hostRuntime.setSilentRuntimeOutput(silentRuntime);
     auto result = func(context, projectPath, outputPath, flags);
     m_hostRuntime.endPackRuntime();
@@ -288,11 +288,13 @@ std::optional<Package> LuaBridge::resolvePackage(const PluginCallContext& contex
         return resolved.value();
     }
 
-    log_lua_error(m_logger, m_pluginId, "[Lua API Error] resolvePackage(context, package) must return a package or nil.");
+    log_lua_error(m_logger, m_pluginId,
+                  "[Lua API Error] resolvePackage(context, package) must return a package or nil.");
     return std::nullopt;
 }
 
-std::optional<ProxyResolution> LuaBridge::resolveProxyRequest(const PluginCallContext& context, const Request& request) {
+std::optional<ProxyResolution> LuaBridge::resolveProxyRequest(const PluginCallContext& context,
+                                                              const Request& request) {
     sol::protected_function func = m_runtime.pluginFunction("resolveProxyRequest");
     if (!func.valid()) {
         return std::nullopt;
@@ -319,7 +321,8 @@ std::optional<ProxyResolution> LuaBridge::resolveProxyRequest(const PluginCallCo
         return resolved.value();
     }
 
-    log_lua_error(m_logger, m_pluginId, "[Lua API Error] resolveProxyRequest(context, request) must return a proxy resolution table or nil.");
+    log_lua_error(m_logger, m_pluginId,
+                  "[Lua API Error] resolveProxyRequest(context, request) must return a proxy resolution table or nil.");
     return std::nullopt;
 }
 
@@ -379,7 +382,8 @@ std::string LuaBridge::createTempDirectory(const std::string& pluginId) {
     return m_hostRuntime.createTempDirectory(pluginId);
 }
 
-DownloadResult LuaBridge::download(const std::string& pluginId, const std::string& url, const std::string& destinationPath) {
+DownloadResult LuaBridge::download(const std::string& pluginId, const std::string& url,
+                                   const std::string& destinationPath) {
     return m_hostRuntime.download(pluginId, url, destinationPath);
 }
 

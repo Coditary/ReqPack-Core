@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <openssl/sha.h>
 #include <sstream>
-#include <sstream>
 #include <string_view>
 
 namespace {
@@ -132,21 +131,19 @@ bool registry_record_requires_script_hash(const RegistryRecord& record) {
 
 std::pair<std::string, std::string> registry_record_payload_files(const RegistryRecord& record) {
     if (record.bundleSource && !record.bundlePath.empty() && std::filesystem::exists(record.bundlePath)) {
-        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(record.bundlePath, record.name); layout.has_value()) {
+        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_find_root(record.bundlePath, record.name);
+            layout.has_value()) {
             return {read_text_file(layout->runScriptPath), std::string{}};
         }
 
         const std::filesystem::path bundlePath(record.bundlePath);
-        return {
-            read_text_file(bundlePath / (record.name + ".lua")),
-            read_text_file(bundlePath / "bootstrap.lua")
-        };
+        return {read_text_file(bundlePath / (record.name + ".lua")), read_text_file(bundlePath / "bootstrap.lua")};
     }
 
     return {record.script, record.bootstrapScript};
 }
 
-}  // namespace
+} // namespace
 
 bool registry_record_is_package_entry(const RegistryRecord& record) {
     return registry_database_to_lower_copy(record.role) == "package";
@@ -168,9 +165,8 @@ bool registry_record_can_materialize_plugin(const RegistryRecord& record) {
 
 std::string registry_database_to_lower_copy(const std::string& value) {
     std::string normalized = value;
-    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return normalized;
 }
 
@@ -180,17 +176,14 @@ std::string registry_database_strip_query_fragment(const std::string& value) {
 }
 
 bool registry_database_has_non_whitespace(const std::string& value) {
-    return std::any_of(value.begin(), value.end(), [](unsigned char c) {
-        return !std::isspace(c);
-    });
+    return std::any_of(value.begin(), value.end(), [](unsigned char c) { return !std::isspace(c); });
 }
 
 bool registry_database_looks_like_html_document(const std::string& value) {
-    const std::string prefix = registry_database_to_lower_copy(value.substr(0, std::min<std::size_t>(value.size(), 512)));
-    return prefix.find("<!doctype html") != std::string::npos ||
-           prefix.find("<html") != std::string::npos ||
-           prefix.find("<head") != std::string::npos ||
-           prefix.find("<body") != std::string::npos;
+    const std::string prefix =
+        registry_database_to_lower_copy(value.substr(0, std::min<std::size_t>(value.size(), 512)));
+    return prefix.find("<!doctype html") != std::string::npos || prefix.find("<html") != std::string::npos ||
+           prefix.find("<head") != std::string::npos || prefix.find("<body") != std::string::npos;
 }
 
 bool registry_database_is_valid_plugin_script(const std::string& script) {
@@ -198,9 +191,8 @@ bool registry_database_is_valid_plugin_script(const std::string& script) {
 }
 
 bool registry_database_is_valid_sha256(const std::string& value) {
-    return value.size() == 64 && std::all_of(value.begin(), value.end(), [](unsigned char ch) {
-        return std::isxdigit(ch) != 0;
-    });
+    return value.size() == 64 &&
+           std::all_of(value.begin(), value.end(), [](unsigned char ch) { return std::isxdigit(ch) != 0; });
 }
 
 std::string registry_database_sha256_hex(const std::string& value) {
@@ -254,9 +246,8 @@ std::string registry_database_serialize_network_scopes(const std::vector<Registr
         if (index > 0) {
             stream << '\n';
         }
-        stream << escape_scope_component(values[index].host) << '|'
-               << escape_scope_component(values[index].scheme) << '|'
-               << escape_scope_component(values[index].pathPrefix);
+        stream << escape_scope_component(values[index].host) << '|' << escape_scope_component(values[index].scheme)
+               << '|' << escape_scope_component(values[index].pathPrefix);
     }
     return stream.str();
 }
@@ -287,11 +278,8 @@ std::vector<RegistryNetworkScope> registry_database_deserialize_network_scopes(c
 
 bool registry_database_is_git_source(const std::string& source) {
     const std::string normalized = registry_database_to_lower_copy(registry_database_strip_query_fragment(source));
-    return starts_with(normalized, "git+") ||
-           starts_with(normalized, "git@") ||
-           starts_with(normalized, "git://") ||
-           starts_with(normalized, "ssh://") ||
-           normalized.ends_with(".git") ||
+    return starts_with(normalized, "git+") || starts_with(normalized, "git@") || starts_with(normalized, "git://") ||
+           starts_with(normalized, "ssh://") || normalized.ends_with(".git") ||
            is_github_repository_https_url(normalized);
 }
 
@@ -352,11 +340,9 @@ std::string registry_database_git_source_with_ref(const std::string& source, con
     return (gitPrefixed ? "git+" : std::string{}) + base + "?ref=" + ref;
 }
 
-std::filesystem::path registry_database_git_repository_cache_path(
-    const ReqPackConfig& config,
-    const std::string& source,
-    const std::string& pluginName
-) {
+std::filesystem::path registry_database_git_repository_cache_path(const ReqPackConfig& config,
+                                                                  const std::string& source,
+                                                                  const std::string& pluginName) {
     std::ostringstream stream;
     stream << std::hex << fnv1a_hash(source);
     return default_reqpack_repo_cache_path() / (pluginName + "-" + stream.str());
@@ -486,8 +472,10 @@ std::string registry_database_serialize_record(const RegistryRecord& record) {
     stream << "targetSystem=" << registry_database_escape_field(record.targetSystem) << '\n';
     stream << "capabilities=" << registry_database_escape_field(join_lines(record.capabilities)) << '\n';
     stream << "ecosystemScopes=" << registry_database_escape_field(join_lines(record.ecosystemScopes)) << '\n';
-    stream << "writeScopes=" << registry_database_escape_field(registry_database_serialize_write_scopes(record.writeScopes)) << '\n';
-    stream << "networkScopes=" << registry_database_escape_field(registry_database_serialize_network_scopes(record.networkScopes)) << '\n';
+    stream << "writeScopes="
+           << registry_database_escape_field(registry_database_serialize_write_scopes(record.writeScopes)) << '\n';
+    stream << "networkScopes="
+           << registry_database_escape_field(registry_database_serialize_network_scopes(record.networkScopes)) << '\n';
     stream << "privilegeLevel=" << registry_database_escape_field(record.privilegeLevel) << '\n';
     stream << "scriptSha256=" << registry_database_escape_field(record.scriptSha256) << '\n';
     stream << "bootstrapSha256=" << registry_database_escape_field(record.bootstrapSha256) << '\n';
@@ -499,7 +487,8 @@ std::string registry_database_serialize_record(const RegistryRecord& record) {
     return stream.str();
 }
 
-std::optional<RegistryRecord> registry_database_deserialize_record(const std::string& name, const std::string& payload) {
+std::optional<RegistryRecord> registry_database_deserialize_record(const std::string& name,
+                                                                   const std::string& payload) {
     const std::size_t separator = payload.find(META_SEPARATOR);
     if (separator == std::string::npos) {
         return std::nullopt;
@@ -569,7 +558,8 @@ std::optional<RegistryRecord> registry_database_deserialize_record(const std::st
     if (record.source.empty() && !record.alias) {
         return std::nullopt;
     }
-    if (registry_record_can_materialize_plugin(record) && !record.script.empty() && !registry_database_is_valid_plugin_script(record.script)) {
+    if (registry_record_can_materialize_plugin(record) && !record.script.empty() &&
+        !registry_database_is_valid_plugin_script(record.script)) {
         return std::nullopt;
     }
 

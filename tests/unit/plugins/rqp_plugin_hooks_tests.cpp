@@ -14,10 +14,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -30,7 +30,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -41,7 +41,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("rqp plugin runtime host exposes singleton and artifact helpers", "[unit][rqp_plugin_hooks]") {
     IPluginRuntimeHost* host = rqp_plugin_runtime_host();
@@ -81,7 +81,8 @@ TEST_CASE("rqp_plugin_unique_nested_file_with_extension finds single nested matc
     CHECK(match.value() == nested);
 }
 
-TEST_CASE("rqp_plugin_unique_nested_file_with_extension returns nullopt when no match exists", "[unit][rqp_plugin_hooks]") {
+TEST_CASE("rqp_plugin_unique_nested_file_with_extension returns nullopt when no match exists",
+          "[unit][rqp_plugin_hooks]") {
     TempDir tempDir{"reqpack-rqp-nested-missing"};
     write_file(tempDir.path() / "readme.txt", "no package here");
 
@@ -95,8 +96,5 @@ TEST_CASE("rqp_plugin_unique_nested_file_with_extension throws on multiple match
     write_file(tempDir.path() / "alpha.rqp", "one");
     write_file(tempDir.path() / "nested" / "beta.rqp", "two");
 
-    CHECK_THROWS_AS(
-        rqp_plugin_unique_nested_file_with_extension(tempDir.path(), ".rqp"),
-        std::runtime_error
-    );
+    CHECK_THROWS_AS(rqp_plugin_unique_nested_file_with_extension(tempDir.path(), ".rqp"), std::runtime_error);
 }

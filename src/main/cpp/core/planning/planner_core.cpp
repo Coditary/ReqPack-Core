@@ -4,13 +4,14 @@
 #include <filesystem>
 
 bool planner_same_package(const Package& left, const Package& right) {
-    return left.action == right.action && left.system == right.system && left.name == right.name && left.version == right.version && left.localTarget == right.localTarget && left.sourcePath == right.sourcePath;
+    return left.action == right.action && left.system == right.system && left.name == right.name &&
+           left.version == right.version && left.localTarget == right.localTarget &&
+           left.sourcePath == right.sourcePath;
 }
 
 bool planner_contains_only_action(const std::vector<Request>& requests, ActionType action) {
-    return !requests.empty() && std::all_of(requests.begin(), requests.end(), [action](const Request& request) {
-        return request.action == action;
-    });
+    return !requests.empty() && std::all_of(requests.begin(), requests.end(),
+                                            [action](const Request& request) { return request.action == action; });
 }
 
 std::string planner_package_specifier_from_package(const Package& package) {
@@ -36,10 +37,8 @@ Package planner_normalize_dependency(Package dependency, const std::string& defa
     return dependency;
 }
 
-std::vector<Request> planner_expand_proxies(
-    const std::vector<Request>& requests,
-    const std::map<std::string, std::string>& systemAliases
-) {
+std::vector<Request> planner_expand_proxies(const std::vector<Request>& requests,
+                                            const std::map<std::string, std::string>& systemAliases) {
     std::vector<Request> expandedRequests = requests;
 
     for (Request& request : expandedRequests) {
@@ -54,11 +53,8 @@ std::vector<Request> planner_expand_proxies(
     return expandedRequests;
 }
 
-Package planner_make_requested_package(
-    const Request& request,
-    const std::string& resolvedSystem,
-    const std::string& packageSpecifier
-) {
+Package planner_make_requested_package(const Request& request, const std::string& resolvedSystem,
+                                       const std::string& packageSpecifier) {
     Package package;
     package.action = request.action;
     package.system = resolvedSystem;
@@ -66,7 +62,8 @@ Package planner_make_requested_package(
     package.directRequest = true;
 
     const std::size_t versionSeparator = packageSpecifier.rfind('@');
-    if (versionSeparator == std::string::npos || versionSeparator == 0 || versionSeparator == packageSpecifier.size() - 1) {
+    if (versionSeparator == std::string::npos || versionSeparator == 0 ||
+        versionSeparator == packageSpecifier.size() - 1) {
         package.name = packageSpecifier;
         return package;
     }
@@ -76,10 +73,7 @@ Package planner_make_requested_package(
     return package;
 }
 
-Package planner_make_local_requested_package(
-    const Request& request,
-    const std::string& resolvedSystem
-) {
+Package planner_make_local_requested_package(const Request& request, const std::string& resolvedSystem) {
     Package package;
     package.action = request.action;
     package.system = resolvedSystem;
@@ -91,10 +85,8 @@ Package planner_make_local_requested_package(
     return package;
 }
 
-Request planner_filter_request_to_missing_packages(
-    const Request& request,
-    const std::vector<Package>& missingPackages
-) {
+Request planner_filter_request_to_missing_packages(const Request& request,
+                                                   const std::vector<Package>& missingPackages) {
     Request filteredRequest = request;
     filteredRequest.packages.clear();
     filteredRequest.packages.reserve(missingPackages.size());
@@ -105,10 +97,8 @@ Request planner_filter_request_to_missing_packages(
     return filteredRequest;
 }
 
-std::optional<Request> planner_filter_install_request(
-    const Request& request,
-    const std::vector<Package>& missingPackages
-) {
+std::optional<Request> planner_filter_install_request(const Request& request,
+                                                      const std::vector<Package>& missingPackages) {
     if (missingPackages.empty()) {
         return std::nullopt;
     }

@@ -160,10 +160,8 @@ std::vector<std::string> wrap_table_text(const std::string& value, const std::si
     return lines;
 }
 
-std::array<std::size_t, TABLE_COLUMNS.size()> table_column_widths(
-    const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows,
-    const std::size_t width
-) {
+std::array<std::size_t, TABLE_COLUMNS.size()>
+table_column_widths(const std::vector<std::array<std::string, TABLE_COLUMNS.size()>>& rows, const std::size_t width) {
     std::array<std::size_t, TABLE_COLUMNS.size()> widths{};
     std::size_t usedWidth = 0;
     for (std::size_t index = 0; index < TABLE_COLUMNS.size(); ++index) {
@@ -203,11 +201,8 @@ std::array<std::size_t, TABLE_COLUMNS.size()> table_column_widths(
     return widths;
 }
 
-std::size_t table_source_width(
-    const std::array<std::size_t, TABLE_COLUMNS.size()>& widths,
-    const std::size_t terminalWidth,
-    const bool wideTable
-) {
+std::size_t table_source_width(const std::array<std::size_t, TABLE_COLUMNS.size()>& widths,
+                               const std::size_t terminalWidth, const bool wideTable) {
     std::size_t usedWidth = TABLE_COLUMNS.size() * TABLE_GAP_WIDTH;
     for (const std::size_t width : widths) {
         usedWidth += width;
@@ -228,13 +223,8 @@ std::string padded_table_cell(const std::string& value, const std::size_t width)
     return stream.str();
 }
 
-void append_table_cell(
-    std::ostringstream& stream,
-    const std::string& value,
-    const std::size_t width,
-    const std::string& colorSpec = {},
-    const bool trailingGap = true
-) {
+void append_table_cell(std::ostringstream& stream, const std::string& value, const std::size_t width,
+                       const std::string& colorSpec = {}, const bool trailingGap = true) {
     const std::string cell = padded_table_cell(value, width);
     if (colorSpec.empty()) {
         stream << cell;
@@ -246,7 +236,7 @@ void append_table_cell(
     }
 }
 
-}  // namespace
+} // namespace
 
 namespace sbom_exporter_internal {
 
@@ -260,14 +250,10 @@ bool table_colors_enabled() {
     return reqpack_stdout_is_tty();
 }
 
-}  // namespace sbom_exporter_internal
+} // namespace sbom_exporter_internal
 
-std::string SbomExporter::renderTable(
-    const Graph& graph,
-    const bool colorizeTable,
-    const bool disableWrap,
-    const bool wideTable
-) const {
+std::string SbomExporter::renderTable(const Graph& graph, const bool colorizeTable, const bool disableWrap,
+                                      const bool wideTable) const {
     std::ostringstream stream;
     const std::vector<Graph::vertex_descriptor> vertices = sbom_exporter_internal::ordered_vertices(graph);
     std::vector<std::array<std::string, TABLE_COLUMNS.size()>> rows;
@@ -300,20 +286,15 @@ std::string SbomExporter::renderTable(
     stream << std::string(std::max<std::size_t>(6, sourceWidth), '-') << '\n';
 
     for (std::size_t rowIndex = 0; rowIndex < rows.size(); ++rowIndex) {
-        const auto sourceLines = disableWrap
-            ? std::vector<std::string>{normalize_table_value(sources[rowIndex])}
-            : wrap_table_text(sources[rowIndex], sourceWidth);
+        const auto sourceLines = disableWrap ? std::vector<std::string>{normalize_table_value(sources[rowIndex])}
+                                             : wrap_table_text(sources[rowIndex], sourceWidth);
         const std::string systemColor = colorizeTable ? system_color_spec_for(rows[rowIndex][0]) : std::string{};
         const std::string sourceColor = colorizeTable ? source_color_spec_for(sources[rowIndex]) : std::string{};
         for (std::size_t lineIndex = 0; lineIndex < sourceLines.size(); ++lineIndex) {
             for (std::size_t columnIndex = 0; columnIndex < TABLE_COLUMNS.size(); ++columnIndex) {
                 const bool colorizeColumn = lineIndex == 0 && columnIndex == 0 && !systemColor.empty();
-                append_table_cell(
-                    stream,
-                    lineIndex == 0 ? rows[rowIndex][columnIndex] : "",
-                    widths[columnIndex],
-                    colorizeColumn ? systemColor : std::string{}
-                );
+                append_table_cell(stream, lineIndex == 0 ? rows[rowIndex][columnIndex] : "", widths[columnIndex],
+                                  colorizeColumn ? systemColor : std::string{});
             }
             if (lineIndex == 0 && !sourceColor.empty()) {
                 stream << ansi_wrap(sourceLines[lineIndex], sourceColor) << '\n';

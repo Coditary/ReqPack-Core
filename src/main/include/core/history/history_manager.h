@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/config/configuration.h"
 #include "core/common/types.h"
+#include "core/config/configuration.h"
 
 #include <filesystem>
 #include <mutex>
@@ -10,12 +10,12 @@
 
 // One entry in the append-only history log.
 struct HistoryEntry {
-    std::string timestamp;      // ISO-8601 UTC, e.g. "2026-04-28T12:00:00Z"
-    std::string action;         // "install" | "remove" | "update" | "ensure"
+    std::string timestamp; // ISO-8601 UTC, e.g. "2026-04-28T12:00:00Z"
+    std::string action;    // "install" | "remove" | "update" | "ensure"
     std::string packageName;
     std::string packageVersion;
-    std::string system;         // plugin/manager name, e.g. "dnf", "maven"
-    std::string status;         // "success" | "failed"
+    std::string system; // plugin/manager name, e.g. "dnf", "maven"
+    std::string status; // "success" | "failed"
     std::string errorMessage;
 };
 
@@ -24,20 +24,18 @@ struct InstalledEntry {
     std::string name;
     std::string version;
     std::string system;
-    std::string installedAt;    // ISO-8601 UTC timestamp of last install/update
-    std::string installMethod;  // "explicit" | "dependency" | "explicit+dependency" | "unknown"
+    std::string installedAt;   // ISO-8601 UTC timestamp of last install/update
+    std::string installMethod; // "explicit" | "dependency" | "explicit+dependency" | "unknown"
     std::vector<std::string> owners;
 };
 
-inline std::string installed_owner_token(
-    const std::string& prefix,
-    const std::string& system,
-    const std::string& name
-) {
+inline std::string installed_owner_token(const std::string& prefix, const std::string& system,
+                                         const std::string& name) {
     return prefix + '\n' + system + '\n' + name;
 }
 
-inline std::string installed_package_owner_id(const std::string& system, const std::string& name, const std::string& version = {}) {
+inline std::string installed_package_owner_id(const std::string& system, const std::string& name,
+                                              const std::string& version = {}) {
     (void)version;
     return installed_owner_token("pkg", system, name);
 }
@@ -50,7 +48,8 @@ inline std::string installed_package_owner_id(const InstalledEntry& entry) {
     return installed_package_owner_id(entry.system, entry.name, entry.version);
 }
 
-inline std::string installed_root_owner_id(const std::string& system, const std::string& name, const std::string& version = {}) {
+inline std::string installed_root_owner_id(const std::string& system, const std::string& name,
+                                           const std::string& version = {}) {
     (void)version;
     return installed_owner_token("root", system, name);
 }
@@ -85,7 +84,7 @@ class HistoryManager {
     // Keeps the newest entries.  No-op when both limits are 0.
     void trimHistoryLog() const;
 
-public:
+  public:
     explicit HistoryManager(const ReqPackConfig& config = default_reqpack_config());
 
     // Read the current installed-packages snapshot from installed-state storage.
@@ -101,7 +100,8 @@ public:
     bool replaceInstalledState(const std::string& system, const std::vector<InstalledEntry>& entries) const;
 
     // Attach direct/dependency ownership metadata to an already-installed package entry.
-    bool mergeInstalledOwnership(const Package& package, const std::vector<std::string>& ownerIds, bool directRequest) const;
+    bool mergeInstalledOwnership(const Package& package, const std::vector<std::string>& ownerIds,
+                                 bool directRequest) const;
 
     // Remove ownership metadata from an already-installed package entry.
     bool subtractInstalledOwnership(const Package& package, const std::vector<std::string>& ownerIds) const;

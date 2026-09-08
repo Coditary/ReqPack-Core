@@ -19,10 +19,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -35,12 +35,12 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class StdoutCapture {
-public:
+  public:
     StdoutCapture() {
         std::cout.flush();
         std::fflush(stdout);
@@ -78,7 +78,7 @@ public:
         return output;
     }
 
-private:
+  private:
     std::string readAll() {
         std::cout.flush();
         std::fflush(stdout);
@@ -130,20 +130,22 @@ std::string read_file(const std::filesystem::path& path) {
     return buffer.str();
 }
 
-std::filesystem::path write_plugin_bundle(
-    const std::filesystem::path& pluginDirectory,
-    const std::string& pluginId,
-    const std::string& runScript
-) {
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginId + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginId + " plugin\",\n"
-        "  \"description\": \"" + pluginId + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+std::filesystem::path write_plugin_bundle(const std::filesystem::path& pluginDirectory, const std::string& pluginId,
+                                          const std::string& runScript) {
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginId +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginId +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginId +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", runScript);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -438,14 +440,16 @@ function plugin.getName() return "policy-bridge" end
 function plugin.getVersion() return "1.0.0" end
 function plugin.getSecurityMetadata()
   return {
-)"} + metadataBody + R"(
+)"} + metadataBody +
+           R"(
   }
 end
 function plugin.getRequirements() return {} end
 function plugin.getCategories() return { "policy" } end
 function plugin.getMissingPackages(packages) return packages end
 function plugin.install(context, packages)
-)" + installBody + R"(
+)" + installBody +
+           R"(
 end
 function plugin.installLocal(context, path) return true end
 function plugin.remove(context, packages) return true end
@@ -457,7 +461,7 @@ function plugin.shutdown() return true end
 )";
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("lua bridge initializes plugin state and parses query values", "[integration][lua_bridge][service]") {
     TempDir tempDir{"reqpack-lua-bridge-query"};
@@ -542,14 +546,16 @@ TEST_CASE("lua bridge initializes plugin state and parses query values", "[integ
     CHECK(info.description == scriptPath.string());
 }
 
-TEST_CASE("lua bridge install exposes context namespaces and runtime host services", "[integration][lua_bridge][service]") {
+TEST_CASE("lua bridge install exposes context namespaces and runtime host services",
+          "[integration][lua_bridge][service]") {
     TempDir tempDir{"reqpack-lua-bridge-context"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "bridge";
     const std::filesystem::path scriptPath = pluginDirectory / "run.lua";
 
     write_file(pluginDirectory / "source.txt", "download-payload\n");
-    const std::string zipCommand = "zip -qj " + escape_shell_arg((pluginDirectory / "source.zip").string()) + " " + escape_shell_arg((pluginDirectory / "source.txt").string());
+    const std::string zipCommand = "zip -qj " + escape_shell_arg((pluginDirectory / "source.zip").string()) + " " +
+                                   escape_shell_arg((pluginDirectory / "source.txt").string());
     REQUIRE(std::system(zipCommand.c_str()) == 0);
     write_plugin_bundle(pluginDirectory, "bridge", CONTEXT_PLUGIN);
 
@@ -558,10 +564,8 @@ TEST_CASE("lua bridge install exposes context namespaces and runtime host servic
     REQUIRE(bridge.init());
 
     StdoutCapture capture;
-    const bool installed = bridge.install(
-        make_context(bridge, config, {"--bridge-flag"}),
-        {Package{.action = ActionType::INSTALL, .system = "bridge", .name = "demo"}}
-    );
+    const bool installed = bridge.install(make_context(bridge, config, {"--bridge-flag"}),
+                                          {Package{.action = ActionType::INSTALL, .system = "bridge", .name = "demo"}});
     Logger::instance().flushSync();
     const std::string output = capture.finish();
 
@@ -615,15 +619,14 @@ TEST_CASE("lua bridge treats zero-exit stderr output as successful exec", "[inte
     TempDir tempDir{"reqpack-lua-bridge-stderr-success"};
     ReqPackConfig config;
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "stderr-success";
-    const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "stderr-success", STDERR_SUCCESS_PLUGIN);
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(pluginDirectory, "stderr-success", STDERR_SUCCESS_PLUGIN);
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    CHECK(bridge.install(
-        make_context(bridge, config),
-        {Package{.action = ActionType::INSTALL, .system = "stderr-success", .name = "demo"}}
-    ));
+    CHECK(bridge.install(make_context(bridge, config),
+                         {Package{.action = ActionType::INSTALL, .system = "stderr-success", .name = "demo"}}));
 }
 
 TEST_CASE("lua bridge exposes ordered repositories for current plugin", "[integration][lua_bridge][service]") {
@@ -663,7 +666,8 @@ TEST_CASE("lua bridge exposes ordered repositories for current plugin", "[integr
 
     const PackageInfo info = bridge.info(make_context(bridge, config), "demo");
     CHECK(info.name == "demo");
-    CHECK(info.version == "2|corp|1|token|secret-token|fail|false|com.mycompany.*|true|central|default|com.mycompany.legacy.*|public");
+    CHECK(info.version ==
+          "2|corp|1|token|secret-token|fail|false|com.mycompany.*|true|central|default|com.mycompany.legacy.*|public");
     CHECK(info.description == "only-current-ecosystem");
 }
 
@@ -693,21 +697,24 @@ TEST_CASE("lua bridge exposes proxy config and proxy resolution hook", "[integra
     CHECK(resolution->flags.value() == std::vector<std::string>{"gradle", "maven", "gradle"});
 }
 
-TEST_CASE("lua bridge allows declared exec and write scope usage under thin-layer policy", "[integration][lua_bridge][service]") {
+TEST_CASE("lua bridge allows declared exec and write scope usage under thin-layer policy",
+          "[integration][lua_bridge][service]") {
     TempDir tempDir{"reqpack-lua-bridge-exec-policy-allow"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
 
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "policy";
-    const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "policy", make_exec_policy_plugin(
-        R"(    role = "package-manager",
+    const std::filesystem::path scriptPath = write_plugin_bundle(
+        pluginDirectory, "policy",
+        make_exec_policy_plugin(
+            R"(    role = "package-manager",
     capabilities = { "exec" },
     writeScopes = {
       { kind = "plugin-data", value = "state" },
     },
     privilegeLevel = "none",)",
-        R"(  local write = context.exec.run("mkdir -p '" .. context.plugin.dir .. "/state' && printf 'context-allowed' > '" .. context.plugin.dir .. "/state/from-context.txt'")
+            R"(  local write = context.exec.run("mkdir -p '" .. context.plugin.dir .. "/state' && printf 'context-allowed' > '" .. context.plugin.dir .. "/state/from-context.txt'")
   local global = reqpack.exec.run("printf 'global-allowed'")
   local ruled = context.exec.run("printf 'ruled-allowed\n'", {
     initial = "scan",
@@ -723,18 +730,15 @@ TEST_CASE("lua bridge allows declared exec and write scope usage under thin-laye
     },
   })
   return write.success and global.success and global.stdout == "global-allowed" and ruled.success and ruled.stdout == "ruled-allowed\n"
-)"
-    ));
+)"));
 
     Logger::instance().setLevel(spdlog::level::debug);
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
     StdoutCapture capture;
-    const bool installed = bridge.install(
-        make_context(bridge, config),
-        {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}
-    );
+    const bool installed = bridge.install(make_context(bridge, config),
+                                          {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}});
     Logger::instance().flushSync();
     const std::string output = capture.finish();
 
@@ -750,57 +754,56 @@ TEST_CASE("lua bridge blocks exec when plugin does not declare exec capability",
     config.execution.checkVirtualFileSystemWrite = true;
 
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "policy";
-    const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "policy", make_exec_policy_plugin(
-        R"(    role = "package-manager",
+    const std::filesystem::path scriptPath =
+        write_plugin_bundle(pluginDirectory, "policy",
+                            make_exec_policy_plugin(
+                                R"(    role = "package-manager",
     writeScopes = {
       { kind = "plugin-data", value = "state" },
     },
     privilegeLevel = "none",)",
-        R"(  local plain = context.exec.run("printf 'blocked-context'")
+                                R"(  local plain = context.exec.run("printf 'blocked-context'")
   local global = reqpack.exec.run("printf 'blocked-global'")
   return not plain.success and plain.exitCode == 126 and string.find(plain.stderr, "capability 'exec'", 1, true) ~= nil
     and not global.success and global.exitCode == 126 and string.find(global.stderr, "capability 'exec'", 1, true) ~= nil
-)"
-    ));
+)"));
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    CHECK(bridge.install(
-        make_context(bridge, config),
-        {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}
-    ));
+    CHECK(bridge.install(make_context(bridge, config),
+                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
 }
 
-TEST_CASE("lua bridge blocks undeclared privilege escalation under thin-layer policy", "[integration][lua_bridge][service]") {
+TEST_CASE("lua bridge blocks undeclared privilege escalation under thin-layer policy",
+          "[integration][lua_bridge][service]") {
     TempDir tempDir{"reqpack-lua-bridge-exec-policy-sudo"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
     config.execution.checkVirtualFileSystemWrite = true;
 
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "policy";
-    const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "policy", make_exec_policy_plugin(
-        R"(    role = "package-manager",
+    const std::filesystem::path scriptPath = write_plugin_bundle(pluginDirectory, "policy",
+                                                                 make_exec_policy_plugin(
+                                                                     R"(    role = "package-manager",
     capabilities = { "exec" },
     writeScopes = {
       { kind = "temp" },
     },
     privilegeLevel = "none",)",
-        R"(  local result = context.exec.run("sudo true")
+                                                                     R"(  local result = context.exec.run("sudo true")
   return not result.success and result.exitCode == 126 and string.find(result.stderr, "privilege escalation", 1, true) ~= nil
-)"
-    ));
+)"));
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    CHECK(bridge.install(
-        make_context(bridge, config),
-        {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}
-    ));
+    CHECK(bridge.install(make_context(bridge, config),
+                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
 }
 
-TEST_CASE("lua bridge blocks writes outside declared scopes under thin-layer policy", "[integration][lua_bridge][service]") {
+TEST_CASE("lua bridge blocks writes outside declared scopes under thin-layer policy",
+          "[integration][lua_bridge][service]") {
     TempDir tempDir{"reqpack-lua-bridge-exec-policy-write-scope"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
@@ -810,25 +813,24 @@ TEST_CASE("lua bridge blocks writes outside declared scopes under thin-layer pol
     const std::filesystem::path scriptPath = pluginDirectory / "run.lua";
     const std::filesystem::path blockedPath = pluginDirectory / "outside.txt";
 
-    write_plugin_bundle(pluginDirectory, "policy", make_exec_policy_plugin(
-        R"(    role = "package-manager",
+    write_plugin_bundle(
+        pluginDirectory, "policy",
+        make_exec_policy_plugin(
+            R"(    role = "package-manager",
     capabilities = { "exec" },
     writeScopes = {
       { kind = "plugin-data", value = "state" },
     },
     privilegeLevel = "none",)",
-        R"(  local result = context.exec.run("printf 'blocked-write' > '" .. context.plugin.dir .. "/outside.txt'")
+            R"(  local result = context.exec.run("printf 'blocked-write' > '" .. context.plugin.dir .. "/outside.txt'")
   return not result.success and result.exitCode == 126 and string.find(result.stderr, "writeScopes", 1, true) ~= nil
-)"
-    ));
+)"));
 
     LuaBridge bridge(scriptPath.string(), config);
     REQUIRE(bridge.init());
 
-    CHECK(bridge.install(
-        make_context(bridge, config),
-        {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}
-    ));
+    CHECK(bridge.install(make_context(bridge, config),
+                         {Package{.action = ActionType::INSTALL, .system = "policy", .name = "demo"}}));
     CHECK_FALSE(std::filesystem::exists(blockedPath));
 }
 

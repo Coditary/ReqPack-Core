@@ -74,7 +74,8 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
 
     if (exists_no_error(outputPath) && !request.force) {
         if (!request.interactive) {
-            throw std::runtime_error("output file already exists: " + outputPath.string() + "\nUse --force to overwrite.");
+            throw std::runtime_error("output file already exists: " + outputPath.string() +
+                                     "\nUse --force to overwrite.");
         }
         std::cout << outputPath.string() << " already exists. Overwrite? [y/N]\n";
         std::cout.flush();
@@ -135,4 +136,4 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
     };
 }
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal

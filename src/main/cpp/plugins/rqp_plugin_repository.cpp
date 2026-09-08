@@ -14,15 +14,12 @@
 #include <string>
 #include <vector>
 
-std::optional<std::filesystem::path> rqp_plugin_unique_nested_file_with_extension(
-    const std::filesystem::path& root,
-    const std::string& extension
-) {
+std::optional<std::filesystem::path> rqp_plugin_unique_nested_file_with_extension(const std::filesystem::path& root,
+                                                                                  const std::string& extension) {
     std::optional<std::filesystem::path> match;
     std::error_code error;
     for (auto it = std::filesystem::recursive_directory_iterator(root, error);
-         it != std::filesystem::recursive_directory_iterator();
-         it.increment(error)) {
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error || !it->is_regular_file()) {
             continue;
         }
@@ -41,12 +38,14 @@ std::vector<RqRepositoryIndex> RqpPlugin::loadRepositoryIndexes(const PluginCall
     std::vector<RqRepositoryIndex> indexes;
     std::vector<std::string> repositories = config_.rqp.repositories;
     for (const std::string& flag : context.flags) {
-        if (flag.rfind(INTERNAL_RQP_REPOSITORY_FLAG_PREFIX, 0) != 0 || flag.size() <= std::char_traits<char>::length(INTERNAL_RQP_REPOSITORY_FLAG_PREFIX)) {
+        if (flag.rfind(INTERNAL_RQP_REPOSITORY_FLAG_PREFIX, 0) != 0 ||
+            flag.size() <= std::char_traits<char>::length(INTERNAL_RQP_REPOSITORY_FLAG_PREFIX)) {
             continue;
         }
 
         const std::string repository = flag.substr(std::char_traits<char>::length(INTERNAL_RQP_REPOSITORY_FLAG_PREFIX));
-        if (!repository.empty() && std::find(repositories.begin(), repositories.end(), repository) == repositories.end()) {
+        if (!repository.empty() &&
+            std::find(repositories.begin(), repositories.end(), repository) == repositories.end()) {
             repositories.push_back(repository);
         }
     }
@@ -94,7 +93,8 @@ std::filesystem::path RqpPlugin::localPathForUrl(const std::string& url) {
 
 std::filesystem::path RqpPlugin::downloadPackageArtifact(const PluginCallContext& context, const std::string& url) {
     const std::filesystem::path localPath = localPathForUrl(url);
-    if (localPath != std::filesystem::path(url) && !is_generic_archive_path(localPath) && !is_archive_wrapper_path(localPath)) {
+    if (localPath != std::filesystem::path(url) && !is_generic_archive_path(localPath) &&
+        !is_archive_wrapper_path(localPath)) {
         return localPath;
     }
 
@@ -102,7 +102,8 @@ std::filesystem::path RqpPlugin::downloadPackageArtifact(const PluginCallContext
     if (tempDirectory.empty()) {
         return {};
     }
-    const std::filesystem::path sourcePath = (localPath != std::filesystem::path(url)) ? localPath : std::filesystem::path(url);
+    const std::filesystem::path sourcePath =
+        (localPath != std::filesystem::path(url)) ? localPath : std::filesystem::path(url);
     const std::string suffix = generic_archive_suffix(sourcePath);
     const std::string wrapper = archive_wrapper_suffix(sourcePath);
     std::string extension;
@@ -112,20 +113,23 @@ std::filesystem::path RqpPlugin::downloadPackageArtifact(const PluginCallContext
     } else {
         extension = suffix.empty() ? sourcePath.extension().string() : suffix;
     }
-    const std::filesystem::path targetPath = std::filesystem::path(tempDirectory) / (extension.empty() ? "download.rqp" : "download" + extension);
+    const std::filesystem::path targetPath =
+        std::filesystem::path(tempDirectory) / (extension.empty() ? "download.rqp" : "download" + extension);
     const DownloadResult download = context.downloadFile(url, targetPath.string());
     if (!download.success) {
         return {};
     }
 
-    std::filesystem::path resolvedPath = download.resolvedPath.empty() ? targetPath : std::filesystem::path(download.resolvedPath);
+    std::filesystem::path resolvedPath =
+        download.resolvedPath.empty() ? targetPath : std::filesystem::path(download.resolvedPath);
     if (std::filesystem::is_directory(resolvedPath)) {
         const std::filesystem::path nestedPackage = resolvedPath / "download.rqp";
         if (std::filesystem::is_regular_file(nestedPackage)) {
             return nestedPackage;
         }
 
-        const std::optional<std::filesystem::path> discoveredPackage = rqp_plugin_unique_nested_file_with_extension(resolvedPath, ".rqp");
+        const std::optional<std::filesystem::path> discoveredPackage =
+            rqp_plugin_unique_nested_file_with_extension(resolvedPath, ".rqp");
         if (discoveredPackage.has_value()) {
             return discoveredPackage.value();
         }

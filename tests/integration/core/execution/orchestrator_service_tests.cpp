@@ -1,6 +1,6 @@
 #include <chrono>
-#include <cstdlib>
 #include <csignal>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -30,10 +30,10 @@ extern char** environ;
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -46,7 +46,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -65,12 +65,9 @@ std::string read_file(const std::filesystem::path& path) {
     return buffer.str();
 }
 
-std::filesystem::path add_plugin_script(
-    const std::filesystem::path& pluginRoot,
-    const std::string& pluginName,
-    const std::string& content,
-    const std::vector<std::string>& dependencySpecs = {}
-) {
+std::filesystem::path add_plugin_script(const std::filesystem::path& pluginRoot, const std::string& pluginName,
+                                        const std::string& content,
+                                        const std::vector<std::string>& dependencySpecs = {}) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
     std::string manifest = "return {\n  apiVersion = 1,\n  depends = {";
     if (!dependencySpecs.empty()) {
@@ -82,15 +79,20 @@ std::filesystem::path add_plugin_script(
     }
     manifest += "}\n}\n";
 
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", manifest);
     write_file(pluginDirectory / "run.lua", content);
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
@@ -117,14 +119,13 @@ void copy_repo_plugin(const std::filesystem::path& pluginRoot, const std::string
 }
 
 void add_minimal_sys_apt_mocks(const std::filesystem::path& fakeBin) {
-    write_file(fakeBin / "apt-get",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "dpkg-query",
-        "#!/bin/sh\n"
-        "exit 1\n");
+    write_file(fakeBin / "apt-get", "#!/bin/sh\n"
+                                    "exit 0\n");
+    write_file(fakeBin / "dpkg-query", "#!/bin/sh\n"
+                                       "exit 1\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "apt-get").string()) + " " +
-        escape_shell_arg((fakeBin / "dpkg-query").string())).c_str()) == 0);
+                         escape_shell_arg((fakeBin / "dpkg-query").string()))
+                            .c_str()) == 0);
 }
 
 std::vector<std::pair<std::string, std::string>> minimal_sys_apt_environment(const std::filesystem::path& fakeBin) {
@@ -136,188 +137,210 @@ std::vector<std::pair<std::string, std::string>> minimal_sys_apt_environment(con
     };
 }
 
-std::filesystem::path write_config(
-    const std::filesystem::path& root,
-    const std::filesystem::path& pluginDirectory,
-    const bool useTransactionDb = false
-) {
+std::filesystem::path write_config(const std::filesystem::path& root, const std::filesystem::path& pluginDirectory,
+                                   const bool useTransactionDb = false) {
     const std::filesystem::path configPath = root / "config.lua";
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = " + std::string(useTransactionDb ? "true" : "false") + ",\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (root / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (root / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (root / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = " +
+                               std::string(useTransactionDb ? "true" : "false") +
+                               ",\n"
+                               "    deleteCommittedTransactions = false,\n"
+                               "    checkVirtualFileSystemWrite = false,\n"
+                               "    transactionDatabasePath = '" +
+                               (root / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (root / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (root / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
     return configPath;
 }
 
-std::filesystem::path write_config_with_proxy(
-    const std::filesystem::path& root,
-    const std::filesystem::path& pluginDirectory,
-    const std::string& defaultTarget,
-    const std::string& targetsLua
-) {
+std::filesystem::path write_config_with_proxy(const std::filesystem::path& root,
+                                              const std::filesystem::path& pluginDirectory,
+                                              const std::string& defaultTarget, const std::string& targetsLua) {
     const std::filesystem::path configPath = root / "config.lua";
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (root / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "    proxies = {\n"
-        "      java = {\n"
-        "        default = '" + defaultTarget + "',\n"
-        "        targets = " + targetsLua + ",\n"
-        "      },\n"
-        "    },\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (root / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (root / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (root / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "    proxies = {\n"
+                               "      java = {\n"
+                               "        default = '" +
+                               defaultTarget +
+                               "',\n"
+                               "        targets = " +
+                               targetsLua +
+                               ",\n"
+                               "      },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (root / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (root / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
     return configPath;
 }
 
-std::filesystem::path write_config_with_rq_repositories(
-    const std::filesystem::path& root,
-    const std::filesystem::path& pluginDirectory,
-    const std::vector<std::string>& repositories
-) {
+std::filesystem::path write_config_with_rq_repositories(const std::filesystem::path& root,
+                                                        const std::filesystem::path& pluginDirectory,
+                                                        const std::vector<std::string>& repositories) {
     const std::filesystem::path configPath = root / "config.lua";
     std::string repositoryList = "";
     for (const std::string& repository : repositories) {
         repositoryList += "      '" + repository + "',\n";
     }
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (root / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (root / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (root / "rqp-state").string() + "',\n"
-        "    repositories = {\n" + repositoryList +
-        "    },\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (root / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (root / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (root / "rqp-state").string() +
+                               "',\n"
+                               "    repositories = {\n" +
+                               repositoryList +
+                               "    },\n"
+                               "  },\n"
+                               "}\n");
     return configPath;
 }
 
-std::filesystem::path write_config_with_maven_repositories(
-    const std::filesystem::path& root,
-    const std::filesystem::path& pluginDirectory,
-    const std::string& repositoriesLua
-) {
+std::filesystem::path write_config_with_maven_repositories(const std::filesystem::path& root,
+                                                           const std::filesystem::path& pluginDirectory,
+                                                           const std::string& repositoriesLua) {
     const std::filesystem::path configPath = root / "config.lua";
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (root / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (root / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  repositories = {\n"
-        "    maven = {\n" + repositoriesLua +
-        "    },\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (root / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (root / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (root / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  repositories = {\n"
+                               "    maven = {\n" +
+                               repositoriesLua +
+                               "    },\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (root / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
     return configPath;
 }
 
-std::filesystem::path build_rqp_package(
-    const std::filesystem::path& root,
-    const std::string& name,
-    const std::string& installLua,
-    const std::optional<std::pair<std::string, std::string>>& payloadFile = std::nullopt,
-    const std::optional<std::string>& overrideHash = std::nullopt,
-    const std::string& version = "1.0.0",
-    const std::optional<std::string>& removeLua = std::nullopt
-) {
+std::filesystem::path
+build_rqp_package(const std::filesystem::path& root, const std::string& name, const std::string& installLua,
+                  const std::optional<std::pair<std::string, std::string>>& payloadFile = std::nullopt,
+                  const std::optional<std::string>& overrideHash = std::nullopt, const std::string& version = "1.0.0",
+                  const std::optional<std::string>& removeLua = std::nullopt) {
     const std::filesystem::path packageRoot = root / (name + "-pkg");
     const std::filesystem::path payloadRoot = packageRoot / "payload-tree";
     const std::filesystem::path controlRoot = packageRoot / "control";
@@ -330,13 +353,16 @@ std::filesystem::path build_rqp_package(
         write_file(payloadPath, payloadFile->second);
         const std::string payloadTar = (controlRoot / "payload" / "payload.tar").string();
         const std::string payloadTarZst = (controlRoot / "payload" / "payload.tar.zst").string();
-        const std::string tarCommand = "tar -C " + escape_shell_arg(payloadRoot.string()) + " -cf " + escape_shell_arg(payloadTar) + " .";
+        const std::string tarCommand =
+            "tar -C " + escape_shell_arg(payloadRoot.string()) + " -cf " + escape_shell_arg(payloadTar) + " .";
         REQUIRE(std::system(tarCommand.c_str()) == 0);
-        const std::string zstdCommand = "zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst);
+        const std::string zstdCommand =
+            "zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst);
         REQUIRE(std::system(zstdCommand.c_str()) == 0);
         std::string hash = overrideHash.value_or("");
         if (!overrideHash.has_value()) {
-            const std::string hashOutput = run_command_capture("openssl dgst -sha256 " + escape_shell_arg(payloadTarZst));
+            const std::string hashOutput =
+                run_command_capture("openssl dgst -sha256 " + escape_shell_arg(payloadTarZst));
             const std::size_t pos = hashOutput.rfind(' ');
             REQUIRE(pos != std::string::npos);
             hash = hashOutput.substr(pos + 1, 64);
@@ -346,59 +372,70 @@ std::filesystem::path build_rqp_package(
         std::filesystem::remove(controlRoot / "payload" / "payload.tar", removeError);
     }
 
-    const std::string metadata = payloadFile.has_value()
-        ? "{\n"
-          "  \"formatVersion\": 1,\n"
-          "  \"name\": \"" + name + "\",\n"
-          "  \"version\": \"" + version + "\",\n"
-          "  \"release\": 1,\n"
-          "  \"revision\": 0,\n"
-          "  \"summary\": \"test package\",\n"
-          "  \"description\": \"integration test package\",\n"
-          "  \"license\": \"MIT\",\n"
-          "  \"architecture\": \"noarch\",\n"
-          "  \"vendor\": \"ReqPack Tests\",\n"
-          "  \"maintainerEmail\": \"tests@example.org\",\n"
-          "  \"tags\": [\"test\"],\n"
-          "  \"url\": \"https://example.test/" + name + ".rqp\",\n"
-          "  \"payload\": {\n"
-          "    \"path\": \"payload/payload.tar.zst\",\n"
-          "    \"archive\": \"tar\",\n"
-          "    \"compression\": \"zstd\",\n"
-          "    \"hashAlgorithm\": \"sha256\",\n"
-          "    \"hashFile\": \"hashes/payload.sha256\",\n"
-          "    \"sizeCompressed\": 0,\n"
-          "    \"sizeInstalledExpected\": 0\n"
-          "  }\n"
-          "}\n"
-        : "{\n"
-          "  \"formatVersion\": 1,\n"
-          "  \"name\": \"" + name + "\",\n"
-          "  \"version\": \"" + version + "\",\n"
-          "  \"release\": 1,\n"
-          "  \"revision\": 0,\n"
-          "  \"summary\": \"test package\",\n"
-          "  \"description\": \"integration test package\",\n"
-          "  \"license\": \"MIT\",\n"
-          "  \"architecture\": \"noarch\",\n"
-          "  \"vendor\": \"ReqPack Tests\",\n"
-          "  \"maintainerEmail\": \"tests@example.org\",\n"
-          "  \"tags\": [\"test\"],\n"
-          "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-          "}\n";
+    const std::string metadata = payloadFile.has_value() ? "{\n"
+                                                           "  \"formatVersion\": 1,\n"
+                                                           "  \"name\": \"" +
+                                                               name +
+                                                               "\",\n"
+                                                               "  \"version\": \"" +
+                                                               version +
+                                                               "\",\n"
+                                                               "  \"release\": 1,\n"
+                                                               "  \"revision\": 0,\n"
+                                                               "  \"summary\": \"test package\",\n"
+                                                               "  \"description\": \"integration test package\",\n"
+                                                               "  \"license\": \"MIT\",\n"
+                                                               "  \"architecture\": \"noarch\",\n"
+                                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                               "  \"tags\": [\"test\"],\n"
+                                                               "  \"url\": \"https://example.test/" +
+                                                               name +
+                                                               ".rqp\",\n"
+                                                               "  \"payload\": {\n"
+                                                               "    \"path\": \"payload/payload.tar.zst\",\n"
+                                                               "    \"archive\": \"tar\",\n"
+                                                               "    \"compression\": \"zstd\",\n"
+                                                               "    \"hashAlgorithm\": \"sha256\",\n"
+                                                               "    \"hashFile\": \"hashes/payload.sha256\",\n"
+                                                               "    \"sizeCompressed\": 0,\n"
+                                                               "    \"sizeInstalledExpected\": 0\n"
+                                                               "  }\n"
+                                                               "}\n"
+                                                         : "{\n"
+                                                           "  \"formatVersion\": 1,\n"
+                                                           "  \"name\": \"" +
+                                                               name +
+                                                               "\",\n"
+                                                               "  \"version\": \"" +
+                                                               version +
+                                                               "\",\n"
+                                                               "  \"release\": 1,\n"
+                                                               "  \"revision\": 0,\n"
+                                                               "  \"summary\": \"test package\",\n"
+                                                               "  \"description\": \"integration test package\",\n"
+                                                               "  \"license\": \"MIT\",\n"
+                                                               "  \"architecture\": \"noarch\",\n"
+                                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                               "  \"tags\": [\"test\"],\n"
+                                                               "  \"url\": \"https://example.test/" +
+                                                               name +
+                                                               ".rqp\"\n"
+                                                               "}\n";
 
     write_file(controlRoot / "metadata.json", metadata);
     std::ostringstream reqpackManifest;
     reqpackManifest << "return {\n"
-        << "  apiVersion = 1,\n"
-        << "  hooks = {\n"
-        << "    install = \"scripts/install.lua\"";
+                    << "  apiVersion = 1,\n"
+                    << "  hooks = {\n"
+                    << "    install = \"scripts/install.lua\"";
     if (removeLua.has_value()) {
         reqpackManifest << ",\n    remove = \"scripts/remove.lua\"";
     }
     reqpackManifest << "\n"
-        << "  }\n"
-        << "}\n";
+                    << "  }\n"
+                    << "}\n";
     write_file(controlRoot / "reqpack.lua", reqpackManifest.str());
     write_file(controlRoot / "scripts" / "install.lua", installLua);
     if (removeLua.has_value()) {
@@ -406,16 +443,14 @@ std::filesystem::path build_rqp_package(
     }
 
     const std::filesystem::path packagePath = root / (name + ".rqp");
-    const std::string tarCommand = "tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .";
+    const std::string tarCommand =
+        "tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .";
     REQUIRE(std::system(tarCommand.c_str()) == 0);
     return packagePath;
 }
 
-std::filesystem::path build_zip_archive(
-    const std::filesystem::path& root,
-    const std::string& archiveName,
-    const std::vector<std::pair<std::string, std::string>>& files
-) {
+std::filesystem::path build_zip_archive(const std::filesystem::path& root, const std::string& archiveName,
+                                        const std::vector<std::pair<std::string, std::string>>& files) {
     const std::filesystem::path sourceRoot = root / (archiveName + "-src");
     std::filesystem::create_directories(sourceRoot);
     for (const auto& [relativePath, content] : files) {
@@ -423,17 +458,15 @@ std::filesystem::path build_zip_archive(
     }
 
     const std::filesystem::path archivePath = root / archiveName;
-    const std::string zipCommand = "cd " + escape_shell_arg(sourceRoot.string()) + " && zip -qr " + escape_shell_arg(archivePath.string()) + " .";
+    const std::string zipCommand =
+        "cd " + escape_shell_arg(sourceRoot.string()) + " && zip -qr " + escape_shell_arg(archivePath.string()) + " .";
     REQUIRE(std::system(zipCommand.c_str()) == 0);
     return archivePath;
 }
 
-std::filesystem::path build_encrypted_zip_archive(
-    const std::filesystem::path& root,
-    const std::string& archiveName,
-    const std::string& password,
-    const std::vector<std::pair<std::string, std::string>>& files
-) {
+std::filesystem::path build_encrypted_zip_archive(const std::filesystem::path& root, const std::string& archiveName,
+                                                  const std::string& password,
+                                                  const std::vector<std::pair<std::string, std::string>>& files) {
     const std::filesystem::path sourceRoot = root / (archiveName + "-src");
     std::filesystem::create_directories(sourceRoot);
     for (const auto& [relativePath, content] : files) {
@@ -442,17 +475,14 @@ std::filesystem::path build_encrypted_zip_archive(
 
     const std::filesystem::path archivePath = root / archiveName;
     const std::string zipCommand = "cd " + escape_shell_arg(sourceRoot.string()) + " && zip -q -r -P " +
-        escape_shell_arg(password) + " " + escape_shell_arg(archivePath.string()) + " .";
+                                   escape_shell_arg(password) + " " + escape_shell_arg(archivePath.string()) + " .";
     REQUIRE(std::system(zipCommand.c_str()) == 0);
     return archivePath;
 }
 
-std::filesystem::path build_encrypted_seven_zip_archive(
-    const std::filesystem::path& root,
-    const std::string& archiveName,
-    const std::string& password,
-    const std::vector<std::pair<std::string, std::string>>& files
-) {
+std::filesystem::path build_encrypted_seven_zip_archive(const std::filesystem::path& root,
+                                                        const std::string& archiveName, const std::string& password,
+                                                        const std::vector<std::pair<std::string, std::string>>& files) {
     const std::filesystem::path sourceRoot = root / (archiveName + "-src");
     std::filesystem::create_directories(sourceRoot);
     for (const auto& [relativePath, content] : files) {
@@ -461,16 +491,14 @@ std::filesystem::path build_encrypted_seven_zip_archive(
 
     const std::filesystem::path archivePath = root / archiveName;
     const std::string sevenZipCommand = "cd " + escape_shell_arg(sourceRoot.string()) + " && 7z a -y -p" +
-        escape_shell_arg(password) + " -mhe=on " + escape_shell_arg(archivePath.string()) + " .";
+                                        escape_shell_arg(password) + " -mhe=on " +
+                                        escape_shell_arg(archivePath.string()) + " .";
     REQUIRE(std::system(sevenZipCommand.c_str()) == 0);
     return archivePath;
 }
 
-std::filesystem::path build_tar_gz_archive(
-    const std::filesystem::path& root,
-    const std::string& archiveName,
-    const std::vector<std::pair<std::string, std::string>>& files
-) {
+std::filesystem::path build_tar_gz_archive(const std::filesystem::path& root, const std::string& archiveName,
+                                           const std::vector<std::pair<std::string, std::string>>& files) {
     const std::filesystem::path sourceRoot = root / (archiveName + "-src");
     std::filesystem::create_directories(sourceRoot);
     for (const auto& [relativePath, content] : files) {
@@ -478,35 +506,30 @@ std::filesystem::path build_tar_gz_archive(
     }
 
     const std::filesystem::path archivePath = root / archiveName;
-    const std::string tarCommand = "tar -C " + escape_shell_arg(sourceRoot.string()) + " -czf " + escape_shell_arg(archivePath.string()) + " .";
+    const std::string tarCommand =
+        "tar -C " + escape_shell_arg(sourceRoot.string()) + " -czf " + escape_shell_arg(archivePath.string()) + " .";
     REQUIRE(std::system(tarCommand.c_str()) == 0);
     return archivePath;
 }
 
-std::filesystem::path build_zstd_file_archive(
-    const std::filesystem::path& root,
-    const std::string& sourceName,
-    const std::string& content
-) {
+std::filesystem::path build_zstd_file_archive(const std::filesystem::path& root, const std::string& sourceName,
+                                              const std::string& content) {
     const std::filesystem::path sourcePath = root / sourceName;
     const std::filesystem::path archivePath = root / (sourceName + ".zst");
     write_file(sourcePath, content);
 
-    const std::string zstdCommand = "zstd -q -f " + escape_shell_arg(sourcePath.string()) + " -o " +
-        escape_shell_arg(archivePath.string());
+    const std::string zstdCommand =
+        "zstd -q -f " + escape_shell_arg(sourcePath.string()) + " -o " + escape_shell_arg(archivePath.string());
     REQUIRE(std::system(zstdCommand.c_str()) == 0);
     return archivePath;
 }
 
-std::filesystem::path wrap_archive_with_gpg(
-    const std::filesystem::path& root,
-    const std::filesystem::path& sourcePath,
-    const std::string& wrapperName,
-    const std::string& password
-) {
+std::filesystem::path wrap_archive_with_gpg(const std::filesystem::path& root, const std::filesystem::path& sourcePath,
+                                            const std::string& wrapperName, const std::string& password) {
     const std::filesystem::path wrapperPath = root / wrapperName;
-    const std::string gpgCommand = "gpg --batch --yes --pinentry-mode loopback --passphrase " + escape_shell_arg(password) +
-        " -o " + escape_shell_arg(wrapperPath.string()) + " -c " + escape_shell_arg(sourcePath.string());
+    const std::string gpgCommand = "gpg --batch --yes --pinentry-mode loopback --passphrase " +
+                                   escape_shell_arg(password) + " -o " + escape_shell_arg(wrapperPath.string()) +
+                                   " -c " + escape_shell_arg(sourcePath.string());
     REQUIRE(std::system(gpgCommand.c_str()) == 0);
     return wrapperPath;
 }
@@ -518,30 +541,33 @@ std::string sha256_file_hex(const std::filesystem::path& path) {
     return hashOutput.substr(pos + 1, 64);
 }
 
-std::filesystem::path write_rq_repository_index(
-    const std::filesystem::path& root,
-    const std::string& packageName,
-    const std::string& packageVersion,
-    const std::filesystem::path& artifactPath,
-    const std::optional<std::string>& packageSha256 = std::nullopt
-) {
+std::filesystem::path write_rq_repository_index(const std::filesystem::path& root, const std::string& packageName,
+                                                const std::string& packageVersion,
+                                                const std::filesystem::path& artifactPath,
+                                                const std::optional<std::string>& packageSha256 = std::nullopt) {
     const std::filesystem::path indexPath = root / "index.json";
-    write_file(indexPath,
+    write_file(
+        indexPath,
         "{\n"
         "  \"schemaVersion\": 1,\n"
         "  \"packages\": [\n"
         "    {\n"
-        "      \"name\": \"" + packageName + "\",\n"
-        "      \"version\": \"" + packageVersion + "\",\n"
-        "      \"release\": 1,\n"
-        "      \"revision\": 0,\n"
-        "      \"architecture\": \"noarch\",\n"
-        "      \"summary\": \"repo package\",\n"
-        "      \"url\": \"file://" + artifactPath.string() + "\""
-        + (packageSha256.has_value() ? ",\n      \"packageSha256\": \"" + packageSha256.value() + "\"\n" : "\n") +
-        "    }\n"
-        "  ]\n"
-        "}\n");
+        "      \"name\": \"" +
+            packageName +
+            "\",\n"
+            "      \"version\": \"" +
+            packageVersion +
+            "\",\n"
+            "      \"release\": 1,\n"
+            "      \"revision\": 0,\n"
+            "      \"architecture\": \"noarch\",\n"
+            "      \"summary\": \"repo package\",\n"
+            "      \"url\": \"file://" +
+            artifactPath.string() + "\"" +
+            (packageSha256.has_value() ? ",\n      \"packageSha256\": \"" + packageSha256.value() + "\"\n" : "\n") +
+            "    }\n"
+            "  ]\n"
+            "}\n");
     return indexPath;
 }
 
@@ -562,10 +588,11 @@ struct CommandRunResult {
     std::string output{};
 };
 
-std::string run_reqpack(const std::filesystem::path& workspace, const std::filesystem::path& configPath, const std::vector<std::string>& arguments) {
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+std::string run_reqpack(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                        const std::vector<std::string>& arguments) {
+    std::string command = "cd " + escape_shell_arg(workspace.string()) + " && " +
+                          escape_shell_arg((build_root() / "rqp").string()) + " --config " +
+                          escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -573,15 +600,12 @@ std::string run_reqpack(const std::filesystem::path& workspace, const std::files
     return run_command_capture(command);
 }
 
-CommandRunResult run_reqpack_result(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::vector<std::string>& arguments
-) {
+CommandRunResult run_reqpack_result(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                                    const std::vector<std::string>& arguments) {
     const std::filesystem::path outputPath = workspace / "reqpack-command-output.txt";
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+    std::string command = "cd " + escape_shell_arg(workspace.string()) + " && " +
+                          escape_shell_arg((build_root() / "rqp").string()) + " --config " +
+                          escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -610,19 +634,14 @@ CommandRunResult run_reqpack_result(
     return result;
 }
 
-std::string run_reqpack_with_home(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::filesystem::path& homePath,
-    const std::vector<std::string>& arguments
-) {
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && env HOME=" + escape_shell_arg(homePath.string()) +
+std::string run_reqpack_with_home(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                                  const std::filesystem::path& homePath, const std::vector<std::string>& arguments) {
+    std::string command =
+        "cd " + escape_shell_arg(workspace.string()) + " && env HOME=" + escape_shell_arg(homePath.string()) +
         " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
         " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
-        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) +
-        " " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) + " " +
+        escape_shell_arg((build_root() / "rqp").string()) + " --config " + escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -630,23 +649,21 @@ std::string run_reqpack_with_home(
     return run_command_capture(command);
 }
 
-std::string run_reqpack_with_home_and_env(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::filesystem::path& homePath,
-    const std::vector<std::pair<std::string, std::string>>& environment,
-    const std::vector<std::string>& arguments
-) {
+std::string run_reqpack_with_home_and_env(const std::filesystem::path& workspace,
+                                          const std::filesystem::path& configPath,
+                                          const std::filesystem::path& homePath,
+                                          const std::vector<std::pair<std::string, std::string>>& environment,
+                                          const std::vector<std::string>& arguments) {
     std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && env HOME=" + escape_shell_arg(homePath.string()) +
-        " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
-        " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
-        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string());
+                          " && env HOME=" + escape_shell_arg(homePath.string()) +
+                          " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
+                          " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
+                          " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string());
     for (const auto& [key, value] : environment) {
         command += " " + key + "=" + escape_shell_arg(value);
     }
-    command += " " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+    command +=
+        " " + escape_shell_arg((build_root() / "rqp").string()) + " --config " + escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -662,18 +679,15 @@ void require_command_success(const std::string& command) {
 }
 
 void init_git_repository(const std::filesystem::path& path) {
-    require_command_success(
-        "mkdir -p " + escape_shell_arg(path.string()) +
-        " && git init -b main " + escape_shell_arg(path.string()) +
-        " && git -C " + escape_shell_arg(path.string()) + " config user.name test" +
-        " && git -C " + escape_shell_arg(path.string()) + " config user.email test@example.test"
-    );
+    require_command_success("mkdir -p " + escape_shell_arg(path.string()) + " && git init -b main " +
+                            escape_shell_arg(path.string()) + " && git -C " + escape_shell_arg(path.string()) +
+                            " config user.name test" + " && git -C " + escape_shell_arg(path.string()) +
+                            " config user.email test@example.test");
 }
 
 std::string git_head_commit(const std::filesystem::path& path) {
-    const std::string output = run_command_capture(
-        "git -C " + escape_shell_arg(path.string()) + " rev-parse --verify HEAD"
-    );
+    const std::string output =
+        run_command_capture("git -C " + escape_shell_arg(path.string()) + " rev-parse --verify HEAD");
     std::istringstream input(output);
     std::string line;
     std::getline(input, line);
@@ -692,150 +706,144 @@ std::string first_non_empty_line(const std::string& text) {
 }
 
 void write_self_update_source_tree(const std::filesystem::path& root, const std::string& versionLabel) {
-    write_file(root / "CMakeLists.txt",
-        "cmake_minimum_required(VERSION 3.15)\n"
-        "project(SelfUpdateStub LANGUAGES CXX)\n"
-        "add_executable(ReqPack src/main.cpp)\n"
-        "set_target_properties(ReqPack PROPERTIES OUTPUT_NAME rqp)\n");
-    write_file(root / "src" / "main.cpp",
-        "#include <iostream>\n"
-        "int main() { std::cout << \"" + versionLabel + "\\n\"; return 0; }\n");
+    write_file(root / "CMakeLists.txt", "cmake_minimum_required(VERSION 3.15)\n"
+                                        "project(SelfUpdateStub LANGUAGES CXX)\n"
+                                        "add_executable(ReqPack src/main.cpp)\n"
+                                        "set_target_properties(ReqPack PROPERTIES OUTPUT_NAME rqp)\n");
+    write_file(root / "src" / "main.cpp", "#include <iostream>\n"
+                                          "int main() { std::cout << \"" +
+                                              versionLabel + "\\n\"; return 0; }\n");
 }
 
-void write_self_update_release_api_response(
-    const std::filesystem::path& apiRoot,
-    const std::string& owner,
-    const std::string& repo,
-    const std::string& tag,
-    const std::string& target,
-    const std::filesystem::path& assetPath
-) {
+void write_self_update_release_api_response(const std::filesystem::path& apiRoot, const std::string& owner,
+                                            const std::string& repo, const std::string& tag, const std::string& target,
+                                            const std::filesystem::path& assetPath) {
     const std::filesystem::path latestPath = apiRoot / "repos" / owner / repo / "releases" / "latest";
-    write_file(latestPath,
-        "{\n"
-        "  \"tag_name\": \"" + tag + "\",\n"
-        "  \"assets\": [\n"
-        "    {\n"
-        "      \"name\": \"rqp-" + tag + "-" + target + ".tar.gz\",\n"
-        "      \"browser_download_url\": \"file://" + assetPath.string() + "\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n");
+    write_file(latestPath, "{\n"
+                           "  \"tag_name\": \"" +
+                               tag +
+                               "\",\n"
+                               "  \"assets\": [\n"
+                               "    {\n"
+                               "      \"name\": \"rqp-" +
+                               tag + "-" + target +
+                               ".tar.gz\",\n"
+                               "      \"browser_download_url\": \"file://" +
+                               assetPath.string() +
+                               "\"\n"
+                               "    }\n"
+                               "  ]\n"
+                               "}\n");
 }
 
-std::filesystem::path create_self_update_release_archive(
-    const std::filesystem::path& root,
-    const std::string& versionLabel,
-    const std::string& tag,
-    const std::string& target
-) {
+std::filesystem::path create_self_update_release_archive(const std::filesystem::path& root,
+                                                         const std::string& versionLabel, const std::string& tag,
+                                                         const std::string& target) {
     const std::filesystem::path sourceRoot = root / ("release-src-" + versionLabel);
     const std::filesystem::path archivePath = root / ("rqp-" + tag + "-" + target + ".tar.gz");
-    write_file(sourceRoot / "rqp",
-        "#!/bin/sh\n"
-        "set -eu\n"
-        "resolve_script_path() {\n"
-        "  target=\"$1\"\n"
-        "  while [ -L \"$target\" ]; do\n"
-        "    dir=$(CDPATH= cd -- \"$(dirname -- \"$target\")\" && pwd)\n"
-        "    target=$(readlink \"$target\")\n"
-        "    case \"$target\" in\n"
-        "      /*) ;;\n"
-        "      *) target=\"$dir/$target\" ;;\n"
-        "    esac\n"
-        "  done\n"
-        "  printf '%s\\n' \"$target\"\n"
-        "}\n"
-        "SCRIPT_PATH=$(resolve_script_path \"$0\")\n"
-        "HERE=$(CDPATH= cd -- \"$(dirname -- \"$SCRIPT_PATH\")\" && pwd)\n"
-        "exec \"$HERE/bin/rqp.bin\" \"$@\"\n");
+    write_file(sourceRoot / "rqp", "#!/bin/sh\n"
+                                   "set -eu\n"
+                                   "resolve_script_path() {\n"
+                                   "  target=\"$1\"\n"
+                                   "  while [ -L \"$target\" ]; do\n"
+                                   "    dir=$(CDPATH= cd -- \"$(dirname -- \"$target\")\" && pwd)\n"
+                                   "    target=$(readlink \"$target\")\n"
+                                   "    case \"$target\" in\n"
+                                   "      /*) ;;\n"
+                                   "      *) target=\"$dir/$target\" ;;\n"
+                                   "    esac\n"
+                                   "  done\n"
+                                   "  printf '%s\\n' \"$target\"\n"
+                                   "}\n"
+                                   "SCRIPT_PATH=$(resolve_script_path \"$0\")\n"
+                                   "HERE=$(CDPATH= cd -- \"$(dirname -- \"$SCRIPT_PATH\")\" && pwd)\n"
+                                   "exec \"$HERE/bin/rqp.bin\" \"$@\"\n");
     write_file(sourceRoot / "bin" / "rqp.bin", "#!/bin/sh\nprintf '%s\\n' '" + versionLabel + "'\n");
-    require_command_success("chmod +x " + escape_shell_arg((sourceRoot / "rqp").string()) +
-        " " + escape_shell_arg((sourceRoot / "bin" / "rqp.bin").string()));
-    require_command_success(
-        "tar -C " + escape_shell_arg(sourceRoot.string()) +
-        " -czf " + escape_shell_arg(archivePath.string()) +
-        " rqp bin"
-    );
+    require_command_success("chmod +x " + escape_shell_arg((sourceRoot / "rqp").string()) + " " +
+                            escape_shell_arg((sourceRoot / "bin" / "rqp.bin").string()));
+    require_command_success("tar -C " + escape_shell_arg(sourceRoot.string()) + " -czf " +
+                            escape_shell_arg(archivePath.string()) + " rqp bin");
     return archivePath;
 }
 
-void commit_self_update_source(const std::filesystem::path& repoPath, const std::string& message, const std::string& versionLabel) {
+void commit_self_update_source(const std::filesystem::path& repoPath, const std::string& message,
+                               const std::string& versionLabel) {
     write_self_update_source_tree(repoPath, versionLabel);
-    require_command_success(
-        "git -C " + escape_shell_arg(repoPath.string()) + " add CMakeLists.txt src/main.cpp" +
-        " && git -C " + escape_shell_arg(repoPath.string()) + " commit -m " + escape_shell_arg(message)
-    );
+    require_command_success("git -C " + escape_shell_arg(repoPath.string()) + " add CMakeLists.txt src/main.cpp" +
+                            " && git -C " + escape_shell_arg(repoPath.string()) + " commit -m " +
+                            escape_shell_arg(message));
 }
 
 void tag_git_commit(const std::filesystem::path& repoPath, const std::string& tagName) {
-    require_command_success(
-        "git -C " + escape_shell_arg(repoPath.string()) + " tag " + escape_shell_arg(tagName)
-    );
+    require_command_success("git -C " + escape_shell_arg(repoPath.string()) + " tag " + escape_shell_arg(tagName));
 }
 
-void write_test_plugin_bundle(const std::filesystem::path& root, const std::string& pluginName, const std::string& versionLabel) {
+void write_test_plugin_bundle(const std::filesystem::path& root, const std::string& pluginName,
+                              const std::string& versionLabel) {
     const std::filesystem::path pluginDirectory = root / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"" + versionLabel + "\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " test plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
-    write_file(pluginDirectory / "reqpack.lua",
-        "return {\n"
-        "  apiVersion = 1,\n"
-        "  depends = {}\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"" +
+                                                      versionLabel +
+                                                      "\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " test plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
+    write_file(pluginDirectory / "reqpack.lua", "return {\n"
+                                                "  apiVersion = 1,\n"
+                                                "  depends = {}\n"
+                                                "}\n");
     write_file(pluginDirectory / "run.lua",
-        "plugin = {}\n"
-        "function plugin.getName() return '" + pluginName + "' end\n"
-        "function plugin.getVersion() return '" + versionLabel + "' end\n"
-        "function plugin.getRequirements() return {} end\n"
-        "function plugin.getCategories() return { 'pkg', 'test' } end\n"
-        "function plugin.getMissingPackages(packages) return packages end\n"
-        "function plugin.install(context, packages) return true end\n"
-        "function plugin.installLocal(context, path) return true end\n"
-        "function plugin.remove(context, packages) return true end\n"
-        "function plugin.update(context, packages) return true end\n"
-        "function plugin.list(context) return { { name = '" + pluginName + "', version = '" + versionLabel + "', description = '" + versionLabel + "' } } end\n"
-        "function plugin.search(context, prompt) return {} end\n"
-        "function plugin.info(context, package) return { name = package, version = '" + versionLabel + "', description = '" + versionLabel + "' } end\n"
-        "function plugin.shutdown() return true end\n");
+               "plugin = {}\n"
+               "function plugin.getName() return '" +
+                   pluginName +
+                   "' end\n"
+                   "function plugin.getVersion() return '" +
+                   versionLabel +
+                   "' end\n"
+                   "function plugin.getRequirements() return {} end\n"
+                   "function plugin.getCategories() return { 'pkg', 'test' } end\n"
+                   "function plugin.getMissingPackages(packages) return packages end\n"
+                   "function plugin.install(context, packages) return true end\n"
+                   "function plugin.installLocal(context, path) return true end\n"
+                   "function plugin.remove(context, packages) return true end\n"
+                   "function plugin.update(context, packages) return true end\n"
+                   "function plugin.list(context) return { { name = '" +
+                   pluginName + "', version = '" + versionLabel + "', description = '" + versionLabel +
+                   "' } } end\n"
+                   "function plugin.search(context, prompt) return {} end\n"
+                   "function plugin.info(context, package) return { name = package, version = '" +
+                   versionLabel + "', description = '" + versionLabel +
+                   "' } end\n"
+                   "function plugin.shutdown() return true end\n");
     write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
     write_file(pluginDirectory / "scripts" / "remove.lua", "return true\n");
 }
 
-void commit_plugin_source_version(
-    const std::filesystem::path& repoPath,
-    const std::string& pluginName,
-    const std::string& message,
-    const std::string& versionLabel,
-    const std::optional<std::string>& tagName = std::nullopt
-) {
+void commit_plugin_source_version(const std::filesystem::path& repoPath, const std::string& pluginName,
+                                  const std::string& message, const std::string& versionLabel,
+                                  const std::optional<std::string>& tagName = std::nullopt) {
     write_test_plugin_bundle(repoPath / "plugins", pluginName, versionLabel);
-    require_command_success(
-        "git -C " + escape_shell_arg(repoPath.string()) + " add plugins" +
-        " && git -C " + escape_shell_arg(repoPath.string()) + " commit -m " + escape_shell_arg(message)
-    );
+    require_command_success("git -C " + escape_shell_arg(repoPath.string()) + " add plugins" + " && git -C " +
+                            escape_shell_arg(repoPath.string()) + " commit -m " + escape_shell_arg(message));
     if (tagName.has_value()) {
         tag_git_commit(repoPath, tagName.value());
     }
 }
 
-std::string run_reqpack_with_stdin(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::vector<std::string>& arguments,
-    const std::string& stdinContent
-) {
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && printf %s " + escape_shell_arg(stdinContent) +
-        " | " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+std::string run_reqpack_with_stdin(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                                   const std::vector<std::string>& arguments, const std::string& stdinContent) {
+    std::string command = "cd " + escape_shell_arg(workspace.string()) + " && printf %s " +
+                          escape_shell_arg(stdinContent) + " | " + escape_shell_arg((build_root() / "rqp").string()) +
+                          " --config " + escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -843,46 +851,41 @@ std::string run_reqpack_with_stdin(
     return run_command_capture(command);
 }
 
-std::string run_reqpack_with_home_and_stdin(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::filesystem::path& homePath,
-    const std::vector<std::string>& arguments,
-    const std::string& stdinContent
-) {
-	std::string innerCommand =
-		"printf %s " + escape_shell_arg(stdinContent) +
-		" | " + escape_shell_arg((build_root() / "rqp").string()) +
-		" --config " + escape_shell_arg(configPath.string());
-	for (const std::string& argument : arguments) {
-		innerCommand += " " + escape_shell_arg(argument);
-	}
+std::string run_reqpack_with_home_and_stdin(const std::filesystem::path& workspace,
+                                            const std::filesystem::path& configPath,
+                                            const std::filesystem::path& homePath,
+                                            const std::vector<std::string>& arguments,
+                                            const std::string& stdinContent) {
+    std::string innerCommand = "printf %s " + escape_shell_arg(stdinContent) + " | " +
+                               escape_shell_arg((build_root() / "rqp").string()) + " --config " +
+                               escape_shell_arg(configPath.string());
+    for (const std::string& argument : arguments) {
+        innerCommand += " " + escape_shell_arg(argument);
+    }
 
-	std::string command = "cd " + escape_shell_arg(workspace.string()) +
-		" && env HOME=" + escape_shell_arg(homePath.string()) +
-		" XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
-		" XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
-		" XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) +
-		" sh -c " + escape_shell_arg(innerCommand);
+    std::string command = "cd " + escape_shell_arg(workspace.string()) +
+                          " && env HOME=" + escape_shell_arg(homePath.string()) +
+                          " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
+                          " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
+                          " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) + " sh -c " +
+                          escape_shell_arg(innerCommand);
     command += " 2>&1";
     return run_command_capture(command);
 }
 
 class ServerProcess {
-public:
-    ServerProcess(
-        const std::filesystem::path& workspace,
-        const std::filesystem::path& configPath,
-        const std::optional<std::filesystem::path>& homePath,
-        const std::vector<std::string>& arguments,
-        const std::filesystem::path& logPath
-    ) {
+  public:
+    ServerProcess(const std::filesystem::path& workspace, const std::filesystem::path& configPath,
+                  const std::optional<std::filesystem::path>& homePath, const std::vector<std::string>& arguments,
+                  const std::filesystem::path& logPath) {
         posix_spawn_file_actions_t actions;
         if (posix_spawn_file_actions_init(&actions) != 0 ||
             posix_spawn_file_actions_addchdir_np(&actions, workspace.c_str()) != 0 ||
             posix_spawn_file_actions_addopen(&actions, STDIN_FILENO, "/dev/null", O_RDONLY, 0) != 0 ||
-            posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, logPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644) != 0 ||
-            posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, logPath.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644) != 0) {
+            posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, logPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+                                             0644) != 0 ||
+            posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, logPath.c_str(), O_WRONLY | O_CREAT | O_APPEND,
+                                             0644) != 0) {
             throw std::runtime_error("failed to configure server process actions");
         }
 
@@ -910,14 +913,8 @@ public:
         }
         argv.push_back(nullptr);
 
-        const int spawnResult = posix_spawn(
-            &pid_,
-            argvStrings.front().c_str(),
-            &actions,
-            nullptr,
-            argv.data(),
-            homePath.has_value() ? environment.data() : environ
-        );
+        const int spawnResult = posix_spawn(&pid_, argvStrings.front().c_str(), &actions, nullptr, argv.data(),
+                                            homePath.has_value() ? environment.data() : environ);
         posix_spawn_file_actions_destroy(&actions);
         if (spawnResult != 0) {
             throw std::runtime_error("failed to spawn server process");
@@ -937,7 +934,7 @@ public:
         pid_ = -1;
     }
 
-private:
+  private:
     pid_t pid_{-1};
 };
 
@@ -1043,20 +1040,16 @@ std::string read_json_response_line(int fd) {
     return read_socket_line(fd);
 }
 
-std::string run_reqpack_with_home_and_status(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::filesystem::path& homePath,
-    const std::vector<std::string>& arguments,
-    int& status
-) {
-    std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && env HOME=" + escape_shell_arg(homePath.string()) +
+std::string run_reqpack_with_home_and_status(const std::filesystem::path& workspace,
+                                             const std::filesystem::path& configPath,
+                                             const std::filesystem::path& homePath,
+                                             const std::vector<std::string>& arguments, int& status) {
+    std::string command =
+        "cd " + escape_shell_arg(workspace.string()) + " && env HOME=" + escape_shell_arg(homePath.string()) +
         " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
         " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
-        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) +
-        " " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string()) + " " +
+        escape_shell_arg((build_root() / "rqp").string()) + " --config " + escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -1080,24 +1073,21 @@ std::string run_reqpack_with_home_and_status(
     return output;
 }
 
-std::string run_reqpack_with_home_env_and_status(
-    const std::filesystem::path& workspace,
-    const std::filesystem::path& configPath,
-    const std::filesystem::path& homePath,
-    const std::vector<std::pair<std::string, std::string>>& environment,
-    const std::vector<std::string>& arguments,
-    int& status
-) {
+std::string run_reqpack_with_home_env_and_status(const std::filesystem::path& workspace,
+                                                 const std::filesystem::path& configPath,
+                                                 const std::filesystem::path& homePath,
+                                                 const std::vector<std::pair<std::string, std::string>>& environment,
+                                                 const std::vector<std::string>& arguments, int& status) {
     std::string command = "cd " + escape_shell_arg(workspace.string()) +
-        " && env HOME=" + escape_shell_arg(homePath.string()) +
-        " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
-        " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
-        " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string());
+                          " && env HOME=" + escape_shell_arg(homePath.string()) +
+                          " XDG_CONFIG_HOME=" + escape_shell_arg((homePath / ".config").string()) +
+                          " XDG_DATA_HOME=" + escape_shell_arg((homePath / ".local" / "share").string()) +
+                          " XDG_CACHE_HOME=" + escape_shell_arg((homePath / ".cache").string());
     for (const auto& [key, value] : environment) {
         command += " " + key + "=" + escape_shell_arg(value);
     }
-    command += " " + escape_shell_arg((build_root() / "rqp").string()) +
-        " --config " + escape_shell_arg(configPath.string());
+    command +=
+        " " + escape_shell_arg((build_root() / "rqp").string()) + " --config " + escape_shell_arg(configPath.string());
     for (const std::string& argument : arguments) {
         command += " " + escape_shell_arg(argument);
     }
@@ -1508,9 +1498,10 @@ end
 function plugin.shutdown() return true end
 )";
 
-}  // namespace
+} // namespace
 
-TEST_CASE("orchestrator list command loads plugin from workspace plugins directory", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator list command loads plugin from workspace plugins directory",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-workspace-list"};
     const std::filesystem::path configuredPluginDirectory = tempDir.path() / "configured-plugins";
     const std::filesystem::path workspacePluginDirectory = tempDir.path() / "plugins";
@@ -1528,7 +1519,8 @@ TEST_CASE("orchestrator list command loads plugin from workspace plugins directo
     CHECK(output.find("workspace") != std::string::npos);
 }
 
-TEST_CASE("orchestrator outdated command prints normalized latest version columns", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator outdated command prints normalized latest version columns",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-outdated"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -1548,7 +1540,8 @@ TEST_CASE("orchestrator outdated command prints normalized latest version column
     CHECK(output.find("query") != std::string::npos);
 }
 
-TEST_CASE("orchestrator dnf list normalizes metadata and filters architecture", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator dnf list normalizes metadata and filters architecture",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-dnf-list-arch-filter"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -1557,34 +1550,29 @@ TEST_CASE("orchestrator dnf list normalizes metadata and filters architecture", 
 
     copy_repo_plugin(pluginDirectory, "dnf");
 
-    write_file(fakeBin / "dnf",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"repoquery\" ] && [ \"$2\" = \"--installed\" ]; then\n"
-        "  if printf '%s' \"$*\" | grep -F -- '%{summary}' >/dev/null 2>&1; then\n"
-        "    printf 'ripgrep.x86_64\\tFast line-oriented search tool\\nripgrep.noarch\\tFast line-oriented search tool\\n'\n"
-        "    exit 0\n"
-        "  fi\n"
-        "  printf 'ripgrep.x86_64\\t14.1.1-1.fc43\\nripgrep.noarch\\t14.1.1-1.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "exit 0\n");
+    write_file(fakeBin / "dnf", "#!/bin/sh\n"
+                                "if [ \"$1\" = \"repoquery\" ] && [ \"$2\" = \"--installed\" ]; then\n"
+                                "  if printf '%s' \"$*\" | grep -F -- '%{summary}' >/dev/null 2>&1; then\n"
+                                "    printf 'ripgrep.x86_64\\tFast line-oriented search tool\\nripgrep.noarch\\tFast "
+                                "line-oriented search tool\\n'\n"
+                                "    exit 0\n"
+                                "  fi\n"
+                                "  printf 'ripgrep.x86_64\\t14.1.1-1.fc43\\nripgrep.noarch\\t14.1.1-1.fc43\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dnf").string())).c_str()) == 0);
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"COLUMNS", "120"},
-        },
-        {"list", "dnf", "--arch", "x86_64"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"PATH", pathValue},
+                                                                        {"COLUMNS", "120"},
+                                                                    },
+                                                                    {"list", "dnf", "--arch", "x86_64"}, status);
     INFO(output);
 
     CHECK(status == 0);
@@ -1608,35 +1596,33 @@ TEST_CASE("orchestrator dnf outdated shows installed and latest versions", "[int
 
     copy_repo_plugin(pluginDirectory, "dnf");
 
-    write_file(fakeBin / "dnf",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"check-update\" ]; then\n"
-        "  printf 'ripgrep.x86_64 15.0.0-1.fc43 updates\\n'\n"
-        "  exit 100\n"
-        "fi\n"
-        "if [ \"$1\" = \"repoquery\" ] && [ \"$2\" = \"--installed\" ]; then\n"
-        "  printf 'ripgrep.x86_64\\tFast line-oriented search tool\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1\" = \"repoquery\" ]; then\n"
-        "  printf 'ripgrep.x86_64\\t15.0.0-1.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "exit 0\n");
-    write_file(fakeBin / "rpm",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--qf\" ]; then\n"
-        "  printf '14.1.1-1.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--quiet\" ]; then\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--whatprovides\" ]; then\n"
-        "  printf 'ripgrep\\t14.1.1-1.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "exit 0\n");
+    write_file(fakeBin / "dnf", "#!/bin/sh\n"
+                                "if [ \"$1\" = \"check-update\" ]; then\n"
+                                "  printf 'ripgrep.x86_64 15.0.0-1.fc43 updates\\n'\n"
+                                "  exit 100\n"
+                                "fi\n"
+                                "if [ \"$1\" = \"repoquery\" ] && [ \"$2\" = \"--installed\" ]; then\n"
+                                "  printf 'ripgrep.x86_64\\tFast line-oriented search tool\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "if [ \"$1\" = \"repoquery\" ]; then\n"
+                                "  printf 'ripgrep.x86_64\\t15.0.0-1.fc43\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "exit 0\n");
+    write_file(fakeBin / "rpm", "#!/bin/sh\n"
+                                "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--qf\" ]; then\n"
+                                "  printf '14.1.1-1.fc43\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--quiet\" ]; then\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "if [ \"$1\" = \"-q\" ] && [ \"$2\" = \"--whatprovides\" ]; then\n"
+                                "  printf 'ripgrep\\t14.1.1-1.fc43\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dnf").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "rpm").string())).c_str()) == 0);
 
@@ -1644,17 +1630,12 @@ TEST_CASE("orchestrator dnf outdated shows installed and latest versions", "[int
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"COLUMNS", "120"},
-        },
-        {"outdated", "dnf"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"PATH", pathValue},
+                                                                        {"COLUMNS", "120"},
+                                                                    },
+                                                                    {"outdated", "dnf"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("OUTDATED: dnf") != std::string::npos);
@@ -1669,7 +1650,8 @@ TEST_CASE("orchestrator dnf outdated shows installed and latest versions", "[int
     CHECK(output.find("search tool") != std::string::npos);
 }
 
-TEST_CASE("orchestrator maven list normalizes type metadata without fake status description", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator maven list normalizes type metadata without fake status description",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-maven-list"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -1679,49 +1661,42 @@ TEST_CASE("orchestrator maven list normalizes type metadata without fake status 
 
     copy_repo_plugin(pluginDirectory, "maven");
 
-    write_file(fakeBin / "java",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "mvn",
-        "#!/bin/sh\n"
-        "exit 0\n");
+    write_file(fakeBin / "java", "#!/bin/sh\n"
+                                 "exit 0\n");
+    write_file(fakeBin / "mvn", "#!/bin/sh\n"
+                                "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "java").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "mvn").string())).c_str()) == 0);
 
     write_file(repoRoot / "org/example/demo-lib/1.2.3/demo-lib-1.2.3.pom",
-        "<project>\n"
-        "  <modelVersion>4.0.0</modelVersion>\n"
-        "  <groupId>org.example</groupId>\n"
-        "  <artifactId>demo-lib</artifactId>\n"
-        "  <version>1.2.3</version>\n"
-        "  <description>Demo library artifact</description>\n"
-        "</project>\n");
+               "<project>\n"
+               "  <modelVersion>4.0.0</modelVersion>\n"
+               "  <groupId>org.example</groupId>\n"
+               "  <artifactId>demo-lib</artifactId>\n"
+               "  <version>1.2.3</version>\n"
+               "  <description>Demo library artifact</description>\n"
+               "</project>\n");
     write_file(repoRoot / "org/example/demo-bom/2.0.0/demo-bom-2.0.0.pom",
-        "<project>\n"
-        "  <modelVersion>4.0.0</modelVersion>\n"
-        "  <groupId>org.example</groupId>\n"
-        "  <artifactId>demo-bom</artifactId>\n"
-        "  <version>2.0.0</version>\n"
-        "  <packaging>pom</packaging>\n"
-        "  <description>Demo bill of materials</description>\n"
-        "</project>\n");
+               "<project>\n"
+               "  <modelVersion>4.0.0</modelVersion>\n"
+               "  <groupId>org.example</groupId>\n"
+               "  <artifactId>demo-bom</artifactId>\n"
+               "  <version>2.0.0</version>\n"
+               "  <packaging>pom</packaging>\n"
+               "  <description>Demo bill of materials</description>\n"
+               "</project>\n");
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_MAVEN_REPO", repoRoot.string()},
-            {"COLUMNS", "120"},
-        },
-        {"list", "maven"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"PATH", pathValue},
+                                                                        {"REQPACK_MAVEN_REPO", repoRoot.string()},
+                                                                        {"COLUMNS", "120"},
+                                                                    },
+                                                                    {"list", "maven"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("LIST: maven") != std::string::npos);
@@ -1738,7 +1713,8 @@ TEST_CASE("orchestrator maven list normalizes type metadata without fake status 
     CHECK(output.find("Installed in local Maven repository") == std::string::npos);
 }
 
-TEST_CASE("orchestrator maven outdated shows latest version once per artifact", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator maven outdated shows latest version once per artifact",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-maven-outdated"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -1749,60 +1725,54 @@ TEST_CASE("orchestrator maven outdated shows latest version once per artifact", 
 
     copy_repo_plugin(pluginDirectory, "maven");
 
-    write_file(fakeBin / "java",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "mvn",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "curl",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(curlLog.string()) + "\n"
-        "case \"$*\" in\n"
-        "  *'g:org.example+AND+a:demo-lib'*)\n"
-        "    printf '{\"response\":{\"docs\":[{\"latestVersion\":\"1.5.0\"}]}}'\n"
-        "    ;;\n"
-        "  *)\n"
-        "    exit 1\n"
-        "    ;;\n"
-        "esac\n");
+    write_file(fakeBin / "java", "#!/bin/sh\n"
+                                 "exit 0\n");
+    write_file(fakeBin / "mvn", "#!/bin/sh\n"
+                                "exit 0\n");
+    write_file(fakeBin / "curl", "#!/bin/sh\n"
+                                 "printf '%s\n' \"$*\" >> " +
+                                     escape_shell_arg(curlLog.string()) +
+                                     "\n"
+                                     "case \"$*\" in\n"
+                                     "  *'g:org.example+AND+a:demo-lib'*)\n"
+                                     "    printf '{\"response\":{\"docs\":[{\"latestVersion\":\"1.5.0\"}]}}'\n"
+                                     "    ;;\n"
+                                     "  *)\n"
+                                     "    exit 1\n"
+                                     "    ;;\n"
+                                     "esac\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "java").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "mvn").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "curl").string())).c_str()) == 0);
 
     write_file(repoRoot / "org/example/demo-lib/1.2.3/demo-lib-1.2.3.pom",
-        "<project>\n"
-        "  <modelVersion>4.0.0</modelVersion>\n"
-        "  <groupId>org.example</groupId>\n"
-        "  <artifactId>demo-lib</artifactId>\n"
-        "  <version>1.2.3</version>\n"
-        "  <description>Demo library artifact</description>\n"
-        "</project>\n");
+               "<project>\n"
+               "  <modelVersion>4.0.0</modelVersion>\n"
+               "  <groupId>org.example</groupId>\n"
+               "  <artifactId>demo-lib</artifactId>\n"
+               "  <version>1.2.3</version>\n"
+               "  <description>Demo library artifact</description>\n"
+               "</project>\n");
     write_file(repoRoot / "org/example/demo-lib/1.5.0/demo-lib-1.5.0.pom",
-        "<project>\n"
-        "  <modelVersion>4.0.0</modelVersion>\n"
-        "  <groupId>org.example</groupId>\n"
-        "  <artifactId>demo-lib</artifactId>\n"
-        "  <version>1.5.0</version>\n"
-        "  <description>Demo library artifact</description>\n"
-        "</project>\n");
+               "<project>\n"
+               "  <modelVersion>4.0.0</modelVersion>\n"
+               "  <groupId>org.example</groupId>\n"
+               "  <artifactId>demo-lib</artifactId>\n"
+               "  <version>1.5.0</version>\n"
+               "  <description>Demo library artifact</description>\n"
+               "</project>\n");
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_MAVEN_REPO", repoRoot.string()},
-            {"COLUMNS", "120"},
-        },
-        {"outdated", "maven"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"PATH", pathValue},
+                                                                        {"REQPACK_MAVEN_REPO", repoRoot.string()},
+                                                                        {"COLUMNS", "120"},
+                                                                    },
+                                                                    {"outdated", "maven"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("OUTDATED: maven") != std::string::npos);
@@ -1810,18 +1780,13 @@ TEST_CASE("orchestrator maven outdated shows latest version once per artifact", 
 
     std::filesystem::remove(repoRoot / "org/example/demo-lib/1.5.0/demo-lib-1.5.0.pom");
 
-    const std::string secondOutput = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_MAVEN_REPO", repoRoot.string()},
-            {"COLUMNS", "120"},
-        },
-        {"outdated", "maven"},
-        status
-    );
+    const std::string secondOutput = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                          {
+                                                                              {"PATH", pathValue},
+                                                                              {"REQPACK_MAVEN_REPO", repoRoot.string()},
+                                                                              {"COLUMNS", "120"},
+                                                                          },
+                                                                          {"outdated", "maven"}, status);
 
     CHECK(status == 0);
     CHECK(secondOutput.find("OUTDATED: maven") != std::string::npos);
@@ -1877,33 +1842,28 @@ TEST_CASE("orchestrator dnf search parses indented native dnf results", "[integr
 
     copy_repo_plugin(pluginDirectory, "dnf");
 
-    write_file(fakeBin / "dnf",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"search\" ]; then\n"
-        "  printf 'Matched fields: name (exact)\\n texlive-xurl.noarch\\tAllow url break at any alphanumerical character\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1\" = \"repoquery\" ]; then\n"
-        "  printf 'texlive-xurl.noarch\\tsvn61553-80.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "exit 0\n");
+    write_file(fakeBin / "dnf", "#!/bin/sh\n"
+                                "if [ \"$1\" = \"search\" ]; then\n"
+                                "  printf 'Matched fields: name (exact)\\n texlive-xurl.noarch\\tAllow url break at "
+                                "any alphanumerical character\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "if [ \"$1\" = \"repoquery\" ]; then\n"
+                                "  printf 'texlive-xurl.noarch\\tsvn61553-80.fc43\\n'\n"
+                                "  exit 0\n"
+                                "fi\n"
+                                "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dnf").string())).c_str()) == 0);
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-        },
-        {"search", "dnf", "texlive-xurl"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"PATH", pathValue},
+                                                                    },
+                                                                    {"search", "dnf", "texlive-xurl"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("SEARCH: dnf") != std::string::npos);
@@ -1926,32 +1886,29 @@ TEST_CASE("orchestrator dnf search honors arch filter", "[integration][orchestra
     copy_repo_plugin(pluginDirectory, "dnf");
 
     write_file(fakeBin / "dnf",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"search\" ]; then\n"
-        "  printf 'Matched fields: name (exact)\\n texlive-xurl.noarch\\tAllow url break at any alphanumerical character\\n texlive-xurl.x86_64\\tAllow url break at any alphanumerical character\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "if [ \"$1\" = \"repoquery\" ]; then\n"
-        "  printf 'texlive-xurl.noarch\\tsvn61553-80.fc43\\ntexlive-xurl.x86_64\\tsvn61553-80.fc43\\n'\n"
-        "  exit 0\n"
-        "fi\n"
-        "exit 0\n");
+               "#!/bin/sh\n"
+               "if [ \"$1\" = \"search\" ]; then\n"
+               "  printf 'Matched fields: name (exact)\\n texlive-xurl.noarch\\tAllow url break at any alphanumerical "
+               "character\\n texlive-xurl.x86_64\\tAllow url break at any alphanumerical character\\n'\n"
+               "  exit 0\n"
+               "fi\n"
+               "if [ \"$1\" = \"repoquery\" ]; then\n"
+               "  printf 'texlive-xurl.noarch\\tsvn61553-80.fc43\\ntexlive-xurl.x86_64\\tsvn61553-80.fc43\\n'\n"
+               "  exit 0\n"
+               "fi\n"
+               "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dnf").string())).c_str()) == 0);
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-        },
-        {"search", "dnf", "texlive-xurl", "--arch", "x86_64"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {
+                                                 {"PATH", pathValue},
+                                             },
+                                             {"search", "dnf", "texlive-xurl", "--arch", "x86_64"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("texlive-xurl") != std::string::npos);
@@ -1959,7 +1916,8 @@ TEST_CASE("orchestrator dnf search honors arch filter", "[integration][orchestra
     CHECK(output.find("noarch") == std::string::npos);
 }
 
-TEST_CASE("orchestrator install command plans validates and executes plugin install", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install command plans validates and executes plugin install",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -1974,10 +1932,12 @@ TEST_CASE("orchestrator install command plans validates and executes plugin inst
     CHECK(read_file(installMarker) == "sample");
 }
 
-TEST_CASE("orchestrator resolves proxy plugin install requests to configured target", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator resolves proxy plugin install requests to configured target",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-proxy-install"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
+    const std::filesystem::path configPath =
+        write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
 
     add_plugin_script(pluginDirectory, "java", PROXY_PLUGIN);
     add_plugin_script(pluginDirectory, "maven", ORCHESTRATOR_PLUGIN);
@@ -1993,16 +1953,19 @@ TEST_CASE("orchestrator resolves proxy plugin install requests to configured tar
     CHECK_FALSE(std::filesystem::exists(gradleInstallMarker));
 }
 
-TEST_CASE("orchestrator proxy default target can be overridden from CLI define flag", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator proxy default target can be overridden from CLI define flag",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-proxy-override"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
+    const std::filesystem::path configPath =
+        write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
 
     add_plugin_script(pluginDirectory, "java", PROXY_PLUGIN);
     add_plugin_script(pluginDirectory, "maven", ORCHESTRATOR_PLUGIN);
     add_plugin_script(pluginDirectory, "gradle", ORCHESTRATOR_PLUGIN);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "java", "sample", "-Dproxy.java.default=gradle"});
+    const std::string output =
+        run_reqpack(tempDir.path(), configPath, {"install", "java", "sample", "-Dproxy.java.default=gradle"});
     INFO(output);
 
     const std::filesystem::path mavenInstallMarker = pluginDirectory / "maven" / "state" / "install.txt";
@@ -2012,10 +1975,12 @@ TEST_CASE("orchestrator proxy default target can be overridden from CLI define f
     CHECK_FALSE(std::filesystem::exists(mavenInstallMarker));
 }
 
-TEST_CASE("orchestrator resolves proxy plugin search requests before logging output", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator resolves proxy plugin search requests before logging output",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-proxy-search"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven' }");
+    const std::filesystem::path configPath =
+        write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven' }");
 
     add_plugin_script(pluginDirectory, "java", PROXY_PLUGIN);
     add_plugin_script(pluginDirectory, "maven", ORCHESTRATOR_PLUGIN);
@@ -2028,10 +1993,12 @@ TEST_CASE("orchestrator resolves proxy plugin search requests before logging out
     CHECK(output.find("searched by maven") != std::string::npos);
 }
 
-TEST_CASE("orchestrator loads repo java proxy plugin from workspace and routes install to configured target", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator loads repo java proxy plugin from workspace and routes install to configured target",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-repo-java-proxy"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
+    const std::filesystem::path configPath =
+        write_config_with_proxy(tempDir.path(), pluginDirectory, "maven", "{ 'maven', 'gradle' }");
 
     copy_repo_plugin(pluginDirectory, "java");
     add_plugin_script(pluginDirectory, "maven", ORCHESTRATOR_PLUGIN);
@@ -2047,16 +2014,17 @@ TEST_CASE("orchestrator loads repo java proxy plugin from workspace and routes i
     CHECK_FALSE(std::filesystem::exists(gradleInstallMarker));
 }
 
-TEST_CASE("orchestrator install local rqp resolves to built-in rqp by extension", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install local rqp resolves to built-in rqp by extension",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-rqp"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-rqp"))
-    );
+        tempDir.path(), "artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-rqp")));
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
     const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "artifact" / "artifact@1.0.0-1+r0";
@@ -2090,7 +2058,8 @@ TEST_CASE("reqpack version commands print build release id", "[integration][orch
     CHECK(flagOutput.find(std::string{"ReqPack "} + reqpack_build_release_id()) != std::string::npos);
 }
 
-TEST_CASE("orchestrator install local archive passes extracted directory to plugin", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install local archive passes extracted directory to plugin",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-archive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2116,13 +2085,10 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)" );
+)");
 
     const std::filesystem::path archivePath = build_zip_archive(
-        tempDir.path(),
-        "artifact.zip",
-        {{"artifact.txt", "hello-local-archive"}, {"nested/inner.txt", "nested"}}
-    );
+        tempDir.path(), "artifact.zip", {{"artifact.txt", "hello-local-archive"}, {"nested/inner.txt", "nested"}});
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "apply", archivePath.string()});
     const std::filesystem::path marker = pluginDirectory / "apply" / "state" / "local.txt";
@@ -2131,7 +2097,8 @@ function plugin.shutdown() return true end
     CHECK(read_file(pluginDirectory / "apply" / "state" / "inner.txt") == "nested");
 }
 
-TEST_CASE("orchestrator install file-url archive resolves system after extraction", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install file-url archive resolves system after extraction",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-file-url-archive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2154,16 +2121,18 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)" );
+)");
 
-    const std::filesystem::path archivePath = build_zip_archive(tempDir.path(), "remote-artifact.zip", {{"artifact.txt", "hello-url-archive"}});
+    const std::filesystem::path archivePath =
+        build_zip_archive(tempDir.path(), "remote-artifact.zip", {{"artifact.txt", "hello-url-archive"}});
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "file://" + archivePath.string()});
     INFO(output);
     CHECK(output.find("INSTALL: apply:local") != std::string::npos);
     CHECK(output.find("1 ok") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install local zstd file resolves system by extracted filename", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install local zstd file resolves system by extracted filename",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-zstd-file"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2190,9 +2159,10 @@ function plugin.list(context) return {} end
 function plugin.search(context, prompt) return {} end
 function plugin.info(context, package) return { name = package, version = "1.0.0" } end
 function plugin.shutdown() return true end
-)" );
+)");
 
-    const std::filesystem::path archivePath = build_zstd_file_archive(tempDir.path(), "artifact.anvilpkg", "hello-zstd-local");
+    const std::filesystem::path archivePath =
+        build_zstd_file_archive(tempDir.path(), "artifact.anvilpkg", "hello-zstd-local");
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", archivePath.string()});
     INFO(output);
@@ -2230,22 +2200,16 @@ function plugin.shutdown() return true end
 )");
 
     const std::filesystem::path archivePath = build_encrypted_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted-cli.zip",
-        "secret123",
-        {{"artifact.txt", "hello-encrypted-cli"}}
-    );
+        tempDir.path(), "artifact-encrypted-cli.zip", "secret123", {{"artifact.txt", "hello-encrypted-cli"}});
 
     const std::string output = run_reqpack(
-        tempDir.path(),
-        configPath,
-        {"--archive-password", "secret123", "install", "apply", archivePath.string()}
-    );
+        tempDir.path(), configPath, {"--archive-password", "secret123", "install", "apply", archivePath.string()});
     INFO(output);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-encrypted-cli");
 }
 
-TEST_CASE("orchestrator install encrypted local archive accepts config password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install encrypted local archive accepts config password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-config"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
@@ -2272,48 +2236,52 @@ function plugin.info(context, package) return { name = package, version = "1.0.0
 function plugin.shutdown() return true end
 )");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  archives = {\n"
-        "    password = 'secret456',\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  archives = {\n"
+                               "    password = 'secret456',\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::filesystem::path archivePath = build_encrypted_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted-config.zip",
-        "secret456",
-        {{"artifact.txt", "hello-encrypted-config"}}
-    );
+        tempDir.path(), "artifact-encrypted-config.zip", "secret456", {{"artifact.txt", "hello-encrypted-config"}});
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "apply", archivePath.string()});
     INFO(output);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-encrypted-config");
 }
 
-TEST_CASE("orchestrator install encrypted local archive accepts env password fallback", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install encrypted local archive accepts env password fallback",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-env"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2342,25 +2310,17 @@ function plugin.shutdown() return true end
 )");
 
     const std::filesystem::path archivePath = build_encrypted_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted-env.zip",
-        "secret789",
-        {{"artifact.txt", "hello-encrypted-env"}}
-    );
+        tempDir.path(), "artifact-encrypted-env.zip", "secret789", {{"artifact.txt", "hello-encrypted-env"}});
 
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {{"REQPACK_ARCHIVE_PASSWORD", "secret789"}},
-        {"install", "apply", archivePath.string()},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {{"REQPACK_ARCHIVE_PASSWORD", "secret789"}},
+                                                                    {"install", "apply", archivePath.string()}, status);
     CHECK(status == 0);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-encrypted-env");
 }
 
-TEST_CASE("orchestrator install encrypted local archive fails without password in non-interactive mode", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install encrypted local archive fails without password in non-interactive mode",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-missing-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2369,26 +2329,17 @@ TEST_CASE("orchestrator install encrypted local archive fails without password i
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     const std::filesystem::path archivePath = build_encrypted_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted-missing.zip",
-        "secret000",
-        {{"artifact.txt", "hello-encrypted-missing"}}
-    );
+        tempDir.path(), "artifact-encrypted-missing.zip", "secret000", {{"artifact.txt", "hello-encrypted-missing"}});
 
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {},
-        {"install", "apply", archivePath.string()},
-        status
-    );
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(), {},
+                                                                    {"install", "apply", archivePath.string()}, status);
     INFO(output);
     CHECK(status != 0);
     CHECK(output.find("archive password required: " + archivePath.string()) != std::string::npos);
 }
 
-TEST_CASE("orchestrator install encrypted local archive fails on invalid password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install encrypted local archive fails on invalid password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-archive-invalid-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2397,46 +2348,37 @@ TEST_CASE("orchestrator install encrypted local archive fails on invalid passwor
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     const std::filesystem::path archivePath = build_encrypted_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted-invalid.zip",
-        "secret111",
-        {{"artifact.txt", "hello-encrypted-invalid"}}
-    );
+        tempDir.path(), "artifact-encrypted-invalid.zip", "secret111", {{"artifact.txt", "hello-encrypted-invalid"}});
 
     const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {},
-        {"--archive-password", "wrong", "install", "apply", archivePath.string()},
-        status
-    );
+        tempDir.path(), configPath, tempDir.path(), {},
+        {"--archive-password", "wrong", "install", "apply", archivePath.string()}, status);
     INFO(output);
     CHECK(status != 0);
     CHECK(output.find("invalid archive password: " + archivePath.string()) != std::string::npos);
 }
 
-TEST_CASE("orchestrator install encrypted seven zip archive accepts CLI password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install encrypted seven zip archive accepts CLI password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-encrypted-7z-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "seven-zip-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-encrypted-7z"))
-    );
+        tempDir.path(), "seven-zip-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-encrypted-7z")));
 
-    const std::filesystem::path archivePath = build_encrypted_seven_zip_archive(
-        tempDir.path(),
-        "artifact-encrypted.7z",
-        "secret7z",
-        {{localPackage.filename().string(), read_file(localPackage)}}
-    );
+    const std::filesystem::path archivePath =
+        build_encrypted_seven_zip_archive(tempDir.path(), "artifact-encrypted.7z", "secret7z",
+                                          {{localPackage.filename().string(), read_file(localPackage)}});
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"--archive-password", "secret7z", "install", "rqp", archivePath.string()});
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "seven-zip-artifact" / "seven-zip-artifact@1.0.0-1+r0";
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {"--archive-password", "secret7z", "install", "rqp", archivePath.string()});
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "seven-zip-artifact" / "seven-zip-artifact@1.0.0-1+r0";
     INFO(output);
     CHECK(std::filesystem::exists(stateDir / "installed.txt"));
     CHECK(read_file(stateDir / "installed.txt") == "hello-encrypted-7z");
@@ -2449,38 +2391,38 @@ TEST_CASE("orchestrator install gpg wrapped zip archive accepts CLI password", "
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_ARCHIVE_COPY_PLUGIN);
 
-    const std::filesystem::path innerArchivePath = build_zip_archive(
-        tempDir.path(),
-        "artifact-inner.zip",
-        {{"artifact.txt", "hello-zip-gpg"}}
-    );
-    const std::filesystem::path archivePath = wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.zip.gpg", "secretgpg");
+    const std::filesystem::path innerArchivePath =
+        build_zip_archive(tempDir.path(), "artifact-inner.zip", {{"artifact.txt", "hello-zip-gpg"}});
+    const std::filesystem::path archivePath =
+        wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.zip.gpg", "secretgpg");
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"--archive-password", "secretgpg", "install", "apply", archivePath.string()});
+    const std::string output = run_reqpack(
+        tempDir.path(), configPath, {"--archive-password", "secretgpg", "install", "apply", archivePath.string()});
     INFO(output);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-zip-gpg");
 }
 
-TEST_CASE("orchestrator install gpg wrapped tar gz archive accepts CLI password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install gpg wrapped tar gz archive accepts CLI password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-targz-gpg-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_ARCHIVE_COPY_PLUGIN);
 
-    const std::filesystem::path innerArchivePath = build_tar_gz_archive(
-        tempDir.path(),
-        "artifact-inner.tar.gz",
-        {{"artifact.txt", "hello-targz-gpg"}}
-    );
-    const std::filesystem::path archivePath = wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.tar.gz.gpg", "secret-targz");
+    const std::filesystem::path innerArchivePath =
+        build_tar_gz_archive(tempDir.path(), "artifact-inner.tar.gz", {{"artifact.txt", "hello-targz-gpg"}});
+    const std::filesystem::path archivePath =
+        wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.tar.gz.gpg", "secret-targz");
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"--archive-password", "secret-targz", "install", "apply", archivePath.string()});
+    const std::string output = run_reqpack(
+        tempDir.path(), configPath, {"--archive-password", "secret-targz", "install", "apply", archivePath.string()});
     INFO(output);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-targz-gpg");
 }
 
-TEST_CASE("orchestrator install gpg wrapped seven zip archive accepts CLI password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install gpg wrapped seven zip archive accepts CLI password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-7z-gpg-cli"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2488,19 +2430,18 @@ TEST_CASE("orchestrator install gpg wrapped seven zip archive accepts CLI passwo
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_ARCHIVE_COPY_PLUGIN);
 
     const std::filesystem::path innerArchivePath = build_encrypted_seven_zip_archive(
-        tempDir.path(),
-        "artifact-inner.7z",
-        "shared7zpass",
-        {{"artifact.txt", "hello-7z-gpg"}}
-    );
-    const std::filesystem::path archivePath = wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.7z.gpg", "shared7zpass");
+        tempDir.path(), "artifact-inner.7z", "shared7zpass", {{"artifact.txt", "hello-7z-gpg"}});
+    const std::filesystem::path archivePath =
+        wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact.7z.gpg", "shared7zpass");
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"--archive-password", "shared7zpass", "install", "apply", archivePath.string()});
+    const std::string output = run_reqpack(
+        tempDir.path(), configPath, {"--archive-password", "shared7zpass", "install", "apply", archivePath.string()});
     INFO(output);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "artifact.txt") == "hello-7z-gpg");
 }
 
-TEST_CASE("orchestrator install gpg wrapped archive fails on invalid password", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install gpg wrapped archive fails on invalid password",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-local-gpg-invalid-password"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -2508,47 +2449,33 @@ TEST_CASE("orchestrator install gpg wrapped archive fails on invalid password", 
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    const std::filesystem::path innerArchivePath = build_zip_archive(
-        tempDir.path(),
-        "artifact-invalid-inner.zip",
-        {{"artifact.txt", "hello-invalid-gpg"}}
-    );
-    const std::filesystem::path archivePath = wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact-invalid.zip.gpg", "rightpass");
+    const std::filesystem::path innerArchivePath =
+        build_zip_archive(tempDir.path(), "artifact-invalid-inner.zip", {{"artifact.txt", "hello-invalid-gpg"}});
+    const std::filesystem::path archivePath =
+        wrap_archive_with_gpg(tempDir.path(), innerArchivePath, "artifact-invalid.zip.gpg", "rightpass");
 
     const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {},
-        {"--archive-password", "wrongpass", "install", "apply", archivePath.string()},
-        status
-    );
+        tempDir.path(), configPath, tempDir.path(), {},
+        {"--archive-password", "wrongpass", "install", "apply", archivePath.string()}, status);
     INFO(output);
     CHECK(status != 0);
     CHECK(output.find("invalid archive password: " + archivePath.string()) != std::string::npos);
 }
 
-TEST_CASE("orchestrator install named rqp package resolves from repository index", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install named rqp package resolves from repository index",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-rqp-repo"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactPath = build_rqp_package(
-        tempDir.path(),
-        "repo-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-from-repo"))
-    );
-    const std::filesystem::path indexPath = write_rq_repository_index(
-        tempDir.path(),
-        "repo-artifact",
-        "1.0.0",
-        artifactPath,
-        sha256_file_hex(artifactPath)
-    );
-    const std::filesystem::path configPath = write_config_with_rq_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        {"file://" + indexPath.string()}
-    );
+        tempDir.path(), "repo-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-from-repo")));
+    const std::filesystem::path indexPath = write_rq_repository_index(tempDir.path(), "repo-artifact", "1.0.0",
+                                                                      artifactPath, sha256_file_hex(artifactPath));
+    const std::filesystem::path configPath =
+        write_config_with_rq_repositories(tempDir.path(), pluginDirectory, {"file://" + indexPath.string()});
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "rqp:repo-artifact@1.0.0"});
     const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "repo-artifact" / "repo-artifact@1.0.0-1+r0";
@@ -2560,7 +2487,8 @@ TEST_CASE("orchestrator install named rqp package resolves from repository index
     CHECK(read_file(stateDir / "source.json").find("\"source\": \"repository\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install registry package entry routes to rqp repository package", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install registry package entry routes to rqp repository package",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-registry-rqp-package"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
@@ -2568,36 +2496,30 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
     std::filesystem::create_directories(workspace);
 
     const std::filesystem::path artifactPath = build_rqp_package(
-        tempDir.path(),
-        "prebyte",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-from-registry-package"))
-    );
-    const std::filesystem::path indexPath = write_rq_repository_index(
-        tempDir.path(),
-        "prebyte",
-        "1.0.0",
-        artifactPath,
-        sha256_file_hex(artifactPath)
-    );
+        tempDir.path(), "prebyte",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-from-registry-package")));
+    const std::filesystem::path indexPath =
+        write_rq_repository_index(tempDir.path(), "prebyte", "1.0.0", artifactPath, sha256_file_hex(artifactPath));
 
     init_git_repository(remoteRegistry);
-    write_file(remoteRegistry / "registry" / "p" / "prebyte.json", std::string{
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"name\": \"prebyte\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"source\": \"file://" + indexPath.string() + "\",\n"
-        "  \"description\": \"Prebyte templating CLI packaged as ReqPack artifact.\",\n"
-        "  \"role\": \"package\",\n"
-        "  \"targetSystem\": \"rqp\",\n"
-        "  \"privilegeLevel\": \"none\"\n"
-        "}\n"
-    });
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'add prebyte package'"
-    );
+    write_file(remoteRegistry / "registry" / "p" / "prebyte.json",
+               std::string{"{\n"
+                           "  \"schemaVersion\": 1,\n"
+                           "  \"name\": \"prebyte\",\n"
+                           "  \"version\": \"1.0.0\",\n"
+                           "  \"source\": \"file://" +
+                           indexPath.string() +
+                           "\",\n"
+                           "  \"description\": \"Prebyte templating CLI packaged as ReqPack artifact.\",\n"
+                           "  \"role\": \"package\",\n"
+                           "  \"targetSystem\": \"rqp\",\n"
+                           "  \"privilegeLevel\": \"none\"\n"
+                           "}\n"});
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'add prebyte package'");
 
     ReqPackConfig defaults = default_reqpack_config();
     defaults.registry.remoteUrl.clear();
@@ -2614,38 +2536,47 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
     CHECK(seedDatabase.getRecord("prebyte")->targetSystem == "rqp");
 
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = 'git+" + remoteRegistry.string() + "',\n"
-        "    remoteBranch = 'main',\n"
-        "    remotePluginsPath = 'registry',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = 'git+" +
+                               remoteRegistry.string() +
+                               "',\n"
+                               "    remoteBranch = 'main',\n"
+                               "    remotePluginsPath = 'registry',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string output = run_reqpack(workspace, configPath, {"install", "prebyte"});
     const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "prebyte" / "prebyte@1.0.0-1+r0";
@@ -2657,60 +2588,42 @@ TEST_CASE("orchestrator install registry package entry routes to rqp repository 
     CHECK(read_file(stateDir / "source.json").find("\"source\": \"repository\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install named rqp package resolves repository zip artifact", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install named rqp package resolves repository zip artifact",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-rqp-repo-zip"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactPath = build_rqp_package(
-        tempDir.path(),
-        "repo-zipped-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-from-zipped-repo"))
-    );
+        tempDir.path(), "repo-zipped-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-from-zipped-repo")));
     const std::filesystem::path archivePath = build_zip_archive(
-        tempDir.path(),
-        "repo-zipped-artifact.zip",
-        {{artifactPath.filename().string(), read_file(artifactPath)}}
-    );
-    const std::filesystem::path indexPath = write_rq_repository_index(
-        tempDir.path(),
-        "repo-zipped-artifact",
-        "1.0.0",
-        archivePath
-    );
-    const std::filesystem::path configPath = write_config_with_rq_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        {"file://" + indexPath.string()}
-    );
+        tempDir.path(), "repo-zipped-artifact.zip", {{artifactPath.filename().string(), read_file(artifactPath)}});
+    const std::filesystem::path indexPath =
+        write_rq_repository_index(tempDir.path(), "repo-zipped-artifact", "1.0.0", archivePath);
+    const std::filesystem::path configPath =
+        write_config_with_rq_repositories(tempDir.path(), pluginDirectory, {"file://" + indexPath.string()});
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "rqp:repo-zipped-artifact@1.0.0"});
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "repo-zipped-artifact" / "repo-zipped-artifact@1.0.0-1+r0";
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "repo-zipped-artifact" / "repo-zipped-artifact@1.0.0-1+r0";
     INFO(output);
     CHECK(std::filesystem::exists(stateDir / "installed.txt"));
     CHECK(read_file(stateDir / "installed.txt") == "hello-from-zipped-repo");
 }
 
-TEST_CASE("orchestrator install rqp package aborts on repository artifact hash mismatch", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator install rqp package aborts on repository artifact hash mismatch",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-install-rqp-repo-bad-hash"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path artifactPath = build_rqp_package(
-        tempDir.path(),
-        "repo-bad-hash",
-        "return true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-from-repo"))
-    );
-    const std::filesystem::path indexPath = write_rq_repository_index(
-        tempDir.path(),
-        "repo-bad-hash",
-        "1.0.0",
-        artifactPath,
-        std::string(64, 'a')
-    );
-    const std::filesystem::path configPath = write_config_with_rq_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        {"file://" + indexPath.string()}
-    );
+    const std::filesystem::path artifactPath =
+        build_rqp_package(tempDir.path(), "repo-bad-hash", "return true\n",
+                          std::make_pair(std::string("payload.txt"), std::string("hello-from-repo")));
+    const std::filesystem::path indexPath =
+        write_rq_repository_index(tempDir.path(), "repo-bad-hash", "1.0.0", artifactPath, std::string(64, 'a'));
+    const std::filesystem::path configPath =
+        write_config_with_rq_repositories(tempDir.path(), pluginDirectory, {"file://" + indexPath.string()});
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"install", "rqp", "repo-bad-hash@1.0.0"});
     const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "repo-bad-hash" / "repo-bad-hash@1.0.0-1+r0";
@@ -2725,11 +2638,11 @@ TEST_CASE("orchestrator list and info read installed rqp state", "[integration][
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "listed-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-list"))
-    );
+        tempDir.path(), "listed-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-list")));
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
 
@@ -2755,40 +2668,51 @@ TEST_CASE("orchestrator rqp search reads local registry records", "[integration]
     add_plugin_script(registrySourceRoot, "pip", ORCHESTRATOR_PLUGIN);
     add_plugin_script(registrySourceRoot, "dnf", ORCHESTRATOR_PLUGIN);
 
-    write_file(configPath,
-        "return {\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = false,\n"
-        "  },\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "    sources = {\n"
-        "      pip = { source = '" + (registrySourceRoot / "pip").string() + "', description = 'Python package manager plugin' },\n"
-        "      dnf = { source = '" + (registrySourceRoot / "dnf").string() + "', description = 'Fedora package manager plugin' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  security = {\n"
+                           "    enabled = true,\n"
+                           "    autoFetch = false,\n"
+                           "  },\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = '" +
+                               (registrySourceRoot / "pip").string() +
+                               "', description = 'Python package manager plugin' },\n"
+                               "      dnf = { source = '" +
+                               (registrySourceRoot / "dnf").string() +
+                               "', description = 'Fedora package manager plugin' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string output = run_reqpack(tempDir.path(), configPath, {"search", "rqp", "PYTHON"});
 
@@ -2807,12 +2731,13 @@ TEST_CASE("orchestrator remove rqp package deletes state and artifacts", "[integ
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "removable-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-remove"))
-    );
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "removable-artifact" / "removable-artifact@1.0.0-1+r0";
+        tempDir.path(), "removable-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-remove")));
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "removable-artifact" / "removable-artifact@1.0.0-1+r0";
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
     REQUIRE(std::filesystem::exists(stateDir / "installed.txt"));
@@ -2823,15 +2748,15 @@ TEST_CASE("orchestrator remove rqp package deletes state and artifacts", "[integ
     CHECK_FALSE(std::filesystem::exists(stateDir));
 }
 
-TEST_CASE("orchestrator remove rqp package installed hook exposes fs and exec helpers", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator remove rqp package installed hook exposes fs and exec helpers",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-rqp-remove-hook-context"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path homePath = tempDir.path() / "home";
-    const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "removable-link-artifact",
-        R"(local function shell_quote(value)
+    const std::filesystem::path localPackage =
+        build_rqp_package(tempDir.path(), "removable-link-artifact",
+                          R"(local function shell_quote(value)
   return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
 end
 local out = context.paths.stateDir .. '/installed.txt'
@@ -2847,10 +2772,8 @@ context.artifacts.register_file(out)
 context.artifacts.register_symlink(link)
 return true
 )",
-        std::make_pair(std::string("payload.txt"), std::string("hello-remove-hook")),
-        std::nullopt,
-        "1.0.0",
-        std::optional<std::string>{R"(local function shell_quote(value)
+                          std::make_pair(std::string("payload.txt"), std::string("hello-remove-hook")), std::nullopt,
+                          "1.0.0", std::optional<std::string>{R"(local function shell_quote(value)
   return "'" .. tostring(value):gsub("'", "'\\''") .. "'"
 end
 local link = os.getenv('HOME') .. '/removable-link'
@@ -2862,16 +2785,17 @@ if context.fs.exists(link) then
   end
 end
 return true
-)"}
-    );
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "removable-link-artifact" / "removable-link-artifact@1.0.0-1+r0";
+)"});
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "removable-link-artifact" / "removable-link-artifact@1.0.0-1+r0";
     const std::filesystem::path removableLink = homePath / "removable-link";
 
     (void)run_reqpack_with_home(tempDir.path(), configPath, homePath, {"install", localPackage.string()});
     REQUIRE(std::filesystem::exists(stateDir / "installed.txt"));
     REQUIRE(std::filesystem::exists(removableLink));
 
-    const std::string output = run_reqpack_with_home(tempDir.path(), configPath, homePath, {"remove", "rqp", "removable-link-artifact@1.0.0"});
+    const std::string output =
+        run_reqpack_with_home(tempDir.path(), configPath, homePath, {"remove", "rqp", "removable-link-artifact@1.0.0"});
 
     INFO(output);
     CHECK(output.find("REMOVE: rqp:removable-link-artifact") != std::string::npos);
@@ -2880,25 +2804,26 @@ return true
     CHECK_FALSE(std::filesystem::exists(stateDir));
 }
 
-TEST_CASE("orchestrator remove rqp package failure exits nonzero when transactional mode enabled", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator remove rqp package failure exits nonzero when transactional mode enabled",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-rqp-remove-failure"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory, true);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "failing-remove-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-remove-failure")),
-        std::nullopt,
-        "1.0.0",
-        std::optional<std::string>{"context.tx.failed('expected remove failure')\nreturn false\n"}
-    );
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "failing-remove-artifact" / "failing-remove-artifact@1.0.0-1+r0";
+        tempDir.path(), "failing-remove-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-remove-failure")), std::nullopt, "1.0.0",
+        std::optional<std::string>{"context.tx.failed('expected remove failure')\nreturn false\n"});
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "failing-remove-artifact" / "failing-remove-artifact@1.0.0-1+r0";
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
     REQUIRE(std::filesystem::exists(stateDir / "installed.txt"));
 
-    const CommandRunResult result = run_reqpack_result(tempDir.path(), configPath, {"remove", "rqp", "failing-remove-artifact@1.0.0"});
+    const CommandRunResult result =
+        run_reqpack_result(tempDir.path(), configPath, {"remove", "rqp", "failing-remove-artifact@1.0.0"});
 
     INFO(result.output);
     CHECK(result.exitCode != 0);
@@ -2911,12 +2836,13 @@ TEST_CASE("orchestrator update rqp package no-ops for local source", "[integrati
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "local-only-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-local"))
-    );
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "local-only-artifact" / "local-only-artifact@1.0.0-1+r0";
+        tempDir.path(), "local-only-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-local")));
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "local-only-artifact" / "local-only-artifact@1.0.0-1+r0";
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
     REQUIRE(std::filesystem::exists(stateDir / "installed.txt"));
@@ -2931,52 +2857,55 @@ TEST_CASE("orchestrator update rqp package installs newer repository version", "
     TempDir tempDir{"reqpack-orchestrator-rqp-update-repo"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path artifactV1 = build_rqp_package(
-        tempDir.path() / "v1",
-        "updatable-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-v1"))
-    );
+        tempDir.path() / "v1", "updatable-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-v1")));
     const std::filesystem::path artifactV2 = build_rqp_package(
-        tempDir.path() / "v2",
-        "updatable-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-v2")),
-        std::nullopt,
-        "1.1.0"
-    );
+        tempDir.path() / "v2", "updatable-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\ncontext.artifacts.register_file(out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-v2")), std::nullopt, "1.1.0");
     const std::filesystem::path indexPath = tempDir.path() / "index.json";
-    write_file(indexPath,
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"packages\": [\n"
-        "    {\n"
-        "      \"name\": \"updatable-artifact\",\n"
-        "      \"version\": \"1.0.0\",\n"
-        "      \"release\": 1,\n"
-        "      \"revision\": 0,\n"
-        "      \"architecture\": \"noarch\",\n"
-        "      \"summary\": \"repo package\",\n"
-        "      \"url\": \"file://" + artifactV1.string() + "\",\n"
-        "      \"packageSha256\": \"" + sha256_file_hex(artifactV1) + "\"\n"
-        "    },\n"
-        "    {\n"
-        "      \"name\": \"updatable-artifact\",\n"
-        "      \"version\": \"1.1.0\",\n"
-        "      \"release\": 1,\n"
-        "      \"revision\": 0,\n"
-        "      \"architecture\": \"noarch\",\n"
-        "      \"summary\": \"repo package\",\n"
-        "      \"url\": \"file://" + artifactV2.string() + "\",\n"
-        "      \"packageSha256\": \"" + sha256_file_hex(artifactV2) + "\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n");
-    const std::filesystem::path configPath = write_config_with_rq_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        {"file://" + indexPath.string()}
-    );
-    const std::filesystem::path stateDir = tempDir.path() / "rqp-state" / "updatable-artifact" / "updatable-artifact@1.1.0-1+r0";
+    write_file(indexPath, "{\n"
+                          "  \"schemaVersion\": 1,\n"
+                          "  \"packages\": [\n"
+                          "    {\n"
+                          "      \"name\": \"updatable-artifact\",\n"
+                          "      \"version\": \"1.0.0\",\n"
+                          "      \"release\": 1,\n"
+                          "      \"revision\": 0,\n"
+                          "      \"architecture\": \"noarch\",\n"
+                          "      \"summary\": \"repo package\",\n"
+                          "      \"url\": \"file://" +
+                              artifactV1.string() +
+                              "\",\n"
+                              "      \"packageSha256\": \"" +
+                              sha256_file_hex(artifactV1) +
+                              "\"\n"
+                              "    },\n"
+                              "    {\n"
+                              "      \"name\": \"updatable-artifact\",\n"
+                              "      \"version\": \"1.1.0\",\n"
+                              "      \"release\": 1,\n"
+                              "      \"revision\": 0,\n"
+                              "      \"architecture\": \"noarch\",\n"
+                              "      \"summary\": \"repo package\",\n"
+                              "      \"url\": \"file://" +
+                              artifactV2.string() +
+                              "\",\n"
+                              "      \"packageSha256\": \"" +
+                              sha256_file_hex(artifactV2) +
+                              "\"\n"
+                              "    }\n"
+                              "  ]\n"
+                              "}\n");
+    const std::filesystem::path configPath =
+        write_config_with_rq_repositories(tempDir.path(), pluginDirectory, {"file://" + indexPath.string()});
+    const std::filesystem::path stateDir =
+        tempDir.path() / "rqp-state" / "updatable-artifact" / "updatable-artifact@1.1.0-1+r0";
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", "rqp", "updatable-artifact@1.0.0"});
     const std::string output = run_reqpack(tempDir.path(), configPath, {"update", "rqp", "updatable-artifact"});
@@ -2985,7 +2914,8 @@ TEST_CASE("orchestrator update rqp package installs newer repository version", "
     CHECK(read_file(stateDir / "installed.txt") == "hello-v2");
 }
 
-TEST_CASE("wrapper self-update downloads latest release binary and swaps local symlink", "[integration][orchestrator][service][self-update]") {
+TEST_CASE("wrapper self-update downloads latest release binary and swaps local symlink",
+          "[integration][orchestrator][service][self-update]") {
     TempDir tempDir{"reqpack-wrapper-self-update"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -3001,41 +2931,54 @@ TEST_CASE("wrapper self-update downloads latest release binary and swaps local s
     const std::string owner = "coditary";
     const std::string repo = "ReqPack";
     const std::string target = HostInfoService::currentSnapshot()->platform.target;
-    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" || target == "aarch64-darwin"));
+    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" ||
+             target == "aarch64-darwin"));
     const std::string firstTag = "v1.0.0";
     const std::string secondTag = "v2.0.0";
-    const std::filesystem::path firstArchive = create_self_update_release_archive(releaseAssetRoot, "v1", firstTag, target);
+    const std::filesystem::path firstArchive =
+        create_self_update_release_archive(releaseAssetRoot, "v1", firstTag, target);
     write_self_update_release_api_response(releaseApiRoot, owner, repo, firstTag, target, firstArchive);
     copy_repo_plugin(pluginDirectory, "sys");
     write_file(fakeBinDirectory / "fake-apt", "#!/bin/sh\nprintf '%s\n' \"$@\" >> \"$REQPACK_TEST_SYS_LOG\"\nexit 0\n");
     require_command_success("chmod +x " + escape_shell_arg((fakeBinDirectory / "fake-apt").string()));
 
-    write_file(configPath,
-        "return {\n"
-        "  logging = {\n"
-        "    consoleOutput = true,\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  selfUpdate = {\n"
-        "    repoUrl = 'https://git.example.test/" + owner + "/" + repo + ".git',\n"
-        "    releaseApiBaseUrl = 'file://" + releaseApiRoot.string() + "',\n"
-        "    releaseTag = 'latest',\n"
-        "    binaryDirectory = '" + (homePath / ".local/share/reqpack/self/bin").string() + "',\n"
-        "    linkPath = '" + (homePath / ".local/bin/rqp").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  logging = {\n"
+                           "    consoleOutput = true,\n"
+                           "  },\n"
+                           "  planner = {\n"
+                           "    autoDownloadMissingPlugins = false,\n"
+                           "    autoDownloadMissingDependencies = false,\n"
+                           "  },\n"
+                           "  registry = {\n"
+                           "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  selfUpdate = {\n"
+                               "    repoUrl = 'https://git.example.test/" +
+                               owner + "/" + repo +
+                               ".git',\n"
+                               "    releaseApiBaseUrl = 'file://" +
+                               releaseApiRoot.string() +
+                               "',\n"
+                               "    releaseTag = 'latest',\n"
+                               "    binaryDirectory = '" +
+                               (homePath / ".local/share/reqpack/self/bin").string() +
+                               "',\n"
+                               "    linkPath = '" +
+                               (homePath / ".local/bin/rqp").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string firstOutput = run_reqpack_with_home(workspace, configPath, homePath, {"up"});
     INFO(firstOutput);
@@ -3049,13 +2992,15 @@ TEST_CASE("wrapper self-update downloads latest release binary and swaps local s
     CHECK(firstOutput.find("UPDATE done:  1 ok") != std::string::npos);
 
     const std::filesystem::path linkPath = homePath / ".local/bin/rqp";
-    const std::filesystem::path binaryPath = homePath / ".local/share/reqpack/self/bin" / ("rqp-" + firstTag + "-" + target) / "rqp";
+    const std::filesystem::path binaryPath =
+        homePath / ".local/share/reqpack/self/bin" / ("rqp-" + firstTag + "-" + target) / "rqp";
     REQUIRE(std::filesystem::exists(binaryPath));
     REQUIRE(std::filesystem::is_symlink(linkPath));
     CHECK(std::filesystem::read_symlink(linkPath) == binaryPath);
     CHECK(run_command_capture(escape_shell_arg(linkPath.string()) + " 2>&1").find("v1") != std::string::npos);
 
-    const std::filesystem::path secondArchive = create_self_update_release_archive(releaseAssetRoot, "v2", secondTag, target);
+    const std::filesystem::path secondArchive =
+        create_self_update_release_archive(releaseAssetRoot, "v2", secondTag, target);
     write_self_update_release_api_response(releaseApiRoot, owner, repo, secondTag, target, secondArchive);
     const std::string secondOutput = run_reqpack_with_home(workspace, configPath, homePath, {"up"});
     INFO(secondOutput);
@@ -3065,26 +3010,24 @@ TEST_CASE("wrapper self-update downloads latest release binary and swaps local s
     CHECK(secondOutput.find("[rqp]  now on release " + secondTag) != std::string::npos);
     CHECK(secondOutput.find("UPDATE done:  1 ok") != std::string::npos);
 
-    const std::filesystem::path secondBinaryPath = homePath / ".local/share/reqpack/self/bin" / ("rqp-" + secondTag + "-" + target) / "rqp";
+    const std::filesystem::path secondBinaryPath =
+        homePath / ".local/share/reqpack/self/bin" / ("rqp-" + secondTag + "-" + target) / "rqp";
     REQUIRE(std::filesystem::exists(secondBinaryPath));
     CHECK(std::filesystem::read_symlink(linkPath) == secondBinaryPath);
     CHECK(run_command_capture(escape_shell_arg(linkPath.string()) + " 2>&1").find("v2") != std::string::npos);
 
     const std::filesystem::path sysLogPath = tempDir.path() / "sys-update.log";
-    const std::string wrapperUpdateOutput = run_reqpack_with_home_and_env(
-        workspace,
-        configPath,
-        homePath,
-        {
-            {"REQPACK_SYS_BACKEND", "apt"},
-            {"REQPACK_SYS_APT_BIN", (fakeBinDirectory / "fake-apt").string()},
-            {"REQPACK_SYS_APT_CACHE_BIN", (fakeBinDirectory / "fake-apt").string()},
-            {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBinDirectory / "fake-apt").string()},
-            {"REQPACK_SYS_NO_SUDO", "1"},
-            {"REQPACK_TEST_SYS_LOG", sysLogPath.string()},
-        },
-        {"up", "sys", "pip"}
-    );
+    const std::string wrapperUpdateOutput =
+        run_reqpack_with_home_and_env(workspace, configPath, homePath,
+                                      {
+                                          {"REQPACK_SYS_BACKEND", "apt"},
+                                          {"REQPACK_SYS_APT_BIN", (fakeBinDirectory / "fake-apt").string()},
+                                          {"REQPACK_SYS_APT_CACHE_BIN", (fakeBinDirectory / "fake-apt").string()},
+                                          {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBinDirectory / "fake-apt").string()},
+                                          {"REQPACK_SYS_NO_SUDO", "1"},
+                                          {"REQPACK_TEST_SYS_LOG", sysLogPath.string()},
+                                      },
+                                      {"up", "sys", "pip"});
     INFO(wrapperUpdateOutput);
     CHECK(wrapperUpdateOutput.find("self-update:") == std::string::npos);
     CHECK(wrapperUpdateOutput.find("UPDATE: sys:pip") != std::string::npos);
@@ -3095,7 +3038,8 @@ TEST_CASE("wrapper self-update downloads latest release binary and swaps local s
     CHECK(sysLog.find("python3-pip") != std::string::npos);
 }
 
-TEST_CASE("self-update metadata download failures include actionable transfer details", "[integration][orchestrator][service][self-update]") {
+TEST_CASE("self-update metadata download failures include actionable transfer details",
+          "[integration][orchestrator][service][self-update]") {
     TempDir tempDir{"reqpack-wrapper-self-update-metadata-error"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -3108,44 +3052,58 @@ TEST_CASE("self-update metadata download failures include actionable transfer de
 
     const std::string owner = "coditary";
     const std::string repo = "ReqPack";
-    const std::string metadataUrl = "file://" + (releaseApiRoot / "repos" / owner / repo / "releases" / "latest").string();
+    const std::string metadataUrl =
+        "file://" + (releaseApiRoot / "repos" / owner / repo / "releases" / "latest").string();
 
-    write_file(configPath,
-        "return {\n"
-        "  logging = {\n"
-        "    consoleOutput = true,\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  selfUpdate = {\n"
-        "    repoUrl = 'https://git.example.test/" + owner + "/" + repo + ".git',\n"
-        "    releaseApiBaseUrl = 'file://" + releaseApiRoot.string() + "',\n"
-        "    releaseTag = 'latest',\n"
-        "    binaryDirectory = '" + (homePath / ".local/share/reqpack/self/bin").string() + "',\n"
-        "    linkPath = '" + (homePath / ".local/bin/rqp").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  logging = {\n"
+                           "    consoleOutput = true,\n"
+                           "  },\n"
+                           "  planner = {\n"
+                           "    autoDownloadMissingPlugins = false,\n"
+                           "    autoDownloadMissingDependencies = false,\n"
+                           "  },\n"
+                           "  registry = {\n"
+                           "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  selfUpdate = {\n"
+                               "    repoUrl = 'https://git.example.test/" +
+                               owner + "/" + repo +
+                               ".git',\n"
+                               "    releaseApiBaseUrl = 'file://" +
+                               releaseApiRoot.string() +
+                               "',\n"
+                               "    releaseTag = 'latest',\n"
+                               "    binaryDirectory = '" +
+                               (homePath / ".local/share/reqpack/self/bin").string() +
+                               "',\n"
+                               "    linkPath = '" +
+                               (homePath / ".local/bin/rqp").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string output = run_reqpack_with_home(workspace, configPath, homePath, {"update"});
     INFO(output);
     CHECK(output.find("Self-update metadata download failed") != std::string::npos);
     CHECK(output.find("url: " + metadataUrl) != std::string::npos);
     CHECK(output.find("curl:") != std::string::npos);
-    CHECK(output.find("Check network access, releaseApiBaseUrl, repository visibility, and selected release tag.") != std::string::npos);
+    CHECK(output.find("Check network access, releaseApiBaseUrl, repository visibility, and selected release tag.") !=
+          std::string::npos);
 }
 
-TEST_CASE("self-update missing asset failure names expected archive", "[integration][orchestrator][service][self-update]") {
+TEST_CASE("self-update missing asset failure names expected archive",
+          "[integration][orchestrator][service][self-update]") {
     TempDir tempDir{"reqpack-wrapper-self-update-missing-asset"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -3160,44 +3118,60 @@ TEST_CASE("self-update missing asset failure names expected archive", "[integrat
     const std::string repo = "ReqPack";
     const std::string tag = "v1.0.0";
     const std::string target = HostInfoService::currentSnapshot()->platform.target;
-    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" || target == "aarch64-darwin"));
+    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" ||
+             target == "aarch64-darwin"));
     write_file(releaseApiRoot / "repos" / owner / repo / "releases" / "latest",
-        "{\n"
-        "  \"tag_name\": \"" + tag + "\",\n"
-        "  \"assets\": [\n"
-        "    {\n"
-        "      \"name\": \"checksums.txt\",\n"
-        "      \"browser_download_url\": \"file://" + (tempDir.path() / "checksums.txt").string() + "\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n");
+               "{\n"
+               "  \"tag_name\": \"" +
+                   tag +
+                   "\",\n"
+                   "  \"assets\": [\n"
+                   "    {\n"
+                   "      \"name\": \"checksums.txt\",\n"
+                   "      \"browser_download_url\": \"file://" +
+                   (tempDir.path() / "checksums.txt").string() +
+                   "\"\n"
+                   "    }\n"
+                   "  ]\n"
+                   "}\n");
 
-    write_file(configPath,
-        "return {\n"
-        "  logging = {\n"
-        "    consoleOutput = true,\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  selfUpdate = {\n"
-        "    repoUrl = 'https://git.example.test/" + owner + "/" + repo + ".git',\n"
-        "    releaseApiBaseUrl = 'file://" + releaseApiRoot.string() + "',\n"
-        "    releaseTag = 'latest',\n"
-        "    binaryDirectory = '" + (homePath / ".local/share/reqpack/self/bin").string() + "',\n"
-        "    linkPath = '" + (homePath / ".local/bin/rqp").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  logging = {\n"
+                           "    consoleOutput = true,\n"
+                           "  },\n"
+                           "  planner = {\n"
+                           "    autoDownloadMissingPlugins = false,\n"
+                           "    autoDownloadMissingDependencies = false,\n"
+                           "  },\n"
+                           "  registry = {\n"
+                           "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  selfUpdate = {\n"
+                               "    repoUrl = 'https://git.example.test/" +
+                               owner + "/" + repo +
+                               ".git',\n"
+                               "    releaseApiBaseUrl = 'file://" +
+                               releaseApiRoot.string() +
+                               "',\n"
+                               "    releaseTag = 'latest',\n"
+                               "    binaryDirectory = '" +
+                               (homePath / ".local/share/reqpack/self/bin").string() +
+                               "',\n"
+                               "    linkPath = '" +
+                               (homePath / ".local/bin/rqp").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string output = run_reqpack_with_home(workspace, configPath, homePath, {"update"});
     INFO(output);
@@ -3208,7 +3182,8 @@ TEST_CASE("self-update missing asset failure names expected archive", "[integrat
     CHECK(output.find("available assets: checksums.txt") != std::string::npos);
 }
 
-TEST_CASE("self-update refreshes main registry before downloading release", "[integration][orchestrator][service][self-update]") {
+TEST_CASE("self-update refreshes main registry before downloading release",
+          "[integration][orchestrator][service][self-update]") {
     TempDir tempDir{"reqpack-wrapper-self-update-registry-refresh"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -3229,10 +3204,8 @@ TEST_CASE("self-update refreshes main registry before downloading release", "[in
   "role": "package-manager",
   "privilegeLevel": "none"
 })");
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial'"
-    );
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial'");
 
     ReqPackConfig defaults = default_reqpack_config();
     defaults.registry.remoteUrl.clear();
@@ -3255,47 +3228,59 @@ TEST_CASE("self-update refreshes main registry before downloading release", "[in
   "role": "package-manager",
   "privilegeLevel": "sudo"
 })");
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'update registry'"
-    );
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'update registry'");
 
     const std::string owner = "coditary";
     const std::string repo = "ReqPack";
     const std::string target = HostInfoService::currentSnapshot()->platform.target;
-    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" || target == "aarch64-darwin"));
+    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" ||
+             target == "aarch64-darwin"));
     const std::string tag = "v1.0.0";
     const std::filesystem::path archive = create_self_update_release_archive(releaseAssetRoot, "v1", tag, target);
     write_self_update_release_api_response(releaseApiRoot, owner, repo, tag, target, archive);
 
-    write_file(configPath,
-        "return {\n"
-        "  logging = {\n"
-        "    consoleOutput = true,\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    remoteUrl = 'git+" + remoteRegistry.string() + "',\n"
-        "    remoteBranch = 'main',\n"
-        "    remotePluginsPath = 'registry',\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  selfUpdate = {\n"
-        "    repoUrl = 'https://git.example.test/" + owner + "/" + repo + ".git',\n"
-        "    releaseApiBaseUrl = 'file://" + releaseApiRoot.string() + "',\n"
-        "    releaseTag = 'latest',\n"
-        "    binaryDirectory = '" + (homePath / ".local/share/reqpack/self/bin").string() + "',\n"
-        "    linkPath = '" + (homePath / ".local/bin/rqp").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  logging = {\n"
+                           "    consoleOutput = true,\n"
+                           "  },\n"
+                           "  planner = {\n"
+                           "    autoDownloadMissingPlugins = false,\n"
+                           "    autoDownloadMissingDependencies = false,\n"
+                           "  },\n"
+                           "  registry = {\n"
+                           "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    remoteUrl = 'git+" +
+                               remoteRegistry.string() +
+                               "',\n"
+                               "    remoteBranch = 'main',\n"
+                               "    remotePluginsPath = 'registry',\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  selfUpdate = {\n"
+                               "    repoUrl = 'https://git.example.test/" +
+                               owner + "/" + repo +
+                               ".git',\n"
+                               "    releaseApiBaseUrl = 'file://" +
+                               releaseApiRoot.string() +
+                               "',\n"
+                               "    releaseTag = 'latest',\n"
+                               "    binaryDirectory = '" +
+                               (homePath / ".local/share/reqpack/self/bin").string() +
+                               "',\n"
+                               "    linkPath = '" +
+                               (homePath / ".local/bin/rqp").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     const std::string output = run_reqpack_with_home(workspace, configPath, homePath, {"update"});
     INFO(output);
@@ -3312,7 +3297,8 @@ TEST_CASE("self-update refreshes main registry before downloading release", "[in
     CHECK(refreshedDatabase.getRecord("apt")->privilegeLevel == "sudo");
 }
 
-TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git", "[integration][orchestrator][service][self-update]") {
+TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git",
+          "[integration][orchestrator][service][self-update]") {
     TempDir tempDir{"reqpack-wrapper-self-update-registry-env-sanitize"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path homePath = tempDir.path() / "home";
@@ -3336,10 +3322,8 @@ TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git", 
   "role": "package-manager",
   "privilegeLevel": "none"
 })");
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial'"
-    );
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial'");
 
     ReqPackConfig defaults = default_reqpack_config();
     defaults.registry.remoteUrl.clear();
@@ -3360,67 +3344,76 @@ TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git", 
   "role": "package-manager",
   "privilegeLevel": "sudo"
 })");
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'refresh registry'"
-    );
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'refresh registry'");
 
     const std::string realGitPath = first_non_empty_line(run_command_capture("command -v git"));
     REQUIRE_FALSE(realGitPath.empty());
     write_file(fakeBinDirectory / "git",
-        "#!/bin/sh\n"
-        "printf '%s\\n' \"${LD_LIBRARY_PATH-<unset>}\" >> \"$REQPACK_TEST_GIT_PROBE\"\n"
-        "exec " + realGitPath + " \"$@\"\n");
+               "#!/bin/sh\n"
+               "printf '%s\\n' \"${LD_LIBRARY_PATH-<unset>}\" >> \"$REQPACK_TEST_GIT_PROBE\"\n"
+               "exec " +
+                   realGitPath + " \"$@\"\n");
     require_command_success("chmod +x " + escape_shell_arg((fakeBinDirectory / "git").string()));
 
     const std::string owner = "coditary";
     const std::string repo = "ReqPack";
     const std::string tag = "v1.0.0";
     const std::string target = HostInfoService::currentSnapshot()->platform.target;
-    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" || target == "aarch64-darwin"));
+    REQUIRE((target == "x86_64-linux" || target == "aarch64-linux" || target == "x86_64-darwin" ||
+             target == "aarch64-darwin"));
     const std::filesystem::path archive = create_self_update_release_archive(releaseAssetRoot, "v1", tag, target);
     write_self_update_release_api_response(releaseApiRoot, owner, repo, tag, target, archive);
 
-    write_file(configPath,
-        "return {\n"
-        "  logging = {\n"
-        "    consoleOutput = true,\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    remoteUrl = 'git+" + remoteRegistry.string() + "',\n"
-        "    remoteBranch = 'main',\n"
-        "    remotePluginsPath = 'registry',\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  selfUpdate = {\n"
-        "    repoUrl = 'https://git.example.test/" + owner + "/" + repo + ".git',\n"
-        "    releaseApiBaseUrl = 'file://" + releaseApiRoot.string() + "',\n"
-        "    releaseTag = 'latest',\n"
-        "    binaryDirectory = '" + (homePath / ".local/share/reqpack/self/bin").string() + "',\n"
-        "    linkPath = '" + (homePath / ".local/bin/rqp").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  logging = {\n"
+                           "    consoleOutput = true,\n"
+                           "  },\n"
+                           "  planner = {\n"
+                           "    autoDownloadMissingPlugins = false,\n"
+                           "    autoDownloadMissingDependencies = false,\n"
+                           "  },\n"
+                           "  registry = {\n"
+                           "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    remoteUrl = 'git+" +
+                               remoteRegistry.string() +
+                               "',\n"
+                               "    remoteBranch = 'main',\n"
+                               "    remotePluginsPath = 'registry',\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  selfUpdate = {\n"
+                               "    repoUrl = 'https://git.example.test/" +
+                               owner + "/" + repo +
+                               ".git',\n"
+                               "    releaseApiBaseUrl = 'file://" +
+                               releaseApiRoot.string() +
+                               "',\n"
+                               "    releaseTag = 'latest',\n"
+                               "    binaryDirectory = '" +
+                               (homePath / ".local/share/reqpack/self/bin").string() +
+                               "',\n"
+                               "    linkPath = '" +
+                               (homePath / ".local/bin/rqp").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
-    const std::string output = run_reqpack_with_home_and_env(
-        workspace,
-        configPath,
-        homePath,
-        {
-            {"PATH", fakeBinDirectory.string() + ":/usr/bin:/bin"},
-            {"LD_LIBRARY_PATH", "/tmp/reqpack-bad-lib-path"},
-            {"REQPACK_TEST_GIT_PROBE", gitProbeLog.string()},
-        },
-        {"update"}
-    );
+    const std::string output = run_reqpack_with_home_and_env(workspace, configPath, homePath,
+                                                             {
+                                                                 {"PATH", fakeBinDirectory.string() + ":/usr/bin:/bin"},
+                                                                 {"LD_LIBRARY_PATH", "/tmp/reqpack-bad-lib-path"},
+                                                                 {"REQPACK_TEST_GIT_PROBE", gitProbeLog.string()},
+                                                             },
+                                                             {"update"});
     INFO(output);
     CHECK(output.find("UPDATE done:  1 ok") != std::string::npos);
 
@@ -3428,7 +3421,8 @@ TEST_CASE("self-update registry refresh strips leaked LD_LIBRARY_PATH for git", 
     CHECK(gitProbe.find("/tmp/reqpack-bad-lib-path") == std::string::npos);
 }
 
-TEST_CASE("update all refreshes main registry before expanding plugin wrappers", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-update-all-main-registry"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path remoteRegistry = tempDir.path() / "remote-registry";
@@ -3448,20 +3442,18 @@ TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
     commit_plugin_source_version(npmRepoPath, "npm", "v2", "2.1.0", "v2.1.0");
     commit_plugin_source_version(npmRepoPath, "npm", "head", "9.9.9-dev");
 
-    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"name\": \"pip\",\n"
-        "  \"source\": \"git+" + pipRepoPath.string() + "\",\n"
-        "  \"description\": \"pip plugin\",\n"
-        "  \"role\": \"package-manager\",\n"
-        "  \"privilegeLevel\": \"none\"\n"
-        "}\n"
-    });
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial registry'"
-    );
+    write_file(remoteRegistry / "registry" / "p" / "pip.json", std::string{"{\n"
+                                                                           "  \"schemaVersion\": 1,\n"
+                                                                           "  \"name\": \"pip\",\n"
+                                                                           "  \"source\": \"git+" +
+                                                                           pipRepoPath.string() +
+                                                                           "\",\n"
+                                                                           "  \"description\": \"pip plugin\",\n"
+                                                                           "  \"role\": \"package-manager\",\n"
+                                                                           "  \"privilegeLevel\": \"none\"\n"
+                                                                           "}\n"});
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'initial registry'");
 
     ReqPackConfig defaults = default_reqpack_config();
     defaults.registry.remoteUrl.clear();
@@ -3474,45 +3466,50 @@ TEST_CASE("update all refreshes main registry before expanding plugin wrappers",
     RegistryDatabase seedDatabase(seedConfig);
     REQUIRE(seedDatabase.ensureReady());
 
-    write_file(remoteRegistry / "registry" / "n" / "npm.json", std::string{
-        "{\n"
-        "  \"schemaVersion\": 1,\n"
-        "  \"name\": \"npm\",\n"
-        "  \"source\": \"git+" + npmRepoPath.string() + "\",\n"
-        "  \"description\": \"npm plugin\",\n"
-        "  \"role\": \"package-manager\",\n"
-        "  \"privilegeLevel\": \"none\"\n"
-        "}\n"
-    });
-    require_command_success(
-        "git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" +
-        " && git -C " + escape_shell_arg(remoteRegistry.string()) + " commit -m 'add npm registry entry'"
-    );
+    write_file(remoteRegistry / "registry" / "n" / "npm.json", std::string{"{\n"
+                                                                           "  \"schemaVersion\": 1,\n"
+                                                                           "  \"name\": \"npm\",\n"
+                                                                           "  \"source\": \"git+" +
+                                                                           npmRepoPath.string() +
+                                                                           "\",\n"
+                                                                           "  \"description\": \"npm plugin\",\n"
+                                                                           "  \"role\": \"package-manager\",\n"
+                                                                           "  \"privilegeLevel\": \"none\"\n"
+                                                                           "}\n"});
+    require_command_success("git -C " + escape_shell_arg(remoteRegistry.string()) + " add registry" + " && git -C " +
+                            escape_shell_arg(remoteRegistry.string()) + " commit -m 'add npm registry entry'");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    remoteUrl = 'git+" + remoteRegistry.string() + "',\n"
-        "    remoteBranch = 'main',\n"
-        "    remotePluginsPath = 'registry',\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    remoteUrl = 'git+" +
+                               remoteRegistry.string() +
+                               "',\n"
+                               "    remoteBranch = 'main',\n"
+                               "    remotePluginsPath = 'registry',\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "npm" / "run.lua"));
@@ -3549,7 +3546,8 @@ TEST_CASE("host refresh rewrites cached host snapshot", "[integration][orchestra
     CHECK(snapshot->cache.refreshReason == "manual-live-probe");
 }
 
-TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-update"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pluginRepoPath = tempDir.path() / "plugin-origin";
@@ -3562,31 +3560,38 @@ TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version",
     commit_plugin_source_version(pluginRepoPath, "pip", "v2", "1.2.0", "v1.2.0");
     commit_plugin_source_version(pluginRepoPath, "pip", "head", "9.9.9-dev");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    sources = {\n"
-        "      pip = { source = 'git+" + pluginRepoPath.string() + "' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = 'git+" +
+                               pluginRepoPath.string() +
+                               "' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     {
         ReqPackConfig defaults = default_reqpack_config();
@@ -3606,7 +3611,8 @@ TEST_CASE("update plugin refreshes git-backed wrapper to newest tagged version",
     CHECK(refreshedScript.find("1.2.0") != std::string::npos);
 }
 
-TEST_CASE("update system --all calls plugin update with empty package list", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("update system --all calls plugin update with empty package list",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-system-update-all"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -3620,7 +3626,8 @@ TEST_CASE("update system --all calls plugin update with empty package list", "[i
     CHECK(read_file(pluginDirectory / "apt" / "state" / "update.txt") == "0");
 }
 
-TEST_CASE("update --all refreshes only installed plugin wrappers", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("update --all refreshes only installed plugin wrappers",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-update-all"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
@@ -3639,32 +3646,41 @@ TEST_CASE("update --all refreshes only installed plugin wrappers", "[integration
     commit_plugin_source_version(npmRepoPath, "npm", "v2", "2.1.0", "v2.1.0");
     commit_plugin_source_version(npmRepoPath, "npm", "head", "9.9.9-dev");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    sources = {\n"
-        "      pip = { source = 'git+" + pipRepoPath.string() + "' },\n"
-        "      npm = { source = 'git+" + npmRepoPath.string() + "' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = 'git+" +
+                               pipRepoPath.string() +
+                               "' },\n"
+                               "      npm = { source = 'git+" +
+                               npmRepoPath.string() +
+                               "' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     {
         ReqPackConfig defaults = default_reqpack_config();
@@ -3689,7 +3705,8 @@ TEST_CASE("update --all refreshes only installed plugin wrappers", "[integration
     CHECK(refreshedNpmScript.find("2.1.0") != std::string::npos);
 }
 
-TEST_CASE("update --all does nothing when no plugins are installed locally", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("update --all does nothing when no plugins are installed locally",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-update-all-config-sources"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
@@ -3708,32 +3725,41 @@ TEST_CASE("update --all does nothing when no plugins are installed locally", "[i
     commit_plugin_source_version(npmRepoPath, "npm", "v2", "2.1.0", "v2.1.0");
     commit_plugin_source_version(npmRepoPath, "npm", "head", "9.9.9-dev");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    sources = {\n"
-        "      pip = { source = 'git+" + pipRepoPath.string() + "' },\n"
-        "      npm = { source = 'git+" + npmRepoPath.string() + "' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = 'git+" +
+                               pipRepoPath.string() +
+                               "' },\n"
+                               "      npm = { source = 'git+" +
+                               npmRepoPath.string() +
+                               "' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "npm" / "run.lua"));
@@ -3744,7 +3770,8 @@ TEST_CASE("update --all does nothing when no plugins are installed locally", "[i
     CHECK_FALSE(std::filesystem::exists(pluginDirectory / "npm" / "run.lua"));
 }
 
-TEST_CASE("orchestrator install plugin wrapper materializes configured git source", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("orchestrator install plugin wrapper materializes configured git source",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-install"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
@@ -3756,31 +3783,38 @@ TEST_CASE("orchestrator install plugin wrapper materializes configured git sourc
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
     commit_plugin_source_version(pipRepoPath, "pip", "v2", "1.2.0", "v1.2.0");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    sources = {\n"
-        "      pip = { source = 'git+" + pipRepoPath.string() + "' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = 'git+" +
+                               pipRepoPath.string() +
+                               "' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     REQUIRE_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
 
@@ -3792,7 +3826,8 @@ TEST_CASE("orchestrator install plugin wrapper materializes configured git sourc
     CHECK(read_file(pluginDirectory / "pip" / "run.lua").find("1.2.0") != std::string::npos);
 }
 
-TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle", "[integration][orchestrator][service][plugin-update]") {
+TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle",
+          "[integration][orchestrator][service][plugin-update]") {
     TempDir tempDir{"reqpack-plugin-wrapper-remove"};
     const std::filesystem::path workspace = tempDir.path() / "workspace";
     const std::filesystem::path pipRepoPath = tempDir.path() / "pip-origin";
@@ -3803,31 +3838,38 @@ TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle", "[integ
     init_git_repository(pipRepoPath);
     commit_plugin_source_version(pipRepoPath, "pip", "v1", "1.0.0", "v1.0.0");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    remoteUrl = '',\n"
-        "    autoLoadPlugins = true,\n"
-        "    sources = {\n"
-        "      pip = { source = 'git+" + pipRepoPath.string() + "' },\n"
-        "    },\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    remoteUrl = '',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    sources = {\n"
+                               "      pip = { source = 'git+" +
+                               pipRepoPath.string() +
+                               "' },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "}\n");
 
     {
         ReqPackConfig defaults = default_reqpack_config();
@@ -3845,7 +3887,8 @@ TEST_CASE("orchestrator remove plugin wrapper deletes installed bundle", "[integ
     CHECK_FALSE(std::filesystem::exists(pluginDirectory / "pip" / "run.lua"));
 }
 
-TEST_CASE("orchestrator sbom command exports planned graph without executing plugin install", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator sbom command exports planned graph without executing plugin install",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-sbom"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -3853,13 +3896,14 @@ TEST_CASE("orchestrator sbom command exports planned graph without executing plu
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "sbom",
-        "apply",
-        "sample",
-        "--output",
-        outputPath.string(),
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {
+                                               "sbom",
+                                               "apply",
+                                               "sample",
+                                               "--output",
+                                               outputPath.string(),
+                                           });
 
     CHECK(output.find(outputPath.string()) != std::string::npos);
     REQUIRE(std::filesystem::exists(outputPath));
@@ -3871,29 +3915,31 @@ TEST_CASE("orchestrator sbom command exports planned graph without executing plu
     CHECK_FALSE(std::filesystem::exists(installMarker));
 }
 
-TEST_CASE("orchestrator sbom resolves installed version for unversioned package request", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator sbom resolves installed version for unversioned package request",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-sbom-installed-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path localPackage = build_rqp_package(
-        tempDir.path(),
-        "listed-artifact",
-        "local out = context.paths.stateDir .. '/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. '/payload.txt', out)\nreturn true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello-list"))
-    );
+        tempDir.path(), "listed-artifact",
+        "local out = context.paths.stateDir .. "
+        "'/installed.txt'\ncontext.fs.mkdir(context.paths.stateDir)\ncontext.fs.copy(context.paths.payloadDir .. "
+        "'/payload.txt', out)\nreturn true\n",
+        std::make_pair(std::string("payload.txt"), std::string("hello-list")));
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
 
     (void)run_reqpack(tempDir.path(), configPath, {"install", localPackage.string()});
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "sbom",
-        "rqp",
-        "listed-artifact",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {
+                                               "sbom",
+                                               "rqp",
+                                               "listed-artifact",
+                                               "--format",
+                                               "json",
+                                               "--output",
+                                               outputPath.string(),
+                                           });
 
     CHECK(output.find(outputPath.string()) != std::string::npos);
     REQUIRE(std::filesystem::exists(outputPath));
@@ -3903,7 +3949,8 @@ TEST_CASE("orchestrator sbom resolves installed version for unversioned package 
     CHECK(sbom.find("\"version\": \"1.0.0-1+r0\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator sbom resolves unversioned package via info without list noise", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator sbom resolves unversioned package via info without list noise",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-sbom-info-only-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -3911,15 +3958,16 @@ TEST_CASE("orchestrator sbom resolves unversioned package via info without list 
 
     add_plugin_script(pluginDirectory, "apply", SBOM_INFO_ONLY_PLUGIN);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "sbom",
-        "apply",
-        "resolved",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {
+                                               "sbom",
+                                               "apply",
+                                               "resolved",
+                                               "--format",
+                                               "json",
+                                               "--output",
+                                               outputPath.string(),
+                                           });
 
     CHECK(output.find("listed:") == std::string::npos);
     CHECK(output.find("informed:") == std::string::npos);
@@ -3931,7 +3979,8 @@ TEST_CASE("orchestrator sbom resolves unversioned package via info without list 
     CHECK(sbom.find("\"version\": \"4.5.6\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator sbom fails by default when info cannot resolve version", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator sbom fails by default when info cannot resolve version",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-sbom-unresolved-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -3940,15 +3989,17 @@ TEST_CASE("orchestrator sbom fails by default when info cannot resolve version",
     add_plugin_script(pluginDirectory, "apply", SBOM_INFO_ONLY_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "sbom",
-        "apply",
-        "missing",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {
+                                                                    "sbom",
+                                                                    "apply",
+                                                                    "missing",
+                                                                    "--format",
+                                                                    "json",
+                                                                    "--output",
+                                                                    outputPath.string(),
+                                                                },
+                                                                status);
 
     CHECK(output.find("listed:") == std::string::npos);
     CHECK(output.find("informed:") == std::string::npos);
@@ -3967,15 +4018,17 @@ TEST_CASE("orchestrator sbom fails when requested package cannot be resolved", "
     add_plugin_script(pluginDirectory, "apply", SBOM_RESOLVE_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "sbom",
-        "apply",
-        "missing",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {
+                                                                    "sbom",
+                                                                    "apply",
+                                                                    "missing",
+                                                                    "--format",
+                                                                    "json",
+                                                                    "--output",
+                                                                    outputPath.string(),
+                                                                },
+                                                                status);
 
     CHECK(status != 0);
     CHECK(output.find("sbom missing package: apply:missing") != std::string::npos);
@@ -3990,17 +4043,18 @@ TEST_CASE("orchestrator sbom can skip missing package via cli flag", "[integrati
 
     add_plugin_script(pluginDirectory, "apply", SBOM_RESOLVE_PLUGIN);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "sbom",
-        "apply",
-        "resolved",
-        "missing",
-        "--sbom-skip-missing-packages",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {
+                                               "sbom",
+                                               "apply",
+                                               "resolved",
+                                               "missing",
+                                               "--sbom-skip-missing-packages",
+                                               "--format",
+                                               "json",
+                                               "--output",
+                                               outputPath.string(),
+                                           });
 
     CHECK(output.find("sbom skipping missing package: apply:missing") != std::string::npos);
     REQUIRE(std::filesystem::exists(outputPath));
@@ -4015,47 +4069,55 @@ TEST_CASE("orchestrator sbom can skip missing package via config", "[integration
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path outputPath = tempDir.path() / "graph.json";
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  sbom = {\n"
-        "    skipMissingPackages = true,\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  sbom = {\n"
+                               "    skipMissingPackages = true,\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", SBOM_RESOLVE_PLUGIN);
 
-    const std::string output = run_reqpack(tempDir.path(), configPath, {
-        "sbom",
-        "apply",
-        "resolved",
-        "missing",
-        "--format",
-        "json",
-        "--output",
-        outputPath.string(),
-    });
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {
+                                               "sbom",
+                                               "apply",
+                                               "resolved",
+                                               "missing",
+                                               "--format",
+                                               "json",
+                                               "--output",
+                                               outputPath.string(),
+                                           });
 
     CHECK(output.find("sbom skipping missing package: apply:missing") != std::string::npos);
     REQUIRE(std::filesystem::exists(outputPath));
@@ -4064,7 +4126,8 @@ TEST_CASE("orchestrator sbom can skip missing package via config", "[integration
     CHECK(sbom.find("\"name\": \"missing\"") == std::string::npos);
 }
 
-TEST_CASE("orchestrator audit command exports sarif without executing plugin install", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator audit command exports sarif without executing plugin install",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-audit-export"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
@@ -4083,45 +4146,56 @@ TEST_CASE("orchestrator audit command exports sarif without executing plugin ins
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "audit",
-        "apply",
-        "sample@1.0.0",
-        "--output",
-        outputPath.string(),
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {
+                                                                    "audit",
+                                                                    "apply",
+                                                                    "sample@1.0.0",
+                                                                    "--output",
+                                                                    outputPath.string(),
+                                                                },
+                                                                status);
 
     CHECK(status == 0);
     CHECK(output.find(outputPath.string()) != std::string::npos);
@@ -4152,43 +4226,54 @@ TEST_CASE("orchestrator audit command returns non-zero on stdout findings", "[in
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "audit",
-        "apply",
-        "sample@1.0.0",
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {
+                                                                    "audit",
+                                                                    "apply",
+                                                                    "sample@1.0.0",
+                                                                },
+                                                                status);
 
     CHECK(status != 0);
     CHECK(output.find("CVE-2026-demo") != std::string::npos);
@@ -4216,44 +4301,56 @@ TEST_CASE("orchestrator audit system-only request audits installed packages", "[
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(), {
-        {"COLUMNS", "80"},
-    }, {
-        "audit",
-        "apply",
-    }, status);
+    const std::string output = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {
+                                                                        {"COLUMNS", "80"},
+                                                                    },
+                                                                    {
+                                                                        "audit",
+                                                                        "apply",
+                                                                    },
+                                                                    status);
 
     CHECK(status != 0);
     CHECK(output.find('\t') == std::string::npos);
@@ -4267,7 +4364,8 @@ TEST_CASE("orchestrator audit system-only request audits installed packages", "[
     CHECK_FALSE(std::filesystem::exists(installMarker));
 }
 
-TEST_CASE("orchestrator audit resolves explicit package versions before matching findings", "[integration][orchestrator][service]") {
+TEST_CASE("orchestrator audit resolves explicit package versions before matching findings",
+          "[integration][orchestrator][service]") {
     TempDir tempDir{"reqpack-orchestrator-audit-resolve-version"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
@@ -4285,43 +4383,54 @@ TEST_CASE("orchestrator audit resolves explicit package versions before matching
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", SBOM_RESOLVE_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "audit",
-        "apply",
-        "resolved",
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {
+                                                                    "audit",
+                                                                    "apply",
+                                                                    "resolved",
+                                                                },
+                                                                status);
 
     CHECK(status != 0);
     CHECK(output.find("CVE-2026-resolved") != std::string::npos);
@@ -4329,7 +4438,8 @@ TEST_CASE("orchestrator audit resolves explicit package versions before matching
     CHECK(output.find("version unavailable") == std::string::npos);
 }
 
-TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped security index", "[integration][orchestrator][security]") {
+TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped security index",
+          "[integration][orchestrator][security]") {
     TempDir tempDir{"reqpack-orchestrator-install-snyk-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path apiRoot = tempDir.path() / "snyk-api" / "orgs" / "org-1";
@@ -4339,84 +4449,108 @@ TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped s
 
     write_file(apiRoot / "export.json", R"({"export_id":"exp-1"})");
     write_file(apiRoot / "jobs" / "export" / "exp-1.json", R"({"status":"FINISHED"})");
-    write_file(apiRoot / "export" / "exp-1.json", std::string{"{"} + "\"download_url\":\"file://" + exportFile.string() + "\"}");
+    write_file(apiRoot / "export" / "exp-1.json",
+               std::string{"{"} + "\"download_url\":\"file://" + exportFile.string() + "\"}");
     write_file(exportFile,
-        "PROBLEM_ID,PROBLEM_TITLE,CVE,PACKAGE_NAME_AND_VERSION,SEMVER_VULNERABLE_RANGE,ISSUE_SEVERITY,NVD_SCORE,SNYK_CVSS_SCORE,UPDATED_AT,FIXED_IN_VERSION,PRODUCT_NAME\n"
-        "SNYK-JAVA-LOG4J-1,Remote code execution,CVE-2026-1,pkg:maven/org.apache.logging.log4j/log4j-core@2.14.1,\"[,2.15.0)\",critical,9.8,9.8,2026-01-01T00:00:00Z,2.15.0,Snyk Open Source\n"
-    );
+               "PROBLEM_ID,PROBLEM_TITLE,CVE,PACKAGE_NAME_AND_VERSION,SEMVER_VULNERABLE_RANGE,ISSUE_SEVERITY,NVD_SCORE,"
+               "SNYK_CVSS_SCORE,UPDATED_AT,FIXED_IN_VERSION,PRODUCT_NAME\n"
+               "SNYK-JAVA-LOG4J-1,Remote code "
+               "execution,CVE-2026-1,pkg:maven/org.apache.logging.log4j/"
+               "log4j-core@2.14.1,\"[,2.15.0)\",critical,9.8,9.8,2026-01-01T00:00:00Z,2.15.0,Snyk Open Source\n");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = true,\n"
-        "    indexPath = '" + (tempDir.path() / "security-index").string() + "',\n"
-        "    cachePath = '" + (tempDir.path() / "security-cache").string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'manual',\n"
-        "    backends = {\n"
-        "      snyk = {\n"
-        "        apiBaseUrl = 'file://" + (tempDir.path() / "snyk-api").string() + "',\n"
-        "        apiVersion = '2024-10-15',\n"
-        "        tokenEnv = 'REQPACK_TEST_SNYK_TOKEN',\n"
-        "        orgId = 'org-1',\n"
-        "        dataset = 'issues',\n"
-        "        refreshMode = 'always',\n"
-        "      },\n"
-        "    },\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    autoFetch = true,\n"
+                               "    indexPath = '" +
+                               (tempDir.path() / "security-index").string() +
+                               "',\n"
+                               "    cachePath = '" +
+                               (tempDir.path() / "security-cache").string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'manual',\n"
+                               "    backends = {\n"
+                               "      snyk = {\n"
+                               "        apiBaseUrl = 'file://" +
+                               (tempDir.path() / "snyk-api").string() +
+                               "',\n"
+                               "        apiVersion = '2024-10-15',\n"
+                               "        tokenEnv = 'REQPACK_TEST_SNYK_TOKEN',\n"
+                               "        orgId = 'org-1',\n"
+                               "        dataset = 'issues',\n"
+                               "        refreshMode = 'always',\n"
+                               "      },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "snyk", SECURITY_PROVIDER_PLUGIN);
     add_plugin_script(pluginDirectory, "maven", MAVEN_AUDIT_PLUGIN);
 
     int installStatus = 0;
-    const std::string installOutput = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(), {
-        {"REQPACK_TEST_SNYK_TOKEN", "token-1"},
-    }, {
-        "install",
-        "snyk",
-        "maven",
-    }, installStatus);
+    const std::string installOutput = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                           {
+                                                                               {"REQPACK_TEST_SNYK_TOKEN", "token-1"},
+                                                                           },
+                                                                           {
+                                                                               "install",
+                                                                               "snyk",
+                                                                               "maven",
+                                                                           },
+                                                                           installStatus);
 
     CHECK(installStatus == 0);
     CHECK(installOutput.find("security gateway action failed") == std::string::npos);
     CHECK(std::filesystem::exists(tempDir.path() / "security-index" / "Maven"));
 
     int auditStatus = 0;
-    const std::string auditOutput = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(), {
-        {"REQPACK_TEST_SNYK_TOKEN", "token-1"},
-    }, {
-        "audit",
-        "maven",
-        "org.apache.logging.log4j:log4j-core",
-        "--format",
-        "json",
-        "--output",
-        auditOutputPath.string(),
-    }, auditStatus);
+    const std::string auditOutput = run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                         {
+                                                                             {"REQPACK_TEST_SNYK_TOKEN", "token-1"},
+                                                                         },
+                                                                         {
+                                                                             "audit",
+                                                                             "maven",
+                                                                             "org.apache.logging.log4j:log4j-core",
+                                                                             "--format",
+                                                                             "json",
+                                                                             "--output",
+                                                                             auditOutputPath.string(),
+                                                                         },
+                                                                         auditStatus);
 
     CHECK(auditStatus == 0);
     CHECK(auditOutput.find(auditOutputPath.string()) != std::string::npos);
@@ -4429,7 +4563,8 @@ TEST_CASE("orchestrator install snyk maven imports tenant findings into scoped s
     CHECK(report.find("\"version\": \"2.14.1\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install trivy maven imports shared advisories into scoped security index", "[integration][orchestrator][security]") {
+TEST_CASE("orchestrator install trivy maven imports shared advisories into scoped security index",
+          "[integration][orchestrator][security]") {
     TempDir tempDir{"reqpack-orchestrator-install-trivy-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path trivyRoot = tempDir.path() / "trivy-db";
@@ -4440,76 +4575,102 @@ TEST_CASE("orchestrator install trivy maven imports shared advisories into scope
     write_file(trivyRoot / "metadata.json", R"({"Version":2})");
     write_file(trivyRoot / "trivy.db", "fixture");
     write_file(helperPath,
-        "#!/bin/sh\n"
-        "printf '%s\\n' '{\"ecosystem\":\"Maven\",\"packageName\":\"org.apache.logging.log4j:log4j-core\",\"advisoryId\":\"CVE-2021-44228\",\"aliases\":[\"GHSA-jfh8-c2jp-5v3q\"],\"summary\":\"Remote code execution\",\"description\":\"desc\",\"severity\":\"CRITICAL\",\"score\":10.0,\"references\":[\"https://example.test/CVE-2021-44228\"],\"modified\":\"2021-12-10T00:00:00Z\",\"published\":\"2021-12-10T00:00:00Z\",\"ranges\":[{\"introduced\":\"2.0-beta9\",\"fixed\":\"2.15.0\"}]}'\n"
-    );
+               "#!/bin/sh\n"
+               "printf '%s\\n' "
+               "'{\"ecosystem\":\"Maven\",\"packageName\":\"org.apache.logging.log4j:log4j-core\",\"advisoryId\":\"CVE-"
+               "2021-44228\",\"aliases\":[\"GHSA-jfh8-c2jp-5v3q\"],\"summary\":\"Remote code "
+               "execution\",\"description\":\"desc\",\"severity\":\"CRITICAL\",\"score\":10.0,\"references\":[\"https:/"
+               "/example.test/"
+               "CVE-2021-44228\"],\"modified\":\"2021-12-10T00:00:00Z\",\"published\":\"2021-12-10T00:00:00Z\","
+               "\"ranges\":[{\"introduced\":\"2.0-beta9\",\"fixed\":\"2.15.0\"}]}'\n");
     REQUIRE(std::system((std::string{"chmod +x "} + escape_shell_arg(helperPath.string())).c_str()) == 0);
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = true,\n"
-        "    indexPath = '" + (tempDir.path() / "security-index").string() + "',\n"
-        "    cachePath = '" + (tempDir.path() / "security-cache").string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'manual',\n"
-        "    backends = {\n"
-        "      trivy = {\n"
-        "        dbRepositories = { 'file://" + trivyRoot.string() + "' },\n"
-        "        helperPath = '" + helperPath.string() + "',\n"
-        "        refreshMode = 'always',\n"
-        "      },\n"
-        "    },\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    autoFetch = true,\n"
+                               "    indexPath = '" +
+                               (tempDir.path() / "security-index").string() +
+                               "',\n"
+                               "    cachePath = '" +
+                               (tempDir.path() / "security-cache").string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'manual',\n"
+                               "    backends = {\n"
+                               "      trivy = {\n"
+                               "        dbRepositories = { 'file://" +
+                               trivyRoot.string() +
+                               "' },\n"
+                               "        helperPath = '" +
+                               helperPath.string() +
+                               "',\n"
+                               "        refreshMode = 'always',\n"
+                               "      },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     copy_repo_plugin(pluginDirectory, "trivy");
     add_plugin_script(pluginDirectory, "maven", MAVEN_AUDIT_PLUGIN);
 
     int installStatus = 0;
-    const std::string installOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "install",
-        "trivy",
-        "maven",
-    }, installStatus);
+    const std::string installOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                       {
+                                                                           "install",
+                                                                           "trivy",
+                                                                           "maven",
+                                                                       },
+                                                                       installStatus);
 
     CHECK(installStatus == 0);
     CHECK(installOutput.find("security gateway action failed") == std::string::npos);
     CHECK(std::filesystem::exists(tempDir.path() / "security-index" / "Maven"));
 
     int auditStatus = 0;
-    const std::string auditOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "audit",
-        "maven",
-        "org.apache.logging.log4j:log4j-core",
-        "--format",
-        "json",
-        "--output",
-        auditOutputPath.string(),
-    }, auditStatus);
+    const std::string auditOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                     {
+                                                                         "audit",
+                                                                         "maven",
+                                                                         "org.apache.logging.log4j:log4j-core",
+                                                                         "--format",
+                                                                         "json",
+                                                                         "--output",
+                                                                         auditOutputPath.string(),
+                                                                     },
+                                                                     auditStatus);
 
     CHECK(auditStatus == 0);
     CHECK(auditOutput.find(auditOutputPath.string()) != std::string::npos);
@@ -4522,10 +4683,12 @@ TEST_CASE("orchestrator install trivy maven imports shared advisories into scope
     CHECK(report.find("\"version\": \"2.14.1\"") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install gh-advisory pip imports shared advisories into scoped security index", "[integration][orchestrator][security]") {
+TEST_CASE("orchestrator install gh-advisory pip imports shared advisories into scoped security index",
+          "[integration][orchestrator][security]") {
     TempDir tempDir{"reqpack-orchestrator-install-gh-advisory-pip"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path advisoryRoot = tempDir.path() / "gh-advisory-db" / "advisories" / "github-reviewed" / "2026" / "01";
+    const std::filesystem::path advisoryRoot =
+        tempDir.path() / "gh-advisory-db" / "advisories" / "github-reviewed" / "2026" / "01";
     const std::filesystem::path configPath = tempDir.path() / "config.lua";
     const std::filesystem::path auditOutputPath = tempDir.path() / "audit.json";
 
@@ -4539,45 +4702,60 @@ TEST_CASE("orchestrator install gh-advisory pip imports shared advisories into s
         }]
     })");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    autoFetch = true,\n"
-        "    indexPath = '" + (tempDir.path() / "security-index").string() + "',\n"
-        "    cachePath = '" + (tempDir.path() / "security-cache").string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'manual',\n"
-        "    backends = {\n"
-        "      [\"gh-advisory\"] = {\n"
-        "        feedUrl = 'file://" + (tempDir.path() / "gh-advisory-db").string() + "',\n"
-        "        refreshMode = 'always',\n"
-        "      },\n"
-        "    },\n"
-        "  },\n"
-        "  rqp = {\n"
-        "    statePath = '" + (tempDir.path() / "rqp-state").string() + "',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    autoFetch = true,\n"
+                               "    indexPath = '" +
+                               (tempDir.path() / "security-index").string() +
+                               "',\n"
+                               "    cachePath = '" +
+                               (tempDir.path() / "security-cache").string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'manual',\n"
+                               "    backends = {\n"
+                               "      [\"gh-advisory\"] = {\n"
+                               "        feedUrl = 'file://" +
+                               (tempDir.path() / "gh-advisory-db").string() +
+                               "',\n"
+                               "        refreshMode = 'always',\n"
+                               "      },\n"
+                               "    },\n"
+                               "  },\n"
+                               "  rqp = {\n"
+                               "    statePath = '" +
+                               (tempDir.path() / "rqp-state").string() +
+                               "',\n"
+                               "  },\n"
+                               "}\n");
 
     copy_repo_plugin(pluginDirectory, "gh-advisory");
     add_plugin_script(pluginDirectory, "pip", R"(
@@ -4620,26 +4798,30 @@ function plugin.shutdown() return true end
 )");
 
     int installStatus = 0;
-    const std::string installOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "install",
-        "gh-advisory",
-        "pip",
-    }, installStatus);
+    const std::string installOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                       {
+                                                                           "install",
+                                                                           "gh-advisory",
+                                                                           "pip",
+                                                                       },
+                                                                       installStatus);
 
     CHECK(installStatus == 0);
     CHECK(installOutput.find("security gateway action failed") == std::string::npos);
     CHECK(std::filesystem::exists(tempDir.path() / "security-index" / "pip"));
 
     int auditStatus = 0;
-    const std::string auditOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "audit",
-        "pip",
-        "urllib3",
-        "--format",
-        "json",
-        "--output",
-        auditOutputPath.string(),
-    }, auditStatus);
+    const std::string auditOutput = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                     {
+                                                                         "audit",
+                                                                         "pip",
+                                                                         "urllib3",
+                                                                         "--format",
+                                                                         "json",
+                                                                         "--output",
+                                                                         auditOutputPath.string(),
+                                                                     },
+                                                                     auditStatus);
 
     CHECK(auditStatus == 0);
     CHECK(auditOutput.find(auditOutputPath.string()) != std::string::npos);
@@ -4690,12 +4872,8 @@ function plugin.info(context, package) return {} end
 function plugin.shutdown() return true end
 )");
 
-    const std::string output = run_reqpack_with_stdin(
-        tempDir.path(),
-        configPath,
-        {"i", "--stdin"},
-        "i apply alpha\ninstall apply beta\n"
-    );
+    const std::string output =
+        run_reqpack_with_stdin(tempDir.path(), configPath, {"i", "--stdin"}, "i apply alpha\ninstall apply beta\n");
     (void)output;
 
     const std::filesystem::path installMarker = pluginDirectory / "apply" / "state" / "install.txt";
@@ -4705,19 +4883,16 @@ function plugin.shutdown() return true end
     CHECK(installed.find("beta\n") != std::string::npos);
 }
 
-TEST_CASE("reqpack serve stdin executes commands line by line and continues after parse errors", "[integration][orchestrator][stdin]") {
+TEST_CASE("reqpack serve stdin executes commands line by line and continues after parse errors",
+          "[integration][orchestrator][stdin]") {
     TempDir tempDir{"reqpack-orchestrator-serve-stdin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    const std::string output = run_reqpack_with_stdin(
-        tempDir.path(),
-        configPath,
-        {"serve", "--stdin"},
-        "install apply alpha\ninstall \"broken\nlist apply\n"
-    );
+    const std::string output = run_reqpack_with_stdin(tempDir.path(), configPath, {"serve", "--stdin"},
+                                                      "install apply alpha\ninstall \"broken\nlist apply\n");
 
     const std::filesystem::path installMarker = pluginDirectory / "apply" / "state" / "install.txt";
     REQUIRE(std::filesystem::exists(installMarker));
@@ -4729,7 +4904,8 @@ TEST_CASE("reqpack serve stdin executes commands line by line and continues afte
     CHECK(output.find("apply") != std::string::npos);
 }
 
-TEST_CASE("reqpack install returns non-zero when security validation blocks execution", "[integration][orchestrator][security]") {
+TEST_CASE("reqpack install returns non-zero when security validation blocks execution",
+          "[integration][orchestrator][security]") {
     TempDir tempDir{"reqpack-orchestrator-security-block"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
@@ -4747,47 +4923,51 @@ TEST_CASE("reqpack install returns non-zero when security validation blocks exec
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "    severityThreshold = 'critical',\n"
-        "    onUnsafe = 'abort',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "    severityThreshold = 'critical',\n"
+                               "    onUnsafe = 'abort',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {"install", "apply", "sample@1.0.0"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {"install", "apply", "sample@1.0.0"}, status);
 
     REQUIRE(status != 0);
     CHECK(WIFEXITED(status));
@@ -4797,7 +4977,8 @@ TEST_CASE("reqpack install returns non-zero when security validation blocks exec
     CHECK_FALSE(std::filesystem::exists(pluginDirectory / "apply" / "state" / "install.txt"));
 }
 
-TEST_CASE("reqpack install refuses prompted unsafe run in non-interactive mode", "[integration][orchestrator][security]") {
+TEST_CASE("reqpack install refuses prompted unsafe run in non-interactive mode",
+          "[integration][orchestrator][security]") {
     TempDir tempDir{"reqpack-orchestrator-security-prompt-non-interactive"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
@@ -4815,47 +4996,51 @@ TEST_CASE("reqpack install refuses prompted unsafe run in non-interactive mode",
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "    severityThreshold = 'critical',\n"
-        "    onUnsafe = 'prompt',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "    severityThreshold = 'critical',\n"
+                               "    onUnsafe = 'prompt',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {"install", "apply", "sample@1.0.0"},
-        status
-    );
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {"install", "apply", "sample@1.0.0"}, status);
 
     REQUIRE(status != 0);
     CHECK(output.find("interactive mode is disabled; refusing to continue.") != std::string::npos);
@@ -4872,9 +5057,9 @@ TEST_CASE("reqpack serve remote text mode supports token auth", "[integration][o
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "auth token secret\n"));
@@ -4892,7 +5077,8 @@ TEST_CASE("reqpack serve remote text mode supports token auth", "[integration][o
     ::close(client);
 }
 
-TEST_CASE("reqpack serve remote returns error when security validation blocks execution", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack serve remote returns error when security validation blocks execution",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-security-block"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path feedPath = tempDir.path() / "osv-feed.json";
@@ -4912,42 +5098,51 @@ TEST_CASE("reqpack serve remote returns error when security validation blocks ex
             }]
         }
     ])");
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = {\n"
-        "    interactive = false,\n"
-        "  },\n"
-        "  security = {\n"
-        "    enabled = true,\n"
-        "    osvFeedUrl = '" + feedPath.string() + "',\n"
-        "    osvDatabasePath = '" + (tempDir.path() / "osv-db").string() + "',\n"
-        "    osvRefreshMode = 'always',\n"
-        "    severityThreshold = 'critical',\n"
-        "    onUnsafe = 'abort',\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = {\n"
+                               "    interactive = false,\n"
+                               "  },\n"
+                               "  security = {\n"
+                               "    enabled = true,\n"
+                               "    osvFeedUrl = '" +
+                               feedPath.string() +
+                               "',\n"
+                               "    osvDatabasePath = '" +
+                               (tempDir.path() / "osv-db").string() +
+                               "',\n"
+                               "    osvRefreshMode = 'always',\n"
+                               "    severityThreshold = 'critical',\n"
+                               "    onUnsafe = 'abort',\n"
+                               "  },\n"
+                               "}\n");
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "auth token secret\n"));
@@ -4972,9 +5167,9 @@ TEST_CASE("reqpack serve remote readonly rejects mutating commands", "[integrati
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--readonly"
-    }, logPath);
+    ServerProcess server(tempDir.path(), configPath, std::nullopt,
+                         {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--readonly"},
+                         logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "install apply alpha\n"));
@@ -4994,9 +5189,10 @@ TEST_CASE("reqpack serve remote json mode returns json responses", "[integration
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"},
+        logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "{\"token\":\"secret\",\"command\":\"list apply\"}\n"));
@@ -5015,9 +5211,10 @@ TEST_CASE("reqpack serve remote json mode rejects invalid json requests", "[inte
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"},
+        logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "not-json\n"));
@@ -5037,9 +5234,10 @@ TEST_CASE("reqpack serve remote json mode accepts empty commands after auth", "[
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--json", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"},
+        logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "{\"token\":\"secret\",\"command\":\"\"}\n"));
@@ -5058,9 +5256,9 @@ TEST_CASE("reqpack serve remote autodetects json clients without json flag", "[i
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int client = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(client, "{\"token\":\"secret\",\"command\":\"list apply\"}\n"));
@@ -5079,9 +5277,10 @@ TEST_CASE("reqpack serve remote enforces max connections", "[integration][orches
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--max-connections", "1"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--max-connections", "1"},
+        logPath);
 
     const int firstClient = connect_with_retry("127.0.0.1", port);
     const int secondClient = connect_with_retry("127.0.0.1", port);
@@ -5099,32 +5298,23 @@ TEST_CASE("reqpack serve remote http and https modes report unimplemented", "[in
 
     SECTION("http") {
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(
-            tempDir.path(),
-            configPath,
-            tempDir.path(),
-            {"serve", "--remote", "--http"},
-            status
-        );
+        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {"serve", "--remote", "--http"}, status);
         CHECK(status != 0);
         CHECK(output.find("serve --remote --http is not implemented yet") != std::string::npos);
     }
 
     SECTION("https") {
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(
-            tempDir.path(),
-            configPath,
-            tempDir.path(),
-            {"serve", "--remote", "--https"},
-            status
-        );
+        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {"serve", "--remote", "--https"}, status);
         CHECK(status != 0);
         CHECK(output.find("serve --remote --https is not implemented yet") != std::string::npos);
     }
 }
 
-TEST_CASE("reqpack serve remote supports admin commands from server remote users", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack serve remote supports admin commands from server remote users",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-admin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5132,17 +5322,15 @@ TEST_CASE("reqpack serve remote supports admin commands from server remote users
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_users(tempDir.path(),
-        "return {\n"
-        "  users = {\n"
-        "    alice = { token = 'user-token' },\n"
-        "    root = { token = 'admin-token', isAdmin = true },\n"
-        "  },\n"
-        "}\n");
+    write_remote_users(tempDir.path(), "return {\n"
+                                       "  users = {\n"
+                                       "    alice = { token = 'user-token' },\n"
+                                       "    root = { token = 'admin-token', isAdmin = true },\n"
+                                       "  },\n"
+                                       "}\n");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)
-    }, logPath);
+    ServerProcess server(tempDir.path(), configPath, tempDir.path(),
+                         {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)}, logPath);
 
     const int userClient = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(userClient, "auth token user-token\n"));
@@ -5188,7 +5376,8 @@ TEST_CASE("reqpack serve remote supports admin commands from server remote users
     ::close(adminClient);
 }
 
-TEST_CASE("reqpack serve remote reload-config reloads users and readonly state", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack serve remote reload-config reloads users and readonly state",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-reload"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5196,49 +5385,51 @@ TEST_CASE("reqpack serve remote reload-config reloads users and readonly state",
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_users(tempDir.path(),
-        "return {\n"
-        "  users = {\n"
-        "    root = { token = 'admin-token', isAdmin = true },\n"
-        "  },\n"
-        "}\n");
+    write_remote_users(tempDir.path(), "return {\n"
+                                       "  users = {\n"
+                                       "    root = { token = 'admin-token', isAdmin = true },\n"
+                                       "  },\n"
+                                       "}\n");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)
-    }, logPath);
+    ServerProcess server(tempDir.path(), configPath, tempDir.path(),
+                         {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)}, logPath);
 
     const int adminClient = connect_with_retry("127.0.0.1", port);
     REQUIRE(send_socket_text(adminClient, "auth token admin-token\n"));
     const auto adminAuth = read_text_protocol_response(adminClient);
     CHECK(adminAuth.first == "OK");
 
-    write_file(configPath,
-        "return {\n"
-        "  execution = {\n"
-        "    useTransactionDb = false,\n"
-        "    deleteCommittedTransactions = false,\n"
-        "    checkVirtualFileSystemWrite = false,\n"
-        "    transactionDatabasePath = '" + (tempDir.path() / "transactions").string() + "',\n"
-        "  },\n"
-        "  planner = {\n"
-        "    autoDownloadMissingPlugins = false,\n"
-        "    autoDownloadMissingDependencies = false,\n"
-        "  },\n"
-        "  registry = {\n"
-        "    pluginDirectory = '" + pluginDirectory.string() + "',\n"
-        "    databasePath = '" + (tempDir.path() / "registry-db").string() + "',\n"
-        "    autoLoadPlugins = true,\n"
-        "    shutDownPluginsOnExit = true,\n"
-        "  },\n"
-        "  interaction = { interactive = false },\n"
-        "  remote = { readonly = true },\n"
-        "}\n");
-    write_remote_users(tempDir.path(),
-        "return {\n"
-        "  users = {\n"
-        "    root = { token = 'new-admin-token', isAdmin = true },\n"
-        "  },\n"
-        "}\n");
+    write_file(configPath, "return {\n"
+                           "  execution = {\n"
+                           "    useTransactionDb = false,\n"
+                           "    deleteCommittedTransactions = false,\n"
+                           "    checkVirtualFileSystemWrite = false,\n"
+                           "    transactionDatabasePath = '" +
+                               (tempDir.path() / "transactions").string() +
+                               "',\n"
+                               "  },\n"
+                               "  planner = {\n"
+                               "    autoDownloadMissingPlugins = false,\n"
+                               "    autoDownloadMissingDependencies = false,\n"
+                               "  },\n"
+                               "  registry = {\n"
+                               "    pluginDirectory = '" +
+                               pluginDirectory.string() +
+                               "',\n"
+                               "    databasePath = '" +
+                               (tempDir.path() / "registry-db").string() +
+                               "',\n"
+                               "    autoLoadPlugins = true,\n"
+                               "    shutDownPluginsOnExit = true,\n"
+                               "  },\n"
+                               "  interaction = { interactive = false },\n"
+                               "  remote = { readonly = true },\n"
+                               "}\n");
+    write_remote_users(tempDir.path(), "return {\n"
+                                       "  users = {\n"
+                                       "    root = { token = 'new-admin-token', isAdmin = true },\n"
+                                       "  },\n"
+                                       "}\n");
 
     REQUIRE(send_socket_text(adminClient, "reload-config\n"));
     const auto reloadResponse = read_text_protocol_response(adminClient);
@@ -5268,7 +5459,8 @@ TEST_CASE("reqpack serve remote reload-config reloads users and readonly state",
     ::close(newAdminClient);
 }
 
-TEST_CASE("reqpack remote loads profile from default remote.lua and forwards command", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack remote loads profile from default remote.lua and forwards command",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-profile"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5276,29 +5468,32 @@ TEST_CASE("reqpack remote loads profile from default remote.lua and forwards com
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    url = 'tcp://127.0.0.1:" + std::to_string(port) + "',\n"
-        "    token = 'secret',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    url = 'tcp://127.0.0.1:" +
+                                              std::to_string(port) +
+                                              "',\n"
+                                              "    token = 'secret',\n"
+                                              "  },\n"
+                                              "}\n");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, tempDir.path(),
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
-    const std::string output = run_reqpack_with_home(tempDir.path(), configPath, tempDir.path(), {"remote", "dev", "list", "apply"});
+    const std::string output =
+        run_reqpack_with_home(tempDir.path(), configPath, tempDir.path(), {"remote", "dev", "list", "apply"});
     CHECK(output.find("apply") != std::string::npos);
     CHECK(output.find("1.0.0") != std::string::npos);
     CHECK(output.find("listed from") != std::string::npos);
     CHECK(output.find("apply") != std::string::npos);
 }
 
-TEST_CASE("reqpack remote preserves forwarded command flags after profile name", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack remote preserves forwarded command flags after profile name",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-profile-flags"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5306,24 +5501,24 @@ TEST_CASE("reqpack remote preserves forwarded command flags after profile name",
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    host = '127.0.0.1',\n"
-        "    port = " + std::to_string(port) + ",\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    host = '127.0.0.1',\n"
+                                          "    port = " +
+                                              std::to_string(port) +
+                                              ",\n"
+                                              "  },\n"
+                                              "}\n");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)
-    }, logPath);
+    ServerProcess server(tempDir.path(), configPath, tempDir.path(),
+                         {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port)}, logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
-    const std::string output = run_reqpack_with_home(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "dev", "sbom", "apply", "sample", "--sbom-format", "json"
-    });
+    const std::string output =
+        run_reqpack_with_home(tempDir.path(), configPath, tempDir.path(),
+                              {"remote", "dev", "sbom", "apply", "sample", "--sbom-format", "json"});
     CHECK(output.find("\"packages\"") != std::string::npos);
     CHECK(output.find("\"name\": \"sample\"") != std::string::npos);
 }
@@ -5336,28 +5531,28 @@ TEST_CASE("reqpack remote uploads local install file over text protocol", "[inte
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    url = 'tcp://127.0.0.1:" + std::to_string(port) + "',\n"
-        "    token = 'secret',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    url = 'tcp://127.0.0.1:" +
+                                              std::to_string(port) +
+                                              "',\n"
+                                              "    token = 'secret',\n"
+                                              "  },\n"
+                                              "}\n");
 
     const std::filesystem::path uploadPath = tempDir.path() / "sample.pkg";
     write_file(uploadPath, "payload-content");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, tempDir.path(),
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "dev", "i", "apply", uploadPath.string()
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(
+        tempDir.path(), configPath, tempDir.path(), {"remote", "dev", "i", "apply", uploadPath.string()}, status);
     CHECK(status == 0);
     CHECK(read_file(pluginDirectory / "apply" / "state" / "local.txt").find("sample.pkg") != std::string::npos);
 }
@@ -5370,30 +5565,31 @@ TEST_CASE("reqpack remote rejects file upload over json protocol", "[integration
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    host = '127.0.0.1',\n"
-        "    port = " + std::to_string(port) + ",\n"
-        "    protocol = 'json',\n"
-        "    token = 'secret',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    host = '127.0.0.1',\n"
+                                          "    port = " +
+                                              std::to_string(port) +
+                                              ",\n"
+                                              "    protocol = 'json',\n"
+                                              "    token = 'secret',\n"
+                                              "  },\n"
+                                              "}\n");
 
     const std::filesystem::path uploadPath = tempDir.path() / "sample.pkg";
     write_file(uploadPath, "payload-content");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret", "--json"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, tempDir.path(),
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret", "--json"},
+        logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "dev", "install", "apply", uploadPath.string()
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(
+        tempDir.path(), configPath, tempDir.path(), {"remote", "dev", "install", "apply", uploadPath.string()}, status);
     CHECK(status != 0);
     CHECK(output.find("file upload requires text protocol") != std::string::npos);
 }
@@ -5406,28 +5602,29 @@ TEST_CASE("reqpack remote upload respects readonly server mode", "[integration][
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    url = 'tcp://127.0.0.1:" + std::to_string(port) + "',\n"
-        "    token = 'secret',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    url = 'tcp://127.0.0.1:" +
+                                              std::to_string(port) +
+                                              "',\n"
+                                              "    token = 'secret',\n"
+                                              "  },\n"
+                                              "}\n");
 
     const std::filesystem::path uploadPath = tempDir.path() / "sample.pkg";
     write_file(uploadPath, "payload-content");
 
-    ServerProcess server(tempDir.path(), configPath, tempDir.path(), {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret", "--readonly"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, tempDir.path(),
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret", "--readonly"},
+        logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "dev", "install", "apply", uploadPath.string()
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(
+        tempDir.path(), configPath, tempDir.path(), {"remote", "dev", "install", "apply", uploadPath.string()}, status);
     CHECK(status != 0);
     CHECK(output.find("readonly") != std::string::npos);
     CHECK_FALSE(std::filesystem::exists(pluginDirectory / "apply" / "state" / "local.txt"));
@@ -5438,15 +5635,13 @@ TEST_CASE("reqpack remote reports missing named profile", "[integration][orchest
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = { host = '127.0.0.1', port = 4545 },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = { host = '127.0.0.1', port = 4545 },\n"
+                                          "}\n");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "missing", "list", "apply"
-    }, status);
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {"remote", "missing", "list", "apply"}, status);
     CHECK(status != 0);
     CHECK(output.find("remote profile not found: missing") != std::string::npos);
 }
@@ -5456,41 +5651,39 @@ TEST_CASE("reqpack remote json profiles require forwarded command", "[integratio
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    host = '127.0.0.1',\n"
-        "    port = 4545,\n"
-        "    protocol = 'json',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    host = '127.0.0.1',\n"
+                                          "    port = 4545,\n"
+                                          "    protocol = 'json',\n"
+                                          "  },\n"
+                                          "}\n");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-        "remote", "dev"
-    }, status);
+    const std::string output =
+        run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {"remote", "dev"}, status);
     CHECK(status != 0);
     CHECK(output.find("json remote profiles require a forwarded command") != std::string::npos);
 }
 
-TEST_CASE("reqpack remote rejects invalid local upload arguments before connecting", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack remote rejects invalid local upload arguments before connecting",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-upload-errors"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    host = '127.0.0.1',\n"
-        "    port = 4545,\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    host = '127.0.0.1',\n"
+                                          "    port = 4545,\n"
+                                          "  },\n"
+                                          "}\n");
 
     SECTION("non-regular upload path is rejected") {
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-            "remote", "dev", "install", "apply", tempDir.path().string()
-        }, status);
+        const std::string output =
+            run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {"remote", "dev", "install", "apply", tempDir.path().string()}, status);
         CHECK(status != 0);
         CHECK(output.find("remote upload only supports regular files") != std::string::npos);
     }
@@ -5502,15 +5695,16 @@ TEST_CASE("reqpack remote rejects invalid local upload arguments before connecti
         write_file(secondUpload, "two");
 
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-            "remote", "dev", "install", "apply", firstUpload.string(), secondUpload.string()
-        }, status);
+        const std::string output = run_reqpack_with_home_and_status(
+            tempDir.path(), configPath, tempDir.path(),
+            {"remote", "dev", "install", "apply", firstUpload.string(), secondUpload.string()}, status);
         CHECK(status != 0);
         CHECK(output.find("remote upload supports one local file per install command") != std::string::npos);
     }
 }
 
-TEST_CASE("reqpack remote interactive client reports local input errors through diagnostics", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack remote interactive client reports local input errors through diagnostics",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-client-input-errors"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5518,31 +5712,28 @@ TEST_CASE("reqpack remote interactive client reports local input errors through 
     const int port = reserve_tcp_port();
 
     add_plugin_script(pluginDirectory, "apply", ORCHESTRATOR_PLUGIN);
-    write_remote_profiles(tempDir.path(),
-        "return {\n"
-        "  dev = {\n"
-        "    host = '127.0.0.1',\n"
-        "    port = " + std::to_string(port) + ",\n"
-        "    token = 'secret',\n"
-        "  },\n"
-        "}\n");
+    write_remote_profiles(tempDir.path(), "return {\n"
+                                          "  dev = {\n"
+                                          "    host = '127.0.0.1',\n"
+                                          "    port = " +
+                                              std::to_string(port) +
+                                              ",\n"
+                                              "    token = 'secret',\n"
+                                              "  },\n"
+                                              "}\n");
 
-    ServerProcess server(tempDir.path(), configPath, std::nullopt, {
-        "serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"
-    }, logPath);
+    ServerProcess server(
+        tempDir.path(), configPath, std::nullopt,
+        {"serve", "--remote", "--bind", "127.0.0.1", "--port", std::to_string(port), "--token", "secret"}, logPath);
 
     const int warmupClient = connect_with_retry("127.0.0.1", port);
     ::close(warmupClient);
 
     const std::filesystem::path badUploadDir = tempDir.path() / "upload-dir";
     std::filesystem::create_directories(badUploadDir);
-    const std::string output = run_reqpack_with_home_and_stdin(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {"remote", "dev"},
-        "\"unterminated\ninstall apply " + badUploadDir.string() + "\nquit\n"
-    );
+    const std::string output =
+        run_reqpack_with_home_and_stdin(tempDir.path(), configPath, tempDir.path(), {"remote", "dev"},
+                                        "\"unterminated\ninstall apply " + badUploadDir.string() + "\nquit\n");
 
     CHECK(output.find("invalid command syntax") != std::string::npos);
     CHECK(output.find("Cause: Interactive remote command could not be tokenized.") != std::string::npos);
@@ -5550,35 +5741,32 @@ TEST_CASE("reqpack remote interactive client reports local input errors through 
     CHECK(output.find("Cause: Interactive remote upload request is invalid.") != std::string::npos);
 }
 
-TEST_CASE("reqpack remote client reports http and https profiles as unimplemented", "[integration][orchestrator][remote]") {
+TEST_CASE("reqpack remote client reports http and https profiles as unimplemented",
+          "[integration][orchestrator][remote]") {
     TempDir tempDir{"reqpack-orchestrator-remote-http-client"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
 
     SECTION("http profile") {
-        write_remote_profiles(tempDir.path(),
-            "return {\n"
-            "  dev = { url = 'http://127.0.0.1:4545' },\n"
-            "}\n");
+        write_remote_profiles(tempDir.path(), "return {\n"
+                                              "  dev = { url = 'http://127.0.0.1:4545' },\n"
+                                              "}\n");
 
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-            "remote", "dev", "list", "apply"
-        }, status);
+        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {"remote", "dev", "list", "apply"}, status);
         CHECK(status != 0);
         CHECK(output.find("http remote profiles are not implemented yet") != std::string::npos);
     }
 
     SECTION("https profile") {
-        write_remote_profiles(tempDir.path(),
-            "return {\n"
-            "  dev = { url = 'https://127.0.0.1:4545' },\n"
-            "}\n");
+        write_remote_profiles(tempDir.path(), "return {\n"
+                                              "  dev = { url = 'https://127.0.0.1:4545' },\n"
+                                              "}\n");
 
         int status = 0;
-        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(), {
-            "remote", "dev", "list", "apply"
-        }, status);
+        const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                    {"remote", "dev", "list", "apply"}, status);
         CHECK(status != 0);
         CHECK(output.find("https remote profiles are not implemented yet") != std::string::npos);
     }
@@ -5594,13 +5782,13 @@ TEST_CASE("orchestrator sys plugin maps logical packages to apt backend", "[inte
 
     copy_repo_plugin(pluginDirectory, "sys");
 
-    write_file(fakeBin / "apt-get",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(aptLog.string()) + "\n"
-        "exit 0\n");
-    write_file(fakeBin / "dpkg-query",
-        "#!/bin/sh\n"
-        "exit 1\n");
+    write_file(fakeBin / "apt-get", "#!/bin/sh\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                        escape_shell_arg(aptLog.string()) +
+                                        "\n"
+                                        "exit 0\n");
+    write_file(fakeBin / "dpkg-query", "#!/bin/sh\n"
+                                       "exit 1\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "apt-get").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dpkg-query").string())).c_str()) == 0);
 
@@ -5608,21 +5796,17 @@ TEST_CASE("orchestrator sys plugin maps logical packages to apt backend", "[inte
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_SYS_BACKEND", "apt"},
-            {"REQPACK_SYS_NO_SUDO", "1"},
-            {"REQPACK_SYS_NIX_BIN", (fakeBin / "missing-nix-env").string()},
-            {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
-            {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
-        },
-        {"install", "sys", "java", "maven"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {
+                                                 {"PATH", pathValue},
+                                                 {"REQPACK_SYS_BACKEND", "apt"},
+                                                 {"REQPACK_SYS_NO_SUDO", "1"},
+                                                 {"REQPACK_SYS_NIX_BIN", (fakeBin / "missing-nix-env").string()},
+                                                 {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
+                                                 {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
+                                             },
+                                             {"install", "sys", "java", "maven"}, status);
 
     INFO(output);
     CHECK(status == 0);
@@ -5635,7 +5819,8 @@ TEST_CASE("orchestrator sys plugin maps logical packages to apt backend", "[inte
     CHECK(log.find("maven") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install maven provisions sys requirements before invoking mvn", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator install maven provisions sys requirements before invoking mvn",
+          "[integration][orchestrator][service][sys]") {
     TempDir tempDir{"reqpack-orchestrator-sys-maven"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5648,26 +5833,29 @@ TEST_CASE("orchestrator install maven provisions sys requirements before invokin
     copy_repo_plugin(pluginDirectory, "sys");
     copy_repo_plugin(pluginDirectory, "maven");
 
-    write_file(fakeBin / "java",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "javac",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "mvn",
-        "#!/bin/sh\n"
-        "[ -f " + escape_shell_arg(provisionedMarker.string()) + " ] || exit 1\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(mvnLog.string()) + "\n"
-        "exit 0\n");
-    write_file(fakeBin / "dpkg-query",
-        "#!/bin/sh\n"
-        "exit 1\n");
+    write_file(fakeBin / "java", "#!/bin/sh\n"
+                                 "exit 0\n");
+    write_file(fakeBin / "javac", "#!/bin/sh\n"
+                                  "exit 0\n");
+    write_file(fakeBin / "mvn", "#!/bin/sh\n"
+                                "[ -f " +
+                                    escape_shell_arg(provisionedMarker.string()) +
+                                    " ] || exit 1\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                    escape_shell_arg(mvnLog.string()) +
+                                    "\n"
+                                    "exit 0\n");
+    write_file(fakeBin / "dpkg-query", "#!/bin/sh\n"
+                                       "exit 1\n");
 
-    write_file(fakeBin / "apt-get",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(aptLog.string()) + "\n"
-        ": > " + escape_shell_arg(provisionedMarker.string()) + "\n"
-        "exit 0\n");
+    write_file(fakeBin / "apt-get", "#!/bin/sh\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                        escape_shell_arg(aptLog.string()) +
+                                        "\n"
+                                        ": > " +
+                                        escape_shell_arg(provisionedMarker.string()) +
+                                        "\n"
+                                        "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "apt-get").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "java").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "javac").string())).c_str()) == 0);
@@ -5678,21 +5866,17 @@ TEST_CASE("orchestrator install maven provisions sys requirements before invokin
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_SYS_BACKEND", "apt"},
-            {"REQPACK_SYS_NO_SUDO", "1"},
-            {"REQPACK_SYS_NIX_BIN", (fakeBin / "missing-nix-env").string()},
-            {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
-            {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
-        },
-        {"install", "maven", "org.junit:junit:4.13"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {
+                                                 {"PATH", pathValue},
+                                                 {"REQPACK_SYS_BACKEND", "apt"},
+                                                 {"REQPACK_SYS_NO_SUDO", "1"},
+                                                 {"REQPACK_SYS_NIX_BIN", (fakeBin / "missing-nix-env").string()},
+                                                 {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
+                                                 {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
+                                             },
+                                             {"install", "maven", "org.junit:junit:4.13"}, status);
 
     INFO(output);
     CHECK(status == 0);
@@ -5708,37 +5892,36 @@ TEST_CASE("orchestrator install maven provisions sys requirements before invokin
     CHECK(mavenInstallLog.find("org.junit:junit:4.13") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install maven uses configured repositories and auth settings", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator install maven uses configured repositories and auth settings",
+          "[integration][orchestrator][service][sys]") {
     TempDir tempDir{"reqpack-orchestrator-maven-repositories"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_maven_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        "      {\n"
-        "        id = 'corp',\n"
-        "        url = 'https://repo.example.test/maven-public',\n"
-        "        priority = 1,\n"
-        "        auth = {\n"
-        "          type = 'token',\n"
-        "          token = '${REQPACK_TEST_NEXUS_TOKEN}',\n"
-        "          headerName = 'X-Repo-Token',\n"
-        "        },\n"
-        "        validation = {\n"
-        "          checksum = 'fail',\n"
-        "          tlsVerify = false,\n"
-        "        },\n"
-        "        scope = {\n"
-        "          include = { 'org.junit:*' },\n"
-        "        },\n"
-        "        snapshots = false,\n"
-        "        releases = true,\n"
-        "      },\n"
-        "      {\n"
-        "        id = 'fallback',\n"
-        "        url = 'https://repo.example.test/fallback',\n"
-        "        priority = 50,\n"
-        "      },\n"
-    );
+    const std::filesystem::path configPath =
+        write_config_with_maven_repositories(tempDir.path(), pluginDirectory,
+                                             "      {\n"
+                                             "        id = 'corp',\n"
+                                             "        url = 'https://repo.example.test/maven-public',\n"
+                                             "        priority = 1,\n"
+                                             "        auth = {\n"
+                                             "          type = 'token',\n"
+                                             "          token = '${REQPACK_TEST_NEXUS_TOKEN}',\n"
+                                             "          headerName = 'X-Repo-Token',\n"
+                                             "        },\n"
+                                             "        validation = {\n"
+                                             "          checksum = 'fail',\n"
+                                             "          tlsVerify = false,\n"
+                                             "        },\n"
+                                             "        scope = {\n"
+                                             "          include = { 'org.junit:*' },\n"
+                                             "        },\n"
+                                             "        snapshots = false,\n"
+                                             "        releases = true,\n"
+                                             "      },\n"
+                                             "      {\n"
+                                             "        id = 'fallback',\n"
+                                             "        url = 'https://repo.example.test/fallback',\n"
+                                             "        priority = 50,\n"
+                                             "      },\n");
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
     const std::filesystem::path mvnLog = tempDir.path() / "mvn.log";
     const std::filesystem::path settingsCopy = tempDir.path() / "captured-settings.xml";
@@ -5747,23 +5930,24 @@ TEST_CASE("orchestrator install maven uses configured repositories and auth sett
     copy_repo_plugin(pluginDirectory, "sys");
     copy_repo_plugin(pluginDirectory, "maven");
 
-    write_file(fakeBin / "java",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "javac",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "mvn",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(mvnLog.string()) + "\n"
-        "settings=''\n"
-        "prev=''\n"
-        "for arg in \"$@\"; do\n"
-        "  if [ \"$prev\" = '-s' ]; then settings=\"$arg\"; break; fi\n"
-        "  prev=\"$arg\"\n"
-        "done\n"
-        "if [ -n \"$settings\" ]; then cp \"$settings\" " + escape_shell_arg(settingsCopy.string()) + "; fi\n"
-        "exit 0\n");
+    write_file(fakeBin / "java", "#!/bin/sh\n"
+                                 "exit 0\n");
+    write_file(fakeBin / "javac", "#!/bin/sh\n"
+                                  "exit 0\n");
+    write_file(fakeBin / "mvn", "#!/bin/sh\n"
+                                "printf '%s\n' \"$*\" >> " +
+                                    escape_shell_arg(mvnLog.string()) +
+                                    "\n"
+                                    "settings=''\n"
+                                    "prev=''\n"
+                                    "for arg in \"$@\"; do\n"
+                                    "  if [ \"$prev\" = '-s' ]; then settings=\"$arg\"; break; fi\n"
+                                    "  prev=\"$arg\"\n"
+                                    "done\n"
+                                    "if [ -n \"$settings\" ]; then cp \"$settings\" " +
+                                    escape_shell_arg(settingsCopy.string()) +
+                                    "; fi\n"
+                                    "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "java").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "javac").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "mvn").string())).c_str()) == 0);
@@ -5778,19 +5962,15 @@ TEST_CASE("orchestrator install maven uses configured repositories and auth sett
 
     int status = 0;
     const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        environment,
-        {"install", "maven", "org.junit:junit:4.13"},
-        status
-    );
+        tempDir.path(), configPath, tempDir.path(), environment, {"install", "maven", "org.junit:junit:4.13"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("[error]") == std::string::npos);
     const std::string mavenInstallLog = read_file(mvnLog);
     CHECK(mavenInstallLog.find("-Dmaven.repo.local=" + (tempDir.path() / "custom-m2").string()) != std::string::npos);
-    CHECK(mavenInstallLog.find("-DremoteRepositories=corp::default::https://repo.example.test/maven-public,fallback::default::https://repo.example.test/fallback") != std::string::npos);
+    CHECK(mavenInstallLog.find("-DremoteRepositories=corp::default::https://repo.example.test/"
+                               "maven-public,fallback::default::https://repo.example.test/fallback") !=
+          std::string::npos);
     CHECK(mavenInstallLog.find("-Dmaven.wagon.http.ssl.insecure=true") != std::string::npos);
     CHECK(mavenInstallLog.find("-Dmaven.wagon.http.ssl.allowall=true") != std::string::npos);
     CHECK(mavenInstallLog.find("-s ") != std::string::npos);
@@ -5806,21 +5986,20 @@ TEST_CASE("orchestrator install maven uses configured repositories and auth sett
     CHECK(settings.find("<enabled>false</enabled>") != std::string::npos);
 }
 
-TEST_CASE("orchestrator install maven fails when configured repositories do not match scope", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator install maven fails when configured repositories do not match scope",
+          "[integration][orchestrator][service][sys]") {
     TempDir tempDir{"reqpack-orchestrator-maven-scope-miss"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
-    const std::filesystem::path configPath = write_config_with_maven_repositories(
-        tempDir.path(),
-        pluginDirectory,
-        "      {\n"
-        "        id = 'corp',\n"
-        "        url = 'https://repo.example.test/maven-public',\n"
-        "        priority = 1,\n"
-        "        scope = {\n"
-        "          include = { 'com.mycompany.*' },\n"
-        "        },\n"
-        "      },\n"
-    );
+    const std::filesystem::path configPath =
+        write_config_with_maven_repositories(tempDir.path(), pluginDirectory,
+                                             "      {\n"
+                                             "        id = 'corp',\n"
+                                             "        url = 'https://repo.example.test/maven-public',\n"
+                                             "        priority = 1,\n"
+                                             "        scope = {\n"
+                                             "          include = { 'com.mycompany.*' },\n"
+                                             "        },\n"
+                                             "      },\n");
     const std::filesystem::path fakeBin = tempDir.path() / "bin";
     const std::filesystem::path mvnLog = tempDir.path() / "mvn.log";
     std::filesystem::create_directories(fakeBin);
@@ -5828,16 +6007,15 @@ TEST_CASE("orchestrator install maven fails when configured repositories do not 
     copy_repo_plugin(pluginDirectory, "sys");
     copy_repo_plugin(pluginDirectory, "maven");
 
-    write_file(fakeBin / "java",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "javac",
-        "#!/bin/sh\n"
-        "exit 0\n");
-    write_file(fakeBin / "mvn",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(mvnLog.string()) + "\n"
-        "exit 0\n");
+    write_file(fakeBin / "java", "#!/bin/sh\n"
+                                 "exit 0\n");
+    write_file(fakeBin / "javac", "#!/bin/sh\n"
+                                  "exit 0\n");
+    write_file(fakeBin / "mvn", "#!/bin/sh\n"
+                                "printf '%s\n' \"$*\" >> " +
+                                    escape_shell_arg(mvnLog.string()) +
+                                    "\n"
+                                    "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "java").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "javac").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "mvn").string())).c_str()) == 0);
@@ -5850,14 +6028,8 @@ TEST_CASE("orchestrator install maven fails when configured repositories do not 
 
     int status = 0;
     const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        environment,
-        {"install", "maven", "org.junit:junit:4.13"},
-        status
-    );
-    
+        tempDir.path(), configPath, tempDir.path(), environment, {"install", "maven", "org.junit:junit:4.13"}, status);
+
     CHECK(status != 0);
     CHECK(output.find("no configured maven repository matched org.junit:junit") != std::string::npos);
     CHECK(output.find("INSTALL done:  2 ok,  0 skipped,  1 failed") != std::string::npos);
@@ -5874,31 +6046,28 @@ TEST_CASE("orchestrator sys plugin installs packages via nix backend", "[integra
 
     copy_repo_plugin(pluginDirectory, "sys");
 
-    write_file(fakeBin / "nix-env",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"-q\" ]; then\n"
-        "  exit 1\n"
-        "fi\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(nixLog.string()) + "\n"
-        "exit 0\n");
+    write_file(fakeBin / "nix-env", "#!/bin/sh\n"
+                                    "if [ \"$1\" = \"-q\" ]; then\n"
+                                    "  exit 1\n"
+                                    "fi\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                        escape_shell_arg(nixLog.string()) +
+                                        "\n"
+                                        "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "nix-env").string())).c_str()) == 0);
 
     const char* currentPath = std::getenv("PATH");
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_SYS_BACKEND", "nix"},
-            {"REQPACK_SYS_NIX_BIN", (fakeBin / "nix-env").string()},
-        },
-        {"install", "sys", "alpha-tool", "beta-tool"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {
+                                                 {"PATH", pathValue},
+                                                 {"REQPACK_SYS_BACKEND", "nix"},
+                                                 {"REQPACK_SYS_NIX_BIN", (fakeBin / "nix-env").string()},
+                                             },
+                                             {"install", "sys", "alpha-tool", "beta-tool"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("[error]") == std::string::npos);
@@ -5909,7 +6078,8 @@ TEST_CASE("orchestrator sys plugin installs packages via nix backend", "[integra
     CHECK(log.find("nixpkgs.beta-tool") != std::string::npos);
 }
 
-TEST_CASE("orchestrator sys plugin falls back to nix when backend package is unavailable", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator sys plugin falls back to nix when backend package is unavailable",
+          "[integration][orchestrator][service][sys]") {
     TempDir tempDir{"reqpack-orchestrator-sys-nix-fallback"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5921,30 +6091,32 @@ TEST_CASE("orchestrator sys plugin falls back to nix when backend package is una
 
     copy_repo_plugin(pluginDirectory, "sys");
 
-    write_file(fakeBin / "apt-get",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(aptLog.string()) + "\n"
-        "exit 0\n");
-    write_file(fakeBin / "apt-cache",
-        "#!/bin/sh\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(aptCacheLog.string()) + "\n"
-        "if [ \"$1\" = \"show\" ] && [ \"$2\" = \"fallbackpkg\" ]; then\n"
-        "  exit 1\n"
-        "fi\n"
-        "exit 0\n");
-    write_file(fakeBin / "dpkg-query",
-        "#!/bin/sh\n"
-        "exit 1\n");
-    write_file(fakeBin / "nix-env",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"-q\" ]; then\n"
-        "  exit 1\n"
-        "fi\n"
-        "if [ \"$1\" = \"-qaA\" ] && [ \"$2\" = \"nixpkgs.fallbackpkg\" ]; then\n"
-        "  exit 0\n"
-        "fi\n"
-        "printf '%s\n' \"$*\" >> " + escape_shell_arg(nixLog.string()) + "\n"
-        "exit 0\n");
+    write_file(fakeBin / "apt-get", "#!/bin/sh\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                        escape_shell_arg(aptLog.string()) +
+                                        "\n"
+                                        "exit 0\n");
+    write_file(fakeBin / "apt-cache", "#!/bin/sh\n"
+                                      "printf '%s\n' \"$*\" >> " +
+                                          escape_shell_arg(aptCacheLog.string()) +
+                                          "\n"
+                                          "if [ \"$1\" = \"show\" ] && [ \"$2\" = \"fallbackpkg\" ]; then\n"
+                                          "  exit 1\n"
+                                          "fi\n"
+                                          "exit 0\n");
+    write_file(fakeBin / "dpkg-query", "#!/bin/sh\n"
+                                       "exit 1\n");
+    write_file(fakeBin / "nix-env", "#!/bin/sh\n"
+                                    "if [ \"$1\" = \"-q\" ]; then\n"
+                                    "  exit 1\n"
+                                    "fi\n"
+                                    "if [ \"$1\" = \"-qaA\" ] && [ \"$2\" = \"nixpkgs.fallbackpkg\" ]; then\n"
+                                    "  exit 0\n"
+                                    "fi\n"
+                                    "printf '%s\n' \"$*\" >> " +
+                                        escape_shell_arg(nixLog.string()) +
+                                        "\n"
+                                        "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "apt-get").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "apt-cache").string())).c_str()) == 0);
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "dpkg-query").string())).c_str()) == 0);
@@ -5954,22 +6126,18 @@ TEST_CASE("orchestrator sys plugin falls back to nix when backend package is una
     const std::string pathValue = fakeBin.string() + ":" + (currentPath != nullptr ? currentPath : "");
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {
-            {"PATH", pathValue},
-            {"REQPACK_SYS_BACKEND", "apt"},
-            {"REQPACK_SYS_NO_SUDO", "1"},
-            {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
-            {"REQPACK_SYS_APT_CACHE_BIN", (fakeBin / "apt-cache").string()},
-            {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
-            {"REQPACK_SYS_NIX_BIN", (fakeBin / "nix-env").string()},
-        },
-        {"install", "sys", "fallbackpkg"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, tempDir.path(),
+                                             {
+                                                 {"PATH", pathValue},
+                                                 {"REQPACK_SYS_BACKEND", "apt"},
+                                                 {"REQPACK_SYS_NO_SUDO", "1"},
+                                                 {"REQPACK_SYS_APT_BIN", (fakeBin / "apt-get").string()},
+                                                 {"REQPACK_SYS_APT_CACHE_BIN", (fakeBin / "apt-cache").string()},
+                                                 {"REQPACK_SYS_DPKG_QUERY_BIN", (fakeBin / "dpkg-query").string()},
+                                                 {"REQPACK_SYS_NIX_BIN", (fakeBin / "nix-env").string()},
+                                             },
+                                             {"install", "sys", "fallbackpkg"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("[error]") == std::string::npos);
@@ -5982,7 +6150,8 @@ TEST_CASE("orchestrator sys plugin falls back to nix when backend package is una
     CHECK(nixOutput.find("nixpkgs.fallbackpkg") != std::string::npos);
 }
 
-TEST_CASE("orchestrator sys plugin bootstraps nix when nix backend is selected but missing", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator sys plugin bootstraps nix when nix backend is selected but missing",
+          "[integration][orchestrator][service][sys]") {
     TempDir tempDir{"reqpack-orchestrator-sys-nix-bootstrap"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -5996,40 +6165,41 @@ TEST_CASE("orchestrator sys plugin bootstraps nix when nix backend is selected b
 
     copy_repo_plugin(pluginDirectory, "sys");
 
-    write_file(fakeBin / "nix-env.stub",
-        "#!/bin/sh\n"
-        "if [ \"$1\" = \"-q\" ]; then\n"
-        "  exit 1\n"
-        "fi\n"
-        "printf '%s\\n' \"$*\" >> " + escape_shell_arg(nixLog.string()) + "\n"
-        "exit 0\n");
-    write_file(bootstrapScript,
-        "#!/bin/sh\n"
-        "printf '%s\\n' bootstrap >> " + escape_shell_arg(bootstrapLog.string()) + "\n"
-        "mkdir -p \"$HOME/.nix-profile/bin\"\n"
-        "/bin/cp " + escape_shell_arg((fakeBin / "nix-env.stub").string()) + " \"$HOME/.nix-profile/bin/nix-env\"\n"
-        "/bin/chmod +x \"$HOME/.nix-profile/bin/nix-env\"\n"
-        "exit 0\n");
+    write_file(fakeBin / "nix-env.stub", "#!/bin/sh\n"
+                                         "if [ \"$1\" = \"-q\" ]; then\n"
+                                         "  exit 1\n"
+                                         "fi\n"
+                                         "printf '%s\\n' \"$*\" >> " +
+                                             escape_shell_arg(nixLog.string()) +
+                                             "\n"
+                                             "exit 0\n");
+    write_file(bootstrapScript, "#!/bin/sh\n"
+                                "printf '%s\\n' bootstrap >> " +
+                                    escape_shell_arg(bootstrapLog.string()) +
+                                    "\n"
+                                    "mkdir -p \"$HOME/.nix-profile/bin\"\n"
+                                    "/bin/cp " +
+                                    escape_shell_arg((fakeBin / "nix-env.stub").string()) +
+                                    " \"$HOME/.nix-profile/bin/nix-env\"\n"
+                                    "/bin/chmod +x \"$HOME/.nix-profile/bin/nix-env\"\n"
+                                    "exit 0\n");
     REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "nix-env.stub").string()) + " " +
-        escape_shell_arg(bootstrapScript.string())).c_str()) == 0);
+                         escape_shell_arg(bootstrapScript.string()))
+                            .c_str()) == 0);
 
     const std::string pathValue = fakeBin.string();
     const std::filesystem::path homePath = tempDir.path() / "home";
     std::filesystem::create_directories(homePath);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_env_and_status(
-        tempDir.path(),
-        configPath,
-        homePath,
-        {
-            {"PATH", pathValue},
-            {"REQPACK_SYS_BACKEND", "nix"},
-            {"REQPACK_SYS_NIX_INSTALL_CMD", bootstrapScript.string()},
-        },
-        {"install", "sys", "bootstrap-tool"},
-        status
-    );
+    const std::string output =
+        run_reqpack_with_home_env_and_status(tempDir.path(), configPath, homePath,
+                                             {
+                                                 {"PATH", pathValue},
+                                                 {"REQPACK_SYS_BACKEND", "nix"},
+                                                 {"REQPACK_SYS_NIX_INSTALL_CMD", bootstrapScript.string()},
+                                             },
+                                             {"install", "sys", "bootstrap-tool"}, status);
 
     CHECK(status == 0);
     CHECK(output.find("[error]") == std::string::npos);
@@ -6041,7 +6211,8 @@ TEST_CASE("orchestrator sys plugin bootstraps nix when nix backend is selected b
     CHECK(nixOutput.find("nixpkgs.bootstrap-tool") != std::string::npos);
 }
 
-TEST_CASE("orchestrator sys plugin delegates install to additional linux backends", "[integration][orchestrator][service][sys]") {
+TEST_CASE("orchestrator sys plugin delegates install to additional linux backends",
+          "[integration][orchestrator][service][sys]") {
     struct BackendCase {
         std::string backend;
         std::string binaryEnv;
@@ -6054,13 +6225,17 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
 
     const std::vector<BackendCase> cases{
         {"yum", "REQPACK_SYS_YUM_BIN", "yum", "REQPACK_SYS_RPM_BIN", "rpm", "install -y", "maven"},
-        {"zypper", "REQPACK_SYS_ZYPPER_BIN", "zypper", "REQPACK_SYS_RPM_BIN", "rpm", "install --auto-agree-with-licenses", "maven"},
-        {"pacman", "REQPACK_SYS_PACMAN_BIN", "pacman", "REQPACK_SYS_PACMAN_BIN", "pacman", "-S --noconfirm --needed", "maven"},
+        {"zypper", "REQPACK_SYS_ZYPPER_BIN", "zypper", "REQPACK_SYS_RPM_BIN", "rpm",
+         "install --auto-agree-with-licenses", "maven"},
+        {"pacman", "REQPACK_SYS_PACMAN_BIN", "pacman", "REQPACK_SYS_PACMAN_BIN", "pacman", "-S --noconfirm --needed",
+         "maven"},
         {"apk", "REQPACK_SYS_APK_BIN", "apk", "REQPACK_SYS_APK_BIN", "apk", "add", "maven"},
-        {"xbps", "REQPACK_SYS_XBPS_INSTALL_BIN", "xbps-install", "REQPACK_SYS_XBPS_QUERY_BIN", "xbps-query", "-Sy", "maven"},
+        {"xbps", "REQPACK_SYS_XBPS_INSTALL_BIN", "xbps-install", "REQPACK_SYS_XBPS_QUERY_BIN", "xbps-query", "-Sy",
+         "maven"},
         {"eopkg", "REQPACK_SYS_EOPKG_BIN", "eopkg", "REQPACK_SYS_EOPKG_BIN", "eopkg", "install -y", "maven"},
         {"urpmi", "REQPACK_SYS_URPMI_BIN", "urpmi", "REQPACK_SYS_RPM_BIN", "rpm", "--auto", "maven"},
-        {"emerge", "REQPACK_SYS_EMERGE_BIN", "emerge", "REQPACK_SYS_EQUERY_BIN", "equery", "--ask=n", "dev-java/maven-bin"},
+        {"emerge", "REQPACK_SYS_EMERGE_BIN", "emerge", "REQPACK_SYS_EQUERY_BIN", "equery", "--ask=n",
+         "dev-java/maven-bin"},
     };
 
     for (const BackendCase& testCase : cases) {
@@ -6074,10 +6249,11 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
 
         copy_repo_plugin(pluginDirectory, "sys");
 
-        write_file(fakeBin / testCase.binaryName,
-            "#!/bin/sh\n"
-            "printf '%s\n' \"$*\" >> " + escape_shell_arg(backendLog.string()) + "\n"
-            "exit 0\n");
+        write_file(fakeBin / testCase.binaryName, "#!/bin/sh\n"
+                                                  "printf '%s\n' \"$*\" >> " +
+                                                      escape_shell_arg(backendLog.string()) +
+                                                      "\n"
+                                                      "exit 0\n");
         REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / testCase.binaryName).string())).c_str()) == 0);
 
         std::vector<std::pair<std::string, std::string>> environment{
@@ -6088,39 +6264,39 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
         };
 
         if (!testCase.queryEnv.empty()) {
-            std::string queryScript =
-                "#!/bin/sh\n"
-                "exit 1\n";
+            std::string queryScript = "#!/bin/sh\n"
+                                      "exit 1\n";
             if (testCase.backend == "pacman") {
-                queryScript =
-                    "#!/bin/sh\n"
-                    "if [ \"$1\" = \"-Q\" ]; then exit 1; fi\n"
-                    "printf '%s\n' \"$*\" >> " + escape_shell_arg(backendLog.string()) + "\n"
-                    "exit 0\n";
-            }
-            else if (testCase.backend == "apk") {
-                queryScript =
-                    "#!/bin/sh\n"
-                    "if [ \"$1\" = \"info\" ] && [ \"$2\" = \"-e\" ]; then exit 1; fi\n"
-                    "printf '%s\n' \"$*\" >> " + escape_shell_arg(backendLog.string()) + "\n"
-                    "exit 0\n";
-            }
-            else if (testCase.backend == "eopkg") {
-                queryScript =
-                    "#!/bin/sh\n"
-                    "if [ \"$1\" = \"list-installed\" ]; then exit 1; fi\n"
-                    "printf '%s\n' \"$*\" >> " + escape_shell_arg(backendLog.string()) + "\n"
-                    "exit 0\n";
+                queryScript = "#!/bin/sh\n"
+                              "if [ \"$1\" = \"-Q\" ]; then exit 1; fi\n"
+                              "printf '%s\n' \"$*\" >> " +
+                              escape_shell_arg(backendLog.string()) +
+                              "\n"
+                              "exit 0\n";
+            } else if (testCase.backend == "apk") {
+                queryScript = "#!/bin/sh\n"
+                              "if [ \"$1\" = \"info\" ] && [ \"$2\" = \"-e\" ]; then exit 1; fi\n"
+                              "printf '%s\n' \"$*\" >> " +
+                              escape_shell_arg(backendLog.string()) +
+                              "\n"
+                              "exit 0\n";
+            } else if (testCase.backend == "eopkg") {
+                queryScript = "#!/bin/sh\n"
+                              "if [ \"$1\" = \"list-installed\" ]; then exit 1; fi\n"
+                              "printf '%s\n' \"$*\" >> " +
+                              escape_shell_arg(backendLog.string()) +
+                              "\n"
+                              "exit 0\n";
             }
             write_file(fakeBin / testCase.queryName, queryScript);
-            REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / testCase.queryName).string())).c_str()) == 0);
+            REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / testCase.queryName).string())).c_str()) ==
+                    0);
             environment.push_back({testCase.queryEnv, (fakeBin / testCase.queryName).string()});
         }
 
         if (testCase.backend == "emerge") {
-            write_file(fakeBin / "equery",
-                "#!/bin/sh\n"
-                "exit 1\n");
+            write_file(fakeBin / "equery", "#!/bin/sh\n"
+                                           "exit 1\n");
             REQUIRE(std::system(("chmod +x " + escape_shell_arg((fakeBin / "equery").string())).c_str()) == 0);
             environment.push_back({"REQPACK_SYS_EQUERY_BIN", (fakeBin / "equery").string()});
         }
@@ -6131,13 +6307,7 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
 
         int status = 0;
         const std::string output = run_reqpack_with_home_env_and_status(
-            tempDir.path(),
-            configPath,
-            tempDir.path(),
-            environment,
-            {"install", "sys", "maven"},
-            status
-        );
+            tempDir.path(), configPath, tempDir.path(), environment, {"install", "sys", "maven"}, status);
 
         CHECK(status == 0);
         CHECK(output.find("[error]") == std::string::npos);
@@ -6148,27 +6318,27 @@ TEST_CASE("orchestrator sys plugin delegates install to additional linux backend
     }
 }
 
-TEST_CASE("orchestrator pack builds builtin rqp and install can consume it", "[integration][orchestrator][service][pack]") {
+TEST_CASE("orchestrator pack builds builtin rqp and install can consume it",
+          "[integration][orchestrator][service][pack]") {
     TempDir tempDir{"reqpack-orchestrator-pack-builtin"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     const std::filesystem::path installLog = tempDir.path() / "installed.txt";
 
-    write_file(projectRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"demo\",\n"
-        "  \"version\": \"1.2.3\",\n"
-        "  \"release\": 2,\n"
-        "  \"revision\": 1,\n"
-        "  \"summary\": \"demo\",\n"
-        "  \"description\": \"demo package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/demo.rqp\"\n"
-        "}\n");
+    write_file(projectRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"demo\",\n"
+                                              "  \"version\": \"1.2.3\",\n"
+                                              "  \"release\": 2,\n"
+                                              "  \"revision\": 1,\n"
+                                              "  \"summary\": \"demo\",\n"
+                                              "  \"description\": \"demo package\",\n"
+                                              "  \"license\": \"MIT\",\n"
+                                              "  \"vendor\": \"ReqPack Tests\",\n"
+                                              "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                              "  \"url\": \"https://example.test/demo.rqp\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -6178,48 +6348,47 @@ return {
 }
 )");
     write_file(projectRoot / "scripts" / "install.lua",
-        "context.fs.copy(context.paths.payloadDir .. '/share/hello.txt', '" + installLog.string() + "')\n"
-        "return true\n");
+               "context.fs.copy(context.paths.payloadDir .. '/share/hello.txt', '" + installLog.string() +
+                   "')\n"
+                   "return true\n");
     write_file(projectRoot / "payload-tree" / "share" / "hello.txt", "hello\n");
 
-    const std::string packOutput = run_reqpack(tempDir.path(), configPath, {"pack", projectRoot.string(), "--output", (tempDir.path() / "dist" / "demo.rqp").string(), "--force"});
+    const std::string packOutput = run_reqpack(
+        tempDir.path(), configPath,
+        {"pack", projectRoot.string(), "--output", (tempDir.path() / "dist" / "demo.rqp").string(), "--force"});
     CHECK(packOutput.find("PACK") != std::string::npos);
     CHECK(packOutput.find("artifact:") != std::string::npos);
     CHECK(std::filesystem::exists(tempDir.path() / "dist" / "demo.rqp"));
 
     int status = 0;
-    const std::string installOutput = run_reqpack_with_home_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {"install", (tempDir.path() / "dist" / "demo.rqp").string()},
-        status
-    );
+    const std::string installOutput =
+        run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                         {"install", (tempDir.path() / "dist" / "demo.rqp").string()}, status);
     CHECK(status == 0);
     CHECK(installOutput.find("INSTALL done:  1 ok,  0 skipped,  0 failed") != std::string::npos);
     CHECK(std::filesystem::exists(installLog));
 }
 
-TEST_CASE("orchestrator pack defaults to current directory when project path omitted", "[integration][orchestrator][service][pack]") {
+TEST_CASE("orchestrator pack defaults to current directory when project path omitted",
+          "[integration][orchestrator][service][pack]") {
     TempDir tempDir{"reqpack-orchestrator-pack-default-project"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
 
-    write_file(projectRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"demo\",\n"
-        "  \"version\": \"1.2.3\",\n"
-        "  \"release\": 2,\n"
-        "  \"revision\": 1,\n"
-        "  \"summary\": \"demo\",\n"
-        "  \"description\": \"demo package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/demo.rqp\"\n"
-        "}\n");
+    write_file(projectRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"demo\",\n"
+                                              "  \"version\": \"1.2.3\",\n"
+                                              "  \"release\": 2,\n"
+                                              "  \"revision\": 1,\n"
+                                              "  \"summary\": \"demo\",\n"
+                                              "  \"description\": \"demo package\",\n"
+                                              "  \"license\": \"MIT\",\n"
+                                              "  \"vendor\": \"ReqPack Tests\",\n"
+                                              "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                              "  \"url\": \"https://example.test/demo.rqp\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", R"(
 return {
   apiVersion = 1,
@@ -6237,36 +6406,34 @@ return {
     CHECK(std::filesystem::exists(projectRoot / "demo.rqp"));
 }
 
-TEST_CASE("orchestrator pack passes external payload dir to builtin builder", "[integration][orchestrator][service][pack]") {
+TEST_CASE("orchestrator pack passes external payload dir to builtin builder",
+          "[integration][orchestrator][service][pack]") {
     TempDir tempDir{"reqpack-orchestrator-pack-external-payload"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     const std::filesystem::path payloadRoot = tempDir.path() / "rootfs";
 
-    write_file(projectRoot / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"external\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"external\",\n"
-        "  \"description\": \"external package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/external.rqp\"\n"
-        "}\n");
+    write_file(projectRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"external\",\n"
+                                              "  \"version\": \"1.0.0\",\n"
+                                              "  \"release\": 1,\n"
+                                              "  \"revision\": 0,\n"
+                                              "  \"summary\": \"external\",\n"
+                                              "  \"description\": \"external package\",\n"
+                                              "  \"license\": \"MIT\",\n"
+                                              "  \"vendor\": \"ReqPack Tests\",\n"
+                                              "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                              "  \"url\": \"https://example.test/external.rqp\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", "return { apiVersion = 1, hooks = { install = 'scripts/install.lua' } }\n");
     write_file(projectRoot / "scripts" / "install.lua", "return true\n");
     write_file(payloadRoot / "opt" / "tool.txt", "payload\n");
 
-    const std::string output = run_reqpack(
-        tempDir.path(),
-        configPath,
-        {"pack", projectRoot.string(), "--payload-dir", payloadRoot.string(), "--output", (tempDir.path() / "external.rqp").string(), "--force"}
-    );
+    const std::string output = run_reqpack(tempDir.path(), configPath,
+                                           {"pack", projectRoot.string(), "--payload-dir", payloadRoot.string(),
+                                            "--output", (tempDir.path() / "external.rqp").string(), "--force"});
     CHECK(output.find("PACK") != std::string::npos);
     CHECK(std::filesystem::exists(tempDir.path() / "external.rqp"));
 }
@@ -6280,7 +6447,8 @@ TEST_CASE("orchestrator pack dispatches to plugin pack", "[integration][orchestr
     add_plugin_script(pluginDirectory, "demo", PACK_PLUGIN);
 
     const std::filesystem::path outputPath = tempDir.path() / "dist" / "demo.pkg";
-    const std::string output = run_reqpack(tempDir.path(), configPath, {"pack", "demo", projectRoot.string(), "--output", outputPath.string(), "--force"});
+    const std::string output = run_reqpack(
+        tempDir.path(), configPath, {"pack", "demo", projectRoot.string(), "--output", outputPath.string(), "--force"});
 
     CHECK(output.find("PACK") != std::string::npos);
     CHECK(output.find("artifact:") != std::string::npos);
@@ -6288,7 +6456,8 @@ TEST_CASE("orchestrator pack dispatches to plugin pack", "[integration][orchestr
     CHECK(read_file(outputPath) == "native-artifact");
 }
 
-TEST_CASE("orchestrator pack fails when plugin reports success without artifact", "[integration][orchestrator][service][pack]") {
+TEST_CASE("orchestrator pack fails when plugin reports success without artifact",
+          "[integration][orchestrator][service][pack]") {
     TempDir tempDir{"reqpack-orchestrator-pack-plugin-no-artifact"};
     const std::filesystem::path pluginDirectory = tempDir.path() / "plugins";
     const std::filesystem::path configPath = write_config(tempDir.path(), pluginDirectory);
@@ -6297,13 +6466,8 @@ TEST_CASE("orchestrator pack fails when plugin reports success without artifact"
     add_plugin_script(pluginDirectory, "demo", PACK_NO_ARTIFACT_PLUGIN);
 
     int status = 0;
-    const std::string output = run_reqpack_with_home_and_status(
-        tempDir.path(),
-        configPath,
-        tempDir.path(),
-        {"pack", "demo", projectRoot.string()},
-        status
-    );
+    const std::string output = run_reqpack_with_home_and_status(tempDir.path(), configPath, tempDir.path(),
+                                                                {"pack", "demo", projectRoot.string()}, status);
 
     CHECK(status != 0);
     CHECK(output.find("did not register any output artifact") != std::string::npos);

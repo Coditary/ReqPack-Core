@@ -101,15 +101,8 @@ HANDLE open_windows_nul_handle() {
     securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.bInheritHandle = TRUE;
 
-    return CreateFileA(
-        "NUL",
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        &securityAttributes,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL,
-        nullptr
-    );
+    return CreateFileA("NUL", GENERIC_READ, FILE_SHARE_READ, &securityAttributes, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                       nullptr);
 }
 
 bool read_windows_pipe(HANDLE pipe, std::string& output, std::string& errorText) {
@@ -158,12 +151,9 @@ void close_windows_process_handles(WindowsProcessHandles& handles) {
     close_windows_handle(handles.process);
 }
 
-std::optional<WindowsProcessHandles> start_windows_process(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory,
-    bool captureOutput,
-    std::string& errorText
-) {
+std::optional<WindowsProcessHandles> start_windows_process(const std::vector<std::string>& arguments,
+                                                           const std::filesystem::path& workingDirectory,
+                                                           bool captureOutput, std::string& errorText) {
     if (arguments.empty()) {
         errorText = "empty command";
         return std::nullopt;
@@ -230,18 +220,9 @@ std::optional<WindowsProcessHandles> start_windows_process(
     const std::string workingDirectoryString = workingDirectory.empty() ? std::string{} : workingDirectory.string();
     const char* workingDirectoryPointer = workingDirectoryString.empty() ? nullptr : workingDirectoryString.c_str();
 
-    const BOOL created = CreateProcessA(
-        arguments.front().c_str(),
-        commandLineBuffer.data(),
-        nullptr,
-        nullptr,
-        TRUE,
-        CREATE_NO_WINDOW,
-        environmentBlock.data(),
-        workingDirectoryPointer,
-        &startupInfo,
-        &processInfo
-    );
+    const BOOL created =
+        CreateProcessA(arguments.front().c_str(), commandLineBuffer.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
+                       environmentBlock.data(), workingDirectoryPointer, &startupInfo, &processInfo);
 
     close_windows_handle(handles.stdoutWrite);
     close_windows_handle(handles.stderrWrite);
@@ -321,15 +302,10 @@ bool read_posix_fd(int fd, std::string& output, std::string& errorText) {
     }
 }
 
-std::optional<pid_t> start_posix_process(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory,
-    int stdoutReadFd,
-    int stdoutWriteFd,
-    int stderrReadFd,
-    int stderrWriteFd,
-    std::string& errorText
-) {
+std::optional<pid_t> start_posix_process(const std::vector<std::string>& arguments,
+                                         const std::filesystem::path& workingDirectory, int stdoutReadFd,
+                                         int stdoutWriteFd, int stderrReadFd, int stderrWriteFd,
+                                         std::string& errorText) {
     posix_spawn_file_actions_t fileActions;
     if (posix_spawn_file_actions_init(&fileActions) != 0) {
         errorText = "posix_spawn_file_actions_init failed";
@@ -344,14 +320,13 @@ std::optional<pid_t> start_posix_process(
 #endif
 
     if (ready && stdoutWriteFd >= 0 && stderrWriteFd >= 0) {
-        ready =
-            posix_spawn_file_actions_addopen(&fileActions, STDIN_FILENO, "/dev/null", O_RDONLY, 0) == 0 &&
-            posix_spawn_file_actions_adddup2(&fileActions, stdoutWriteFd, STDOUT_FILENO) == 0 &&
-            posix_spawn_file_actions_adddup2(&fileActions, stderrWriteFd, STDERR_FILENO) == 0 &&
-            posix_spawn_file_actions_addclose(&fileActions, stdoutReadFd) == 0 &&
-            posix_spawn_file_actions_addclose(&fileActions, stdoutWriteFd) == 0 &&
-            posix_spawn_file_actions_addclose(&fileActions, stderrReadFd) == 0 &&
-            posix_spawn_file_actions_addclose(&fileActions, stderrWriteFd) == 0;
+        ready = posix_spawn_file_actions_addopen(&fileActions, STDIN_FILENO, "/dev/null", O_RDONLY, 0) == 0 &&
+                posix_spawn_file_actions_adddup2(&fileActions, stdoutWriteFd, STDOUT_FILENO) == 0 &&
+                posix_spawn_file_actions_adddup2(&fileActions, stderrWriteFd, STDERR_FILENO) == 0 &&
+                posix_spawn_file_actions_addclose(&fileActions, stdoutReadFd) == 0 &&
+                posix_spawn_file_actions_addclose(&fileActions, stdoutWriteFd) == 0 &&
+                posix_spawn_file_actions_addclose(&fileActions, stderrReadFd) == 0 &&
+                posix_spawn_file_actions_addclose(&fileActions, stderrWriteFd) == 0;
     }
 
     if (!ready) {
@@ -376,14 +351,8 @@ std::optional<pid_t> start_posix_process(
     environmentPointers.push_back(nullptr);
 
     pid_t pid = 0;
-    const int spawnResult = posix_spawnp(
-        &pid,
-        arguments.front().c_str(),
-        &fileActions,
-        nullptr,
-        argv.data(),
-        environmentPointers.data()
-    );
+    const int spawnResult =
+        posix_spawnp(&pid, arguments.front().c_str(), &fileActions, nullptr, argv.data(), environmentPointers.data());
     posix_spawn_file_actions_destroy(&fileActions);
     if (spawnResult != 0) {
         errorText = std::string{"spawn failed: "} + std::strerror(spawnResult);
@@ -395,12 +364,9 @@ std::optional<pid_t> start_posix_process(
 
 #endif
 
-}  // namespace
+} // namespace
 
-bool reqpack_run_process(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory
-) {
+bool reqpack_run_process(const std::vector<std::string>& arguments, const std::filesystem::path& workingDirectory) {
 #if defined(_WIN32)
     std::string errorText;
     std::optional<WindowsProcessHandles> handles = start_windows_process(arguments, workingDirectory, false, errorText);
@@ -425,10 +391,8 @@ bool reqpack_run_process(
 #endif
 }
 
-ReqpackProcessResult reqpack_run_process_capture(
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& workingDirectory
-) {
+ReqpackProcessResult reqpack_run_process_capture(const std::vector<std::string>& arguments,
+                                                 const std::filesystem::path& workingDirectory) {
     ReqpackProcessResult result;
     if (arguments.empty()) {
         result.stderrText = "empty command";
@@ -473,15 +437,8 @@ ReqpackProcessResult reqpack_run_process_capture(
     }
 
     std::string errorText;
-    const std::optional<pid_t> pid = start_posix_process(
-        arguments,
-        workingDirectory,
-        stdoutPipe[0],
-        stdoutPipe[1],
-        stderrPipe[0],
-        stderrPipe[1],
-        errorText
-    );
+    const std::optional<pid_t> pid = start_posix_process(arguments, workingDirectory, stdoutPipe[0], stdoutPipe[1],
+                                                         stderrPipe[0], stderrPipe[1], errorText);
     (void)::close(stdoutPipe[1]);
     (void)::close(stderrPipe[1]);
     if (!pid.has_value()) {

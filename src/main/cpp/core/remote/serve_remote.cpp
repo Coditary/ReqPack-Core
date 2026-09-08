@@ -14,15 +14,9 @@ bool remote_protocol_requires_explicit_mode(ServeRemoteProtocol protocol) {
     return protocol == ServeRemoteProtocol::HTTP || protocol == ServeRemoteProtocol::HTTPS;
 }
 
-int run_remote_serve(
-    Cli& cli,
-    const ReqPackConfig& config,
-    const std::filesystem::path& configPath,
-    const ReqPackConfigOverrides& configOverrides,
-    Logger& logger,
-    IDisplay* display,
-    const ServeRuntimeOptions& options
-) {
+int run_remote_serve(Cli& cli, const ReqPackConfig& config, const std::filesystem::path& configPath,
+                     const ReqPackConfigOverrides& configOverrides, Logger& logger, IDisplay* display,
+                     const ServeRuntimeOptions& options) {
     if (options.remoteProtocol == ServeRemoteProtocol::HTTP) {
         logger.err("serve --remote --http is not implemented yet");
         logger.flushSync();
@@ -83,8 +77,8 @@ int run_remote_serve(
         if (active_connection_count(state) >= snapshot.options.maxConnections) {
             const CommandOutput output = command_output_message(DisplayMode::SERVE, "max connections reached", false);
             const std::string response = snapshot.options.remoteProtocol == ServeRemoteProtocol::JSON
-                ? json_response(false, output)
-                : text_response(false, output);
+                                             ? json_response(false, output)
+                                             : text_response(false, output);
             (void)send_all(clientFd, response);
             reqpack_close_socket(clientFd);
             continue;
@@ -93,15 +87,8 @@ int run_remote_serve(
         char hostBuffer[NI_MAXHOST];
         char serviceBuffer[NI_MAXSERV];
         std::string remoteAddress = "unknown";
-        if (::getnameinfo(
-                reinterpret_cast<sockaddr*>(&clientAddress),
-                clientLength,
-                hostBuffer,
-                sizeof(hostBuffer),
-                serviceBuffer,
-                sizeof(serviceBuffer),
-                NI_NUMERICHOST | NI_NUMERICSERV
-            ) == 0) {
+        if (::getnameinfo(reinterpret_cast<sockaddr*>(&clientAddress), clientLength, hostBuffer, sizeof(hostBuffer),
+                          serviceBuffer, sizeof(serviceBuffer), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
             remoteAddress = std::string(hostBuffer) + ":" + serviceBuffer;
         }
 
@@ -110,17 +97,18 @@ int run_remote_serve(
             std::lock_guard<std::mutex> lock(state.mutex);
             sessionId = state.nextSessionId++;
             state.sessions.emplace(sessionId, RemoteSessionInfo{
-                .id = sessionId,
-                .remoteAddress = remoteAddress,
-                .connectedAt = std::chrono::system_clock::now(),
-            });
+                                                  .id = sessionId,
+                                                  .remoteAddress = remoteAddress,
+                                                  .connectedAt = std::chrono::system_clock::now(),
+                                              });
         }
 
         std::thread([&, clientFd, sessionId]() {
             const std::optional<std::string> firstLine = read_line_from_socket(clientFd);
             if (firstLine.has_value()) {
                 const RemoteStateSnapshot workerSnapshot = snapshot_remote_state(state);
-                const std::optional<ConnectionProtocol> protocol = detect_connection_protocol(workerSnapshot.options, firstLine.value());
+                const std::optional<ConnectionProtocol> protocol =
+                    detect_connection_protocol(workerSnapshot.options, firstLine.value());
                 if (protocol.has_value() && protocol.value() == ConnectionProtocol::JSON) {
                     set_session_protocol(state, sessionId, ConnectionProtocol::JSON);
                     handle_json_client(clientFd, cli, state, logger, display, sessionId, commandMutex, firstLine);
@@ -128,7 +116,9 @@ int run_remote_serve(
                     set_session_protocol(state, sessionId, ConnectionProtocol::TEXT);
                     handle_text_client(clientFd, cli, state, logger, display, sessionId, commandMutex, firstLine);
                 } else {
-                    (void)send_all(clientFd, text_response(false, command_output_message(DisplayMode::SERVE, "unsupported negotiated protocol", false)));
+                    (void)send_all(clientFd, text_response(false, command_output_message(
+                                                                      DisplayMode::SERVE,
+                                                                      "unsupported negotiated protocol", false)));
                 }
             }
             reqpack_close_socket(clientFd);

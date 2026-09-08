@@ -17,10 +17,10 @@ namespace {
 constexpr const char* kSilentRuntimeFlag = "__reqpack-internal-silent-runtime";
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -33,7 +33,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -44,7 +44,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("lua bridge host runtime emits logs and transaction events", "[unit][lua_bridge_host_runtime]") {
     TempDir tempDir{"reqpack-lua-host-runtime-events"};
@@ -228,17 +228,13 @@ TEST_CASE("lua bridge host runtime executes exec rules without policy enforcemen
     )");
 
     const std::filesystem::path marker = tempDir.path() / "rules-open.txt";
-    const ExecResult allowed = runtime.executeCommandWithPolicy(
-        "demo",
-        "printf ok > " + marker.string(),
-        rules,
-        true
-    );
+    const ExecResult allowed = runtime.executeCommandWithPolicy("demo", "printf ok > " + marker.string(), rules, true);
     CHECK(allowed.success);
     CHECK(std::filesystem::exists(marker));
 }
 
-TEST_CASE("lua bridge host runtime denies exec rules when policy enforcement fails", "[unit][lua_bridge_host_runtime]") {
+TEST_CASE("lua bridge host runtime denies exec rules when policy enforcement fails",
+          "[unit][lua_bridge_host_runtime]") {
     TempDir tempDir{"reqpack-lua-host-runtime-rules-deny"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;
@@ -265,12 +261,8 @@ TEST_CASE("lua bridge host runtime denies exec rules when policy enforcement fai
         }
     )");
 
-    const ExecResult denied = runtime.executeCommandWithPolicy(
-        "demo",
-        "printf blocked > /tmp/reqpack-rules-deny-test.txt",
-        rules,
-        false
-    );
+    const ExecResult denied =
+        runtime.executeCommandWithPolicy("demo", "printf blocked > /tmp/reqpack-rules-deny-test.txt", rules, false);
     CHECK_FALSE(denied.success);
     CHECK(denied.exitCode == 126);
     CHECK_FALSE(denied.stderrText.empty());
@@ -304,7 +296,8 @@ TEST_CASE("lua bridge host runtime creates temp directories", "[unit][lua_bridge
     runtime.cleanupAfterShutdown();
 }
 
-TEST_CASE("lua bridge host runtime execute delegates to policy-aware command runner", "[unit][lua_bridge_host_runtime]") {
+TEST_CASE("lua bridge host runtime execute delegates to policy-aware command runner",
+          "[unit][lua_bridge_host_runtime]") {
     TempDir tempDir{"reqpack-lua-host-runtime-execute-delegate"};
     ReqPackConfig config;
     Logger& logger = Logger::instance();
@@ -320,7 +313,8 @@ TEST_CASE("lua bridge host runtime execute delegates to policy-aware command run
     CHECK(result.stdoutText == "scope:demo:echo delegated");
 }
 
-TEST_CASE("lua bridge host runtime denies execution silently when policy blocks writes", "[unit][lua_bridge_host_runtime]") {
+TEST_CASE("lua bridge host runtime denies execution silently when policy blocks writes",
+          "[unit][lua_bridge_host_runtime]") {
     TempDir tempDir{"reqpack-lua-host-runtime-silent-deny"};
     ReqPackConfig config;
     config.security.requireThinLayer = true;

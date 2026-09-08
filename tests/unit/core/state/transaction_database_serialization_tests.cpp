@@ -23,7 +23,8 @@ TEST_CASE("transaction database package token and item id are stable", "[unit][t
     CHECK(transaction_database_item_id_for_package(different) != itemId);
 }
 
-TEST_CASE("transaction database escapes and unescapes newline and backslash", "[unit][transaction_database][serialization]") {
+TEST_CASE("transaction database escapes and unescapes newline and backslash",
+          "[unit][transaction_database][serialization]") {
     const std::string raw = std::string("line1\nline2\\path");
     const std::string escaped = transaction_database_escape_field(raw);
 
@@ -31,7 +32,8 @@ TEST_CASE("transaction database escapes and unescapes newline and backslash", "[
     CHECK(transaction_database_unescape_field(escaped) == raw);
 }
 
-TEST_CASE("transaction database run serialization round-trips fields and flags", "[unit][transaction_database][serialization]") {
+TEST_CASE("transaction database run serialization round-trips fields and flags",
+          "[unit][transaction_database][serialization]") {
     TransactionRunRecord run;
     run.id = "run-42";
     run.state = "open\nstate";
@@ -51,13 +53,15 @@ TEST_CASE("transaction database run serialization round-trips fields and flags",
     CHECK(payload.find("state=open\\nstate") != std::string::npos);
 }
 
-TEST_CASE("transaction database run deserializer rejects missing required fields", "[unit][transaction_database][serialization]") {
+TEST_CASE("transaction database run deserializer rejects missing required fields",
+          "[unit][transaction_database][serialization]") {
     CHECK_FALSE(transaction_database_deserialize_run("run-1", "createdAt=1000\nupdatedAt=1001\nflags=\n").has_value());
     CHECK_FALSE(transaction_database_deserialize_run("run-1", "state=open\nupdatedAt=1001\nflags=\n").has_value());
     CHECK_FALSE(transaction_database_deserialize_run("run-1", "state=open\ncreatedAt=1000\nflags=\n").has_value());
 }
 
-TEST_CASE("transaction database item serialization round-trips package payload", "[unit][transaction_database][serialization]") {
+TEST_CASE("transaction database item serialization round-trips package payload",
+          "[unit][transaction_database][serialization]") {
     TransactionItemRecord item;
     item.runId = "run-7";
     item.package.action = ActionType::REMOVE;
@@ -89,38 +93,37 @@ TEST_CASE("transaction database item serialization round-trips package payload",
     CHECK(parsed->errorMessage == item.errorMessage);
 }
 
-TEST_CASE("transaction database item deserializer rejects malformed numeric and boolean fields", "[unit][transaction_database][serialization]") {
+TEST_CASE("transaction database item deserializer rejects malformed numeric and boolean fields",
+          "[unit][transaction_database][serialization]") {
     const std::string key = "item:run-1:item-1";
 
-    CHECK_FALSE(transaction_database_deserialize_item(
-        key,
-        "sequence=oops\naction=1\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n"
-    ).has_value());
+    CHECK_FALSE(transaction_database_deserialize_item(key, "sequence=oops\naction=1\nsystem=dnf\nname=git\nversion="
+                                                           "\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n")
+                    .has_value());
 
-    CHECK_FALSE(transaction_database_deserialize_item(
-        key,
-        "sequence=0\naction=oops\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n"
-    ).has_value());
+    CHECK_FALSE(transaction_database_deserialize_item(key, "sequence=0\naction=oops\nsystem=dnf\nname=git\nversion="
+                                                           "\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n")
+                    .has_value());
 
-    CHECK_FALSE(transaction_database_deserialize_item(
-        key,
-        "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=maybe\nstatus=planned\nerror=\n"
-    ).has_value());
+    CHECK_FALSE(transaction_database_deserialize_item(key, "sequence=0\naction=1\nsystem=dnf\nname=git\nversion="
+                                                           "\nsourcePath=\nlocalTarget=maybe\nstatus=planned\nerror=\n")
+                    .has_value());
 }
 
-TEST_CASE("transaction database item deserializer rejects malformed key and missing required fields", "[unit][transaction_database][serialization]") {
-    CHECK_FALSE(transaction_database_deserialize_item(
-        "broken-key",
-        "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n"
-    ).has_value());
+TEST_CASE("transaction database item deserializer rejects malformed key and missing required fields",
+          "[unit][transaction_database][serialization]") {
+    CHECK_FALSE(
+        transaction_database_deserialize_item("broken-key", "sequence=0\naction=1\nsystem=dnf\nname=git\nversion="
+                                                            "\nsourcePath=\nlocalTarget=0\nstatus=planned\nerror=\n")
+            .has_value());
 
     CHECK_FALSE(transaction_database_deserialize_item(
-        "item:run-1:item-1",
-        "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=0\nerror=\n"
-    ).has_value());
+                    "item:run-1:item-1",
+                    "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nsourcePath=\nlocalTarget=0\nerror=\n")
+                    .has_value());
 
     CHECK_FALSE(transaction_database_deserialize_item(
-        "item:run-1:item-1",
-        "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nlocalTarget=0\nstatus=planned\nerror=\n"
-    ).has_value());
+                    "item:run-1:item-1",
+                    "sequence=0\naction=1\nsystem=dnf\nname=git\nversion=\nlocalTarget=0\nstatus=planned\nerror=\n")
+                    .has_value());
 }

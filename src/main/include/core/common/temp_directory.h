@@ -9,10 +9,8 @@
 #include <unistd.h>
 #endif
 
-inline std::filesystem::path reqpack_make_unique_directory(
-    const std::filesystem::path& parent,
-    const std::string& prefix
-) {
+inline std::filesystem::path reqpack_make_unique_directory(const std::filesystem::path& parent,
+                                                           const std::string& prefix) {
     std::error_code error;
     std::filesystem::create_directories(parent, error);
     if (error) {

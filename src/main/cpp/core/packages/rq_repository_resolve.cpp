@@ -19,18 +19,15 @@ bool is_better_candidate(const RqRepositoryPackage& candidate, const RqRepositor
     return false;
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_repository_internal {
 
-std::optional<RqRepositoryPackage> resolve_package_impl(
-    const std::vector<RqRepositoryIndex>& indexes,
-    const std::string& name,
-    const std::string& version,
-    const std::string& hostArchitecture,
-    const std::set<std::string>& hostSystems,
-    const ReqPackConfig& config
-) {
+std::optional<RqRepositoryPackage> resolve_package_impl(const std::vector<RqRepositoryIndex>& indexes,
+                                                        const std::string& name, const std::string& version,
+                                                        const std::string& hostArchitecture,
+                                                        const std::set<std::string>& hostSystems,
+                                                        const ReqPackConfig& config) {
     std::optional<RqRepositoryPackage> best;
     const auto aliases = rq_merged_system_aliases(config);
 
@@ -57,4 +54,4 @@ std::optional<RqRepositoryPackage> resolve_package_impl(
     return best;
 }
 
-}  // namespace rq_repository_internal
+} // namespace rq_repository_internal

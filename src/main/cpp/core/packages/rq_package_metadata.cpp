@@ -18,12 +18,24 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size());
     for (char ch : value) {
         switch (ch) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default: escaped.push_back(ch); break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(ch);
+            break;
         }
     }
     return escaped;
@@ -107,7 +119,7 @@ std::vector<RqBinaryEntry> load_binaries(const boost::optional<const ptree&>& va
     return result;
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_package_internal {
 
@@ -320,4 +332,4 @@ std::map<std::string, std::string> parse_reqpack_hooks_impl(const std::filesyste
     return hooks;
 }
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal

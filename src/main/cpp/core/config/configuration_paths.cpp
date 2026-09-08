@@ -52,7 +52,7 @@ std::filesystem::path xdg_directory(const char* envName, const std::filesystem::
     return fallback / "reqpack";
 }
 
-}  // namespace
+} // namespace
 
 namespace configuration_internal {
 
@@ -134,9 +134,7 @@ std::string expand_env_reference(const std::string& value) {
         if (name.empty()) {
             return value;
         }
-        if (!std::all_of(name.begin(), name.end(), [](unsigned char c) {
-                return std::isalnum(c) || c == '_';
-            })) {
+        if (!std::all_of(name.begin(), name.end(), [](unsigned char c) { return std::isalnum(c) || c == '_'; })) {
             return value;
         }
     }
@@ -149,7 +147,7 @@ std::string expand_env_reference(const std::string& value) {
     return resolved != nullptr ? std::string(resolved) : std::string{};
 }
 
-}  // namespace configuration_internal
+} // namespace configuration_internal
 
 ReqPackConfig::ReqPackConfig()
     : security(SecurityConfig{
@@ -172,8 +170,8 @@ ReqPackConfig::ReqPackConfig()
           .linkPath = default_reqpack_self_update_link_path().string(),
       }),
       history(HistoryConfig{
-           .historyPath = default_reqpack_history_path().string(),
-       }) {
+          .historyPath = default_reqpack_history_path().string(),
+      }) {
     version = reqpack_build_release_id();
     downloader.userAgent = reqpack_user_agent();
 

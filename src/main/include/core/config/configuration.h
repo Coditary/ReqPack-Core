@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "core/common/build_info.h"
-#include <rqp/security/security_config.h>
 #include <rqp/security/plugin_metadata_provider.h>
+#include <rqp/security/security_config.h>
 
 using RegistryWriteScope = PluginWriteScope;
 using RegistryNetworkScope = PluginNetworkScope;
@@ -29,56 +29,21 @@ using RegistryNetworkScope = PluginNetworkScope;
 #endif
 #endif
 
-enum class LogLevel {
-    TRACE,
-    DEBUG,
-    INFO,
-    WARN,
-    ERROR,
-    CRITICAL
-};
+enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL };
 
-enum class ReportFormat {
-    NONE,
-    JSON,
-    CYCLONEDX
-};
+enum class ReportFormat { NONE, JSON, CYCLONEDX };
 
-enum class SbomOutputFormat {
-    TABLE,
-    JSON,
-    CYCLONEDX_JSON
-};
+enum class SbomOutputFormat { TABLE, JSON, CYCLONEDX_JSON };
 
-enum class AuditOutputFormat {
-    TABLE,
-    JSON,
-    CYCLONEDX_VEX_JSON,
-    SARIF
-};
+enum class AuditOutputFormat { TABLE, JSON, CYCLONEDX_VEX_JSON, SARIF };
 
-enum class DisplayRenderer {
-    PLAIN,
-    COLOR
-};
+enum class DisplayRenderer { PLAIN, COLOR };
 
-enum class ExecutionJobsMode {
-    FIXED,
-    MAX
-};
+enum class ExecutionJobsMode { FIXED, MAX };
 
-enum class RepositoryAuthType {
-    NONE,
-    BASIC,
-    TOKEN,
-    SSH
-};
+enum class RepositoryAuthType { NONE, BASIC, TOKEN, SSH };
 
-enum class RepositoryChecksumPolicy {
-    FAIL,
-    WARN,
-    SKIP
-};
+enum class RepositoryChecksumPolicy { FAIL, WARN, SKIP };
 
 struct LoggingConfig {
     LogLevel level{LogLevel::INFO};
@@ -404,21 +369,16 @@ RegistrySourceMap collect_registry_sources(const ReqPackConfig& config);
 std::vector<RepositoryEntry> repositories_for_ecosystem(const ReqPackConfig& config, const std::string& ecosystem);
 std::optional<ProxyConfig> proxy_config_for_system(const ReqPackConfig& config, const std::string& system);
 
-ReqPackConfig load_config_from_lua(
-    const std::filesystem::path& configPath,
-    const ReqPackConfig& fallback = default_reqpack_config()
-);
+ReqPackConfig load_config_from_lua(const std::filesystem::path& configPath,
+                                   const ReqPackConfig& fallback = default_reqpack_config());
 
 ReqPackConfig apply_config_overrides(const ReqPackConfig& base, const ReqPackConfigOverrides& overrides);
 std::size_t resolved_execution_jobs(const ReqPackConfig& config);
 
 std::string resolve_archive_password(const ReqPackConfig& config);
 
-bool consume_cli_config_flag(
-    const std::vector<std::string>& arguments,
-    std::size_t& index,
-    ReqPackConfigOverrides& overrides
-);
+bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::size_t& index,
+                             ReqPackConfigOverrides& overrides);
 
 ReqPackConfigOverrides extract_cli_config_overrides(const std::vector<std::string>& arguments);
 
@@ -426,102 +386,102 @@ ReqPackConfigOverrides extract_cli_config_overrides(int argc, char* argv[]);
 
 inline std::string to_string(LogLevel level) {
     switch (level) {
-        case LogLevel::TRACE:
-            return "trace";
-        case LogLevel::DEBUG:
-            return "debug";
-        case LogLevel::INFO:
-            return "info";
-        case LogLevel::WARN:
-            return "warn";
-        case LogLevel::ERROR:
-            return "error";
-        case LogLevel::CRITICAL:
-        default:
-            return "critical";
+    case LogLevel::TRACE:
+        return "trace";
+    case LogLevel::DEBUG:
+        return "debug";
+    case LogLevel::INFO:
+        return "info";
+    case LogLevel::WARN:
+        return "warn";
+    case LogLevel::ERROR:
+        return "error";
+    case LogLevel::CRITICAL:
+    default:
+        return "critical";
     }
 }
 
 inline std::string to_string(ReportFormat format) {
     switch (format) {
-        case ReportFormat::JSON:
-            return "json";
-        case ReportFormat::CYCLONEDX:
-            return "cyclonedx";
-        case ReportFormat::NONE:
-        default:
-            return "none";
+    case ReportFormat::JSON:
+        return "json";
+    case ReportFormat::CYCLONEDX:
+        return "cyclonedx";
+    case ReportFormat::NONE:
+    default:
+        return "none";
     }
 }
 
 inline std::string to_string(SbomOutputFormat format) {
     switch (format) {
-        case SbomOutputFormat::JSON:
-            return "json";
-        case SbomOutputFormat::CYCLONEDX_JSON:
-            return "cyclonedx-json";
-        case SbomOutputFormat::TABLE:
-        default:
-            return "table";
+    case SbomOutputFormat::JSON:
+        return "json";
+    case SbomOutputFormat::CYCLONEDX_JSON:
+        return "cyclonedx-json";
+    case SbomOutputFormat::TABLE:
+    default:
+        return "table";
     }
 }
 
 inline std::string to_string(AuditOutputFormat format) {
     switch (format) {
-        case AuditOutputFormat::JSON:
-            return "json";
-        case AuditOutputFormat::CYCLONEDX_VEX_JSON:
-            return "cyclonedx-vex-json";
-        case AuditOutputFormat::SARIF:
-            return "sarif";
-        case AuditOutputFormat::TABLE:
-        default:
-            return "table";
+    case AuditOutputFormat::JSON:
+        return "json";
+    case AuditOutputFormat::CYCLONEDX_VEX_JSON:
+        return "cyclonedx-vex-json";
+    case AuditOutputFormat::SARIF:
+        return "sarif";
+    case AuditOutputFormat::TABLE:
+    default:
+        return "table";
     }
 }
 
 inline std::string to_string(DisplayRenderer renderer) {
     switch (renderer) {
-        case DisplayRenderer::COLOR:
-            return "color";
-        case DisplayRenderer::PLAIN:
-        default:
-            return "plain";
+    case DisplayRenderer::COLOR:
+        return "color";
+    case DisplayRenderer::PLAIN:
+    default:
+        return "plain";
     }
 }
 
 inline std::string to_string(ExecutionJobsMode mode) {
     switch (mode) {
-        case ExecutionJobsMode::MAX:
-            return "max";
-        case ExecutionJobsMode::FIXED:
-        default:
-            return "fixed";
+    case ExecutionJobsMode::MAX:
+        return "max";
+    case ExecutionJobsMode::FIXED:
+    default:
+        return "fixed";
     }
 }
 
 inline std::string to_string(RepositoryAuthType type) {
     switch (type) {
-        case RepositoryAuthType::BASIC:
-            return "basic";
-        case RepositoryAuthType::TOKEN:
-            return "token";
-        case RepositoryAuthType::SSH:
-            return "ssh";
-        case RepositoryAuthType::NONE:
-        default:
-            return "none";
+    case RepositoryAuthType::BASIC:
+        return "basic";
+    case RepositoryAuthType::TOKEN:
+        return "token";
+    case RepositoryAuthType::SSH:
+        return "ssh";
+    case RepositoryAuthType::NONE:
+    default:
+        return "none";
     }
 }
 
 inline std::string to_string(RepositoryChecksumPolicy policy) {
     switch (policy) {
-        case RepositoryChecksumPolicy::FAIL:
-            return "fail";
-        case RepositoryChecksumPolicy::SKIP:
-            return "ignore";
-        case RepositoryChecksumPolicy::WARN:
-        default:
-            return "warn";
+    case RepositoryChecksumPolicy::FAIL:
+        return "fail";
+    case RepositoryChecksumPolicy::SKIP:
+        return "ignore";
+    case RepositoryChecksumPolicy::WARN:
+    default:
+        return "warn";
     }
 }

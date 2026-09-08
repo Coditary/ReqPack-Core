@@ -19,16 +19,13 @@ bool Downloader::download_to_path(const std::string& source, const std::filesyst
     return this->download_to_path(source, targetPath, nullptr, nullptr, nullptr);
 }
 
-bool Downloader::download_to_path(const std::string& source,
-                                  const std::filesystem::path& targetPath,
+bool Downloader::download_to_path(const std::string& source, const std::filesystem::path& targetPath,
                                   DownloadFailureDetails* failureDetails) const {
     return this->download_to_path(source, targetPath, nullptr, nullptr, failureDetails);
 }
 
-bool Downloader::download_to_path(const std::string& source,
-                                  const std::filesystem::path& targetPath,
-                                  DownloadProgressCallback progressCallback,
-                                  void* progressUserData,
+bool Downloader::download_to_path(const std::string& source, const std::filesystem::path& targetPath,
+                                  DownloadProgressCallback progressCallback, void* progressUserData,
                                   DownloadFailureDetails* failureDetails) const {
     const bool remoteSource = downloader_is_remote_source(source);
     downloader_transfer_internal::reset_download_failure(failureDetails, source, remoteSource);
@@ -38,10 +35,9 @@ bool Downloader::download_to_path(const std::string& source,
         std::filesystem::create_directories(targetPath.parent_path(), directoryError);
     }
     if (directoryError) {
-        downloader_transfer_internal::set_download_failure(failureDetails,
-                                                           source,
-                                                           remoteSource,
-                                                           "create_directories failed for '" + targetPath.parent_path().string() + "': " + directoryError.message());
+        downloader_transfer_internal::set_download_failure(
+            failureDetails, source, remoteSource,
+            "create_directories failed for '" + targetPath.parent_path().string() + "': " + directoryError.message());
         return false;
     }
 
@@ -49,10 +45,8 @@ bool Downloader::download_to_path(const std::string& source,
         std::error_code error;
         std::filesystem::copy_file(source, targetPath, std::filesystem::copy_options::overwrite_existing, error);
         if (error) {
-            downloader_transfer_internal::set_download_failure(failureDetails,
-                                                               source,
-                                                               false,
-                                                               "copy_file failed for '" + source + "': " + error.message());
+            downloader_transfer_internal::set_download_failure(
+                failureDetails, source, false, "copy_file failed for '" + source + "': " + error.message());
         }
         return !error;
     }
@@ -61,10 +55,8 @@ bool Downloader::download_to_path(const std::string& source,
 
     FILE* file = std::fopen(tempPath.string().c_str(), "wb");
     if (file == nullptr) {
-        downloader_transfer_internal::set_download_failure(failureDetails,
-                                                           source,
-                                                           true,
-                                                           "fopen failed for '" + tempPath.string() + "': " + std::strerror(errno));
+        downloader_transfer_internal::set_download_failure(
+            failureDetails, source, true, "fopen failed for '" + tempPath.string() + "': " + std::strerror(errno));
         return false;
     }
 
@@ -96,12 +88,7 @@ bool Downloader::download_to_path(const std::string& source,
 
     if (result != CURLE_OK || statusCode >= 400) {
         std::filesystem::remove(tempPath);
-        downloader_transfer_internal::set_download_failure(failureDetails,
-                                                           source,
-                                                           true,
-                                                           {},
-                                                           result,
-                                                           statusCode);
+        downloader_transfer_internal::set_download_failure(failureDetails, source, true, {}, result, statusCode);
         return false;
     }
 
@@ -109,10 +96,8 @@ bool Downloader::download_to_path(const std::string& source,
     std::filesystem::rename(tempPath, targetPath, renameError);
     if (renameError) {
         std::filesystem::remove(tempPath);
-        downloader_transfer_internal::set_download_failure(failureDetails,
-                                                           source,
-                                                           true,
-                                                           "rename failed for '" + tempPath.string() + "': " + renameError.message());
+        downloader_transfer_internal::set_download_failure(
+            failureDetails, source, true, "rename failed for '" + tempPath.string() + "': " + renameError.message());
         return false;
     }
 

@@ -11,7 +11,7 @@ bool is_table(const sol::state& lua, const char* name) {
     return value.valid() && value.get_type() == sol::type::table;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("lua env registers ffi as global and requireable module", "[unit][luaenv][ffi]") {
     sol::state lua;
@@ -58,8 +58,8 @@ TEST_CASE("lua env ffi registration is idempotent", "[unit][luaenv][ffi]") {
 
     ensure_ffi_available(lua);
 
-    const bool sameModule = lua.script(
-        "return reqpack_ffi_before ~= nil and reqpack_ffi_before == package.loaded['ffi']");
+    const bool sameModule =
+        lua.script("return reqpack_ffi_before ~= nil and reqpack_ffi_before == package.loaded['ffi']");
     CHECK(sameModule);
 }
 

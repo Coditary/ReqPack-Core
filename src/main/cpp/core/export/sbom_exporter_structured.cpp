@@ -13,9 +13,8 @@
 namespace sbom_exporter_internal {
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -47,7 +46,7 @@ std::string package_display_name(const Package& package) {
     return package.name;
 }
 
-}  // namespace sbom_exporter_internal
+} // namespace sbom_exporter_internal
 
 namespace {
 
@@ -56,14 +55,24 @@ std::string json_escape(const std::string& value) {
     escaped.reserve(value.size() + 8);
     for (unsigned char c : value) {
         switch (c) {
-            case '\\': escaped += "\\\\"; break;
-            case '"': escaped += "\\\""; break;
-            case '\n': escaped += "\\n"; break;
-            case '\r': escaped += "\\r"; break;
-            case '\t': escaped += "\\t"; break;
-            default:
-                escaped.push_back(static_cast<char>(c));
-                break;
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            escaped.push_back(static_cast<char>(c));
+            break;
         }
     }
     return escaped;
@@ -107,7 +116,7 @@ std::string purl_for(const Package& package, PluginMetadataProvider* metadataPro
     return purl;
 }
 
-}  // namespace
+} // namespace
 
 std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) const {
     std::ostringstream stream;
@@ -122,8 +131,10 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
             const Package& package = graph[vertices[index]];
             stream << "    {\n";
             stream << "      \"type\": \"library\",\n";
-            stream << "      \"bom-ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package)) << "\",\n";
-            stream << "      \"name\": \"" << json_escape(sbom_exporter_internal::package_display_name(package)) << "\"";
+            stream << "      \"bom-ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package))
+                   << "\",\n";
+            stream << "      \"name\": \"" << json_escape(sbom_exporter_internal::package_display_name(package))
+                   << "\"";
             if (!package.version.empty()) {
                 stream << ",\n      \"version\": \"" << json_escape(package.version) << "\"";
             }
@@ -136,7 +147,8 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
             stream << ",\n      \"properties\": [\n";
             stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << json_escape(package.system) << "\"}";
             if (!package.sourcePath.empty()) {
-                stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << json_escape(package.sourcePath) << "\"}";
+                stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \""
+                       << json_escape(package.sourcePath) << "\"}";
             }
             if (package.localTarget) {
                 stream << ",\n        {\"name\": \"reqpack:localTarget\", \"value\": \"true\"}";
@@ -160,7 +172,8 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
                 }
                 firstDependency = false;
                 stream << "    {\n";
-                stream << "      \"ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package)) << "\",\n";
+                stream << "      \"ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package))
+                       << "\",\n";
                 stream << "      \"dependsOn\": [";
                 auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
                 bool firstEdge = true;
@@ -188,7 +201,8 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
         stream << "    {\n";
         stream << "      \"system\": \"" << json_escape(package.system) << "\",\n";
         stream << "      \"name\": \"" << json_escape(package.name) << "\",\n";
-        stream << "      \"displayName\": \"" << json_escape(sbom_exporter_internal::package_display_name(package)) << "\",\n";
+        stream << "      \"displayName\": \"" << json_escape(sbom_exporter_internal::package_display_name(package))
+               << "\",\n";
         stream << "      \"version\": \"" << json_escape(package.version) << "\",\n";
         stream << "      \"sourcePath\": \"" << json_escape(package.sourcePath) << "\",\n";
         stream << "      \"localTarget\": " << (package.localTarget ? "true" : "false") << "\n";

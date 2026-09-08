@@ -15,9 +15,8 @@ struct ShellCommandInspection {
 };
 
 bool is_all_digits(const std::string& value) {
-    return !value.empty() && std::all_of(value.begin(), value.end(), [](unsigned char c) {
-        return std::isdigit(c) != 0;
-    });
+    return !value.empty() &&
+           std::all_of(value.begin(), value.end(), [](unsigned char c) { return std::isdigit(c) != 0; });
 }
 
 bool is_command_boundary_token(const std::string& token) {
@@ -139,13 +138,15 @@ std::vector<std::string> tokenize_shell_command(const std::string& command) {
     return tokens;
 }
 
-void collect_write_targets_from_command_words(const std::vector<std::string>& words, ShellCommandInspection& inspection) {
+void collect_write_targets_from_command_words(const std::vector<std::string>& words,
+                                              ShellCommandInspection& inspection) {
     if (words.empty()) {
         return;
     }
 
     std::size_t commandIndex = 0;
-    while (commandIndex < words.size() && words[commandIndex].find('=') != std::string::npos && words[commandIndex].find('/') == std::string::npos) {
+    while (commandIndex < words.size() && words[commandIndex].find('=') != std::string::npos &&
+           words[commandIndex].find('/') == std::string::npos) {
         ++commandIndex;
     }
     if (commandIndex >= words.size()) {
@@ -155,8 +156,9 @@ void collect_write_targets_from_command_words(const std::vector<std::string>& wo
     std::string commandName = command_basename(words[commandIndex]);
     if (commandName == "env") {
         std::size_t nextIndex = commandIndex + 1;
-        while (nextIndex < words.size() && (is_option_token(words[nextIndex]) ||
-                                            (words[nextIndex].find('=') != std::string::npos && words[nextIndex].find('/') == std::string::npos))) {
+        while (nextIndex < words.size() &&
+               (is_option_token(words[nextIndex]) ||
+                (words[nextIndex].find('=') != std::string::npos && words[nextIndex].find('/') == std::string::npos))) {
             ++nextIndex;
         }
         if (nextIndex >= words.size()) {
@@ -273,13 +275,11 @@ bool path_has_prefix(const std::filesystem::path& path, const std::filesystem::p
 }
 
 bool is_safe_redirection_sink(const std::filesystem::path& path) {
-    return path == std::filesystem::path("/dev/null") ||
-           path == std::filesystem::path("/dev/stdout") ||
+    return path == std::filesystem::path("/dev/null") || path == std::filesystem::path("/dev/stdout") ||
            path == std::filesystem::path("/dev/stderr");
 }
 
-bool write_scope_allows_path(const PluginWriteScope& scope,
-                             const std::filesystem::path& targetPath,
+bool write_scope_allows_path(const PluginWriteScope& scope, const std::filesystem::path& targetPath,
                              const std::filesystem::path& pluginDirectory) {
     const std::string kind = LuaBridgeValueMapper::toLowerCopy(scope.kind);
     if (kind == "read-only") {
@@ -317,43 +317,37 @@ bool write_scope_allows_path(const PluginWriteScope& scope,
 
     if (kind == "system-package-paths") {
         static const std::array<std::filesystem::path, 6> bases{
-            std::filesystem::path("/usr"),
-            std::filesystem::path("/usr/local"),
-            std::filesystem::path("/opt"),
-            std::filesystem::path("/etc"),
-            std::filesystem::path("/var/lib"),
-            std::filesystem::path("/var/cache"),
+            std::filesystem::path("/usr"), std::filesystem::path("/usr/local"), std::filesystem::path("/opt"),
+            std::filesystem::path("/etc"), std::filesystem::path("/var/lib"),   std::filesystem::path("/var/cache"),
         };
-        return std::any_of(bases.begin(), bases.end(), [&](const std::filesystem::path& base) {
-            return path_has_prefix(targetPath, base);
-        });
+        return std::any_of(bases.begin(), bases.end(),
+                           [&](const std::filesystem::path& base) { return path_has_prefix(targetPath, base); });
     }
 
     return false;
 }
 
-bool any_write_scope_allows_path(const std::vector<PluginWriteScope>& scopes,
-                                 const std::filesystem::path& targetPath,
+bool any_write_scope_allows_path(const std::vector<PluginWriteScope>& scopes, const std::filesystem::path& targetPath,
                                  const std::filesystem::path& pluginDirectory) {
     return std::any_of(scopes.begin(), scopes.end(), [&](const PluginWriteScope& scope) {
         return write_scope_allows_path(scope, targetPath, pluginDirectory);
     });
 }
 
-}  // namespace
+} // namespace
 
-std::optional<std::string> LuaBridgeExecutionPolicy::validate(const PluginSecurityMetadata& metadata,
-                                                              const std::string& pluginId,
-                                                              const std::string& pluginDirectory,
-                                                              const std::string& command,
-                                                              const std::vector<std::filesystem::path>& runtimeWriteRoots) {
+std::optional<std::string>
+LuaBridgeExecutionPolicy::validate(const PluginSecurityMetadata& metadata, const std::string& pluginId,
+                                   const std::string& pluginDirectory, const std::string& command,
+                                   const std::vector<std::filesystem::path>& runtimeWriteRoots) {
     if (std::find(metadata.capabilities.begin(), metadata.capabilities.end(), "exec") == metadata.capabilities.end()) {
         return "execution policy denied for plugin '" + pluginId + "': shell command requires capability 'exec'.";
     }
 
     const ShellCommandInspection inspection = inspect_shell_command(command);
     if (inspection.requestsPrivilege && metadata.privilegeLevel != "sudo") {
-        return "execution policy denied for plugin '" + pluginId + "': command requests privilege escalation but privilegeLevel is '" + metadata.privilegeLevel + "'.";
+        return "execution policy denied for plugin '" + pluginId +
+               "': command requests privilege escalation but privilegeLevel is '" + metadata.privilegeLevel + "'.";
     }
 
     const std::filesystem::path workingDirectory = current_working_directory_or(std::filesystem::path(pluginDirectory));
@@ -364,14 +358,16 @@ std::optional<std::string> LuaBridgeExecutionPolicy::validate(const PluginSecuri
             continue;
         }
 
-        if (std::any_of(runtimeWriteRoots.begin(), runtimeWriteRoots.end(), [&](const std::filesystem::path& allowedRoot) {
-                return path_has_prefix(targetPath, allowedRoot.lexically_normal());
-            })) {
+        if (std::any_of(runtimeWriteRoots.begin(), runtimeWriteRoots.end(),
+                        [&](const std::filesystem::path& allowedRoot) {
+                            return path_has_prefix(targetPath, allowedRoot.lexically_normal());
+                        })) {
             continue;
         }
 
         if (!any_write_scope_allows_path(metadata.writeScopes, targetPath, normalizedPluginDirectory)) {
-            return "execution policy denied for plugin '" + pluginId + "': command writes outside declared writeScopes ('" + rawTarget + "').";
+            return "execution policy denied for plugin '" + pluginId +
+                   "': command writes outside declared writeScopes ('" + rawTarget + "').";
         }
     }
 

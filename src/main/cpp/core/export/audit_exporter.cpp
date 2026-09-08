@@ -12,7 +12,7 @@ bool request_has_flag(const Request& request, const std::string& name) {
     return std::find(request.flags.begin(), request.flags.end(), name) != request.flags.end();
 }
 
-}  // namespace
+} // namespace
 
 AuditExporter::AuditExporter(PluginMetadataProvider* metadataProvider, const ReqPackConfig& config)
     : config(config), metadataProvider(metadataProvider) {}
@@ -41,22 +41,19 @@ std::string AuditExporter::resolveOutputPath(const Request& request) const {
     return request.outputPath;
 }
 
-std::string AuditExporter::renderGraph(const Graph& graph, const std::vector<ValidationFinding>& findings, const Request& request) const {
+std::string AuditExporter::renderGraph(const Graph& graph, const std::vector<ValidationFinding>& findings,
+                                       const Request& request) const {
     switch (resolveFormat(request)) {
-        case AuditOutputFormat::JSON:
-            return renderJson(graph, findings);
-        case AuditOutputFormat::CYCLONEDX_VEX_JSON:
-            return renderCycloneDxVex(graph, findings);
-        case AuditOutputFormat::SARIF:
-            return renderSarif(graph, findings);
-        case AuditOutputFormat::TABLE:
-        default:
-            return renderTable(
-                graph,
-                findings,
-                request.outputPath.empty() && audit_exporter_internal::table_colors_enabled(),
-                request_has_flag(request, "no-wrap"),
-                request_has_flag(request, "wide")
-            );
+    case AuditOutputFormat::JSON:
+        return renderJson(graph, findings);
+    case AuditOutputFormat::CYCLONEDX_VEX_JSON:
+        return renderCycloneDxVex(graph, findings);
+    case AuditOutputFormat::SARIF:
+        return renderSarif(graph, findings);
+    case AuditOutputFormat::TABLE:
+    default:
+        return renderTable(graph, findings,
+                           request.outputPath.empty() && audit_exporter_internal::table_colors_enabled(),
+                           request_has_flag(request, "no-wrap"), request_has_flag(request, "wide"));
     }
 }

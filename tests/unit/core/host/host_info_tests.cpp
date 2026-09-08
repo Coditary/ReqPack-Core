@@ -11,10 +11,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -27,7 +27,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -84,7 +84,7 @@ HostInfoSnapshot sample_snapshot() {
     return snapshot;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("host info normalizes common architecture aliases", "[unit][host_info][normalize]") {
     CHECK(normalize_host_architecture("AMD64") == "x86_64");
@@ -118,7 +118,8 @@ TEST_CASE("host info resolves cache path under reqpack cache root", "[unit][host
     TempDir tempDir{"reqpack-host-info-path"};
     ScopedEnvVar cacheHome{"XDG_CACHE_HOME", (tempDir.path() / "cache-root").string()};
 
-    CHECK(default_reqpack_host_info_cache_path() == tempDir.path() / "cache-root" / "reqpack" / "host" / "info.v1.json");
+    CHECK(default_reqpack_host_info_cache_path() ==
+          tempDir.path() / "cache-root" / "reqpack" / "host" / "info.v1.json");
 }
 
 TEST_CASE("host info cache file roundtrips snapshot", "[unit][host_info][cache]") {

@@ -13,10 +13,12 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(static_cast<long long>(std::filesystem::file_time_type::clock::now().time_since_epoch().count())))) {
+                (prefix + "-" +
+                 std::to_string(static_cast<long long>(
+                     std::filesystem::file_time_type::clock::now().time_since_epoch().count())))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -29,7 +31,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -47,15 +49,20 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 
 void write_plugin_bundle(const std::filesystem::path& pluginRoot, const std::string& pluginName) {
     const std::filesystem::path pluginDirectory = pluginRoot / pluginName;
-    write_file(pluginDirectory / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + pluginName + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"" + pluginName + " plugin\",\n"
-        "  \"description\": \"" + pluginName + " plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"" +
+                                                      pluginName +
+                                                      "\",\n"
+                                                      "  \"version\": \"1.0.0\",\n"
+                                                      "  \"summary\": \"" +
+                                                      pluginName +
+                                                      " plugin\",\n"
+                                                      "  \"description\": \"" +
+                                                      pluginName +
+                                                      " plugin bundle\",\n"
+                                                      "  \"license\": \"MIT\"\n"
+                                                      "}\n");
     write_file(pluginDirectory / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(pluginDirectory / "run.lua", R"(
 plugin = {}
@@ -86,7 +93,7 @@ void write_test_plugin_bundles(const std::filesystem::path& pluginRoot) {
     write_plugin_bundle(pluginRoot, "sys");
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("configuration applies CLI overrides and expands path fields", "[unit][configuration][cli]") {
     ReqPackConfig base;
@@ -188,15 +195,14 @@ TEST_CASE("cli update --all discovers only installed plugins", "[unit][configura
     config.registry.sources["maven"].source = "git+https://github.com/Matographo/maven.git?ref=main";
 
     std::filesystem::create_directories(pluginDirectory / "dnf" / "scripts");
-    write_file(pluginDirectory / "dnf" / "metadata.json",
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"dnf\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"summary\": \"dnf plugin\",\n"
-        "  \"description\": \"dnf plugin bundle\",\n"
-        "  \"license\": \"MIT\"\n"
-        "}\n");
+    write_file(pluginDirectory / "dnf" / "metadata.json", "{\n"
+                                                          "  \"formatVersion\": 1,\n"
+                                                          "  \"name\": \"dnf\",\n"
+                                                          "  \"version\": \"1.0.0\",\n"
+                                                          "  \"summary\": \"dnf plugin\",\n"
+                                                          "  \"description\": \"dnf plugin bundle\",\n"
+                                                          "  \"license\": \"MIT\"\n"
+                                                          "}\n");
     write_file(pluginDirectory / "dnf" / "reqpack.lua", "return { apiVersion = 1, depends = {} }\n");
     write_file(pluginDirectory / "dnf" / "run.lua", "return {}\n");
     write_file(pluginDirectory / "dnf" / "scripts" / "install.lua", "return true\n");
@@ -209,7 +215,8 @@ TEST_CASE("cli update --all discovers only installed plugins", "[unit][configura
     CHECK(requests[0].system == "dnf");
     CHECK(requests[0].action == ActionType::UPDATE);
     CHECK(requests[0].flags.end() != std::find(requests[0].flags.begin(), requests[0].flags.end(), "all"));
-    CHECK(requests[0].flags.end() != std::find(requests[0].flags.begin(), requests[0].flags.end(), "__reqpack-internal-plugin-refresh-all"));
+    CHECK(requests[0].flags.end() !=
+          std::find(requests[0].flags.begin(), requests[0].flags.end(), "__reqpack-internal-plugin-refresh-all"));
 }
 
 TEST_CASE("cli update --all orders installed plugins by plugin dependencies", "[unit][configuration][cli]") {
@@ -228,15 +235,20 @@ TEST_CASE("cli update --all orders installed plugins by plugin dependencies", "[
             manifest += "  ";
         }
         manifest += "}\n}\n";
-        write_file(pluginPath / "metadata.json",
-            "{\n"
-            "  \"formatVersion\": 1,\n"
-            "  \"name\": \"" + name + "\",\n"
-            "  \"version\": \"1.0.0\",\n"
-            "  \"summary\": \"" + name + " plugin\",\n"
-            "  \"description\": \"" + name + " plugin bundle\",\n"
-            "  \"license\": \"MIT\"\n"
-            "}\n");
+        write_file(pluginPath / "metadata.json", "{\n"
+                                                 "  \"formatVersion\": 1,\n"
+                                                 "  \"name\": \"" +
+                                                     name +
+                                                     "\",\n"
+                                                     "  \"version\": \"1.0.0\",\n"
+                                                     "  \"summary\": \"" +
+                                                     name +
+                                                     " plugin\",\n"
+                                                     "  \"description\": \"" +
+                                                     name +
+                                                     " plugin bundle\",\n"
+                                                     "  \"license\": \"MIT\"\n"
+                                                     "}\n");
         write_file(pluginPath / "reqpack.lua", manifest);
         write_file(pluginPath / "run.lua", "return {}\n");
         write_file(pluginPath / "scripts" / "install.lua", "return true\n");
@@ -539,10 +551,7 @@ TEST_CASE("configuration extracts multiple CLI overrides in one pass", "[unit][c
         argv.push_back(argument.data());
     }
 
-    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(
-        static_cast<int>(argv.size()),
-        argv.data()
-    );
+    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(static_cast<int>(argv.size()), argv.data());
 
     REQUIRE(overrides.dryRun.has_value());
     CHECK(overrides.dryRun.value());
@@ -580,7 +589,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     config.registry.databasePath = (tempDir.path() / "registry-db").string();
 
     SECTION("token vector install parse") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "dnf", "curl", "git"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "git"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "dnf");
@@ -604,7 +614,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("sys install keeps logical package names that match known systems") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "sys", "java", "maven"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "sys", "java", "maven"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "sys");
@@ -612,7 +623,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("sys install still allows explicit scoped system switches") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "sys", "java", "rqp:tool@1.2.3"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "sys", "java", "rqp:tool@1.2.3"}, config);
         REQUIRE(requests.size() == 2);
         CHECK(requests[0].action == ActionType::INSTALL);
         CHECK(requests[0].system == "sys");
@@ -631,7 +643,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("token vector strips proxy define flags from request payload") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "java", "artifact", "-Dproxy.java.default=gradle"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "java", "artifact", "-Dproxy.java.default=gradle"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().system == "java");
         CHECK(requests.front().packages == std::vector<std::string>{"artifact"});
@@ -639,27 +652,31 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("install accepts jobs flags without forwarding them to plugins") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().packages == std::vector<std::string>{"curl"});
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("install accepts jobs max without forwarding it to plugins") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs-max"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "dnf", "curl", "--jobs-max"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().packages == std::vector<std::string>{"curl"});
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("conflicting jobs flags fail in config override extraction layer") {
-        const ReqPackConfigOverrides overrides = extract_cli_config_overrides(std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3", "--jobs-max"});
+        const ReqPackConfigOverrides overrides = extract_cli_config_overrides(
+            std::vector<std::string>{"install", "dnf", "curl", "--jobs", "3", "--jobs-max"});
         REQUIRE(overrides.errorMessage.has_value());
         CHECK(overrides.errorMessage.value() == "cannot combine --jobs with --jobs-max");
     }
 
     SECTION("local regular file before system resolution becomes local target") {
-        const std::filesystem::path tempRoot = std::filesystem::temp_directory_path() / "reqpack-cli-local-target-test.rqp";
+        const std::filesystem::path tempRoot =
+            std::filesystem::temp_directory_path() / "reqpack-cli-local-target-test.rqp";
         {
             std::ofstream output(tempRoot, std::ios::binary);
             REQUIRE(output.is_open());
@@ -678,14 +695,16 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("explicit rqp with local file keeps rqp system") {
-        const std::filesystem::path tempRoot = std::filesystem::temp_directory_path() / "reqpack-cli-local-rqp-test.rqp";
+        const std::filesystem::path tempRoot =
+            std::filesystem::temp_directory_path() / "reqpack-cli-local-rqp-test.rqp";
         {
             std::ofstream output(tempRoot, std::ios::binary);
             REQUIRE(output.is_open());
             output << "rqp";
         }
 
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"install", "rqp", tempRoot.string()}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"install", "rqp", tempRoot.string()}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::INSTALL);
         CHECK(requests.front().system == "rqp");
@@ -697,10 +716,10 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("pack builtin parses project path output payload and force") {
-        const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"pack", "./demo", "--output", "./dist/demo.rqp", "--payload-dir", "./rootfs", "--force"},
-            config
-        );
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"pack", "./demo", "--output", "./dist/demo.rqp", "--payload-dir",
+                                               "./rootfs", "--force"},
+                      config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
         CHECK(requests.front().system.empty());
@@ -712,10 +731,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("pack builtin defaults project path to current directory") {
-        const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"pack", "--output", "./dist/demo.rqp", "--force"},
-            config
-        );
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"pack", "--output", "./dist/demo.rqp", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
         CHECK(requests.front().system.empty());
@@ -728,9 +745,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
     SECTION("pack plugin parses known system and project path") {
         const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"pack", "dnf", "./project", "--output", "./dist/demo.pkg", "--force"},
-            config
-        );
+            std::vector<std::string>{"pack", "dnf", "./project", "--output", "./dist/demo.pkg", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::PACK);
         CHECK(requests.front().system == "dnf");
@@ -742,7 +757,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("pack rejects ambiguous two argument form when first token is not known system") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"pack", "unknown-system", "./project"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"pack", "unknown-system", "./project"}, config);
         CHECK(requests.empty());
         CHECK(cli.parseFailed());
     }
@@ -810,12 +826,14 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
             CHECK(request.system != "rqp");
             CHECK(request.packages.empty());
             CHECK(std::find(request.flags.begin(), request.flags.end(), "all") != request.flags.end());
-            CHECK(std::find(request.flags.begin(), request.flags.end(), "__reqpack-internal-plugin-refresh-all") != request.flags.end());
+            CHECK(std::find(request.flags.begin(), request.flags.end(), "__reqpack-internal-plugin-refresh-all") !=
+                  request.flags.end());
         }
     }
 
     SECTION("update all emits expand request before plugin materialization") {
-        const std::filesystem::path tempRoot = std::filesystem::temp_directory_path() / "reqpack-cli-update-all-config-sources";
+        const std::filesystem::path tempRoot =
+            std::filesystem::temp_directory_path() / "reqpack-cli-update-all-config-sources";
         std::error_code error;
         std::filesystem::remove_all(tempRoot, error);
         std::filesystem::create_directories(tempRoot / "plugins");
@@ -830,9 +848,12 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().system.empty());
         CHECK(requests.front().action == ActionType::UPDATE);
-        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") != requests.front().flags.end());
-        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "__reqpack-internal-plugin-refresh-all") != requests.front().flags.end());
-        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "__reqpack-internal-update-all-expand") != requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(),
+                        "__reqpack-internal-plugin-refresh-all") != requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(),
+                        "__reqpack-internal-update-all-expand") != requests.front().flags.end());
 
         std::filesystem::remove_all(tempRoot, error);
     }
@@ -868,8 +889,10 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
         CHECK(requests.front().packages.empty());
-        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "dry-run") == requests.front().flags.end());
-        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") != requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "dry-run") ==
+              requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
     }
 
     SECTION("update sys pip stays explicit wrapper request") {
@@ -881,7 +904,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit infers sarif format from output path") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--output", "report.sarif"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--output", "report.sarif"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().outputPath == "report.sarif");
@@ -889,25 +913,29 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit preserves table layout flags") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--wide", "--no-wrap"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--wide", "--no-wrap"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().flags == std::vector<std::string>{"wide", "no-wrap"});
     }
 
     SECTION("sbom preserves table layout flags") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--wide", "--no-wrap"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--wide", "--no-wrap"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().flags == std::vector<std::string>{"wide", "no-wrap"});
     }
 
     SECTION("sbom skips missing packages via config flag without forwarding it to plugins") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--sbom-skip-missing-packages"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"sbom", "dnf", "curl", "--sbom-skip-missing-packages"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().flags.empty());
     }
 
     SECTION("snapshot preserves output path and force flag") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"snapshot", "--output", "reqpack.lua", "--force"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"snapshot", "--output", "reqpack.lua", "--force"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::SNAPSHOT);
         CHECK(requests.front().outputPath == "reqpack.lua");
@@ -923,7 +951,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit rejects invalid format") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--format", "xml"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"audit", "dnf", "curl", "--format", "xml"}, config);
         CHECK(requests.empty());
         CHECK(cli.parseFailed());
     }
@@ -935,10 +964,12 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         {
             std::ofstream output(manifestPath);
             REQUIRE(output.is_open());
-            output << "return { packages = { { system = 'dnf', name = 'curl' }, { system = 'npm', name = 'react', version = '18.3.1' } } }\n";
+            output << "return { packages = { { system = 'dnf', name = 'curl' }, { system = 'npm', name = 'react', "
+                      "version = '18.3.1' } } }\n";
         }
 
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"audit", manifestPath.string()}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"audit", manifestPath.string()}, config);
         REQUIRE(requests.size() == 2);
         CHECK(requests[0].action == ActionType::AUDIT);
         CHECK(requests[1].action == ActionType::AUDIT);
@@ -948,7 +979,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit manifest input preserves output format and path before manifest") {
-        const std::filesystem::path manifestDir = std::filesystem::temp_directory_path() / "reqpack-cli-audit-manifest-output-before";
+        const std::filesystem::path manifestDir =
+            std::filesystem::temp_directory_path() / "reqpack-cli-audit-manifest-output-before";
         std::filesystem::create_directories(manifestDir);
         const std::filesystem::path manifestPath = manifestDir / "reqpack.lua";
         {
@@ -959,8 +991,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
         const std::vector<Request> requests = cli.parse(
             std::vector<std::string>{"audit", "--format", "json", "--output", "report.json", manifestPath.string()},
-            config
-        );
+            config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().system == "dnf");
@@ -973,7 +1004,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("audit manifest input infers output format from path after manifest") {
-        const std::filesystem::path manifestDir = std::filesystem::temp_directory_path() / "reqpack-cli-audit-manifest-output-after";
+        const std::filesystem::path manifestDir =
+            std::filesystem::temp_directory_path() / "reqpack-cli-audit-manifest-output-after";
         std::filesystem::create_directories(manifestDir);
         const std::filesystem::path manifestPath = manifestDir / "reqpack.lua";
         {
@@ -982,10 +1014,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
             output << "return { packages = { { system = 'dnf', name = 'curl' } } }\n";
         }
 
-        const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"audit", manifestPath.string(), "--output", "report.sarif"},
-            config
-        );
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"audit", manifestPath.string(), "--output", "report.sarif"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::AUDIT);
         CHECK(requests.front().outputPath == "report.sarif");
@@ -996,15 +1026,16 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("search parses repeated arch and type filters") {
-        const std::vector<Request> requests = cli.parse(
-            std::vector<std::string>{"search", "dnf", "python3", "--arch", "noarch", "--arch", "x86_64", "--type", "doc", "--type", "devel"},
-            config
-        );
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"search", "dnf", "python3", "--arch", "noarch", "--arch", "x86_64",
+                                               "--type", "doc", "--type", "devel"},
+                      config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::SEARCH);
         CHECK(requests.front().system == "dnf");
         CHECK(requests.front().packages == std::vector<std::string>{"python3"});
-        CHECK(requests.front().flags == std::vector<std::string>{"arch=noarch", "arch=x86_64", "type=doc", "type=devel"});
+        CHECK(requests.front().flags ==
+              std::vector<std::string>{"arch=noarch", "arch=x86_64", "type=doc", "type=devel"});
     }
 
     SECTION("search rejects missing filter values") {
@@ -1016,9 +1047,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
     SECTION("list and outdated parse repeated arch and type filters") {
         const std::vector<Request> listed = cli.parse(
-            std::vector<std::string>{"list", "dnf", "--arch", "noarch", "--type", "doc", "--type", "devel"},
-            config
-        );
+            std::vector<std::string>{"list", "dnf", "--arch", "noarch", "--type", "doc", "--type", "devel"}, config);
         REQUIRE(listed.size() == 1);
         CHECK(listed.front().action == ActionType::LIST);
         CHECK(listed.front().system == "dnf");
@@ -1026,8 +1055,7 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
 
         const std::vector<Request> outdated = cli.parse(
             std::vector<std::string>{"outdated", "dnf", "--arch", "x86_64", "--arch", "noarch", "--type", "doc"},
-            config
-        );
+            config);
         REQUIRE(outdated.size() == 1);
         CHECK(outdated.front().action == ActionType::OUTDATED);
         CHECK(outdated.front().system == "dnf");
@@ -1051,7 +1079,8 @@ TEST_CASE("cli recognizes remote command and prints dedicated help", "[unit][cli
     ReqPackConfig config = default_reqpack_config();
 
     SECTION("remote command does not produce orchestrator requests") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string>{"remote", "dev", "list", "apply"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string>{"remote", "dev", "list", "apply"}, config);
         CHECK(requests.empty());
     }
 
@@ -1155,10 +1184,7 @@ TEST_CASE("configuration consumes extended security and execution CLI flags", "[
         argv.push_back(argument.data());
     }
 
-    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(
-        static_cast<int>(argv.size()),
-        argv.data()
-    );
+    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(static_cast<int>(argv.size()), argv.data());
 
     REQUIRE(overrides.securityEnabled.has_value());
     CHECK(overrides.securityEnabled.value());
@@ -1204,26 +1230,16 @@ TEST_CASE("configuration consumes extended security and execution CLI flags", "[
 
 TEST_CASE("configuration consumes logging and unsafe abort CLI flags", "[unit][configuration][cli]") {
     std::vector<std::string> arguments{
-        "ReqPack",
-        "--log-console",
-        "--log-pattern",
-        "[%l] %v",
-        "--backtrace",
-        "--no-security",
-        "--abort-on-unsafe",
-        "--prompt-on-unresolved-version",
-        "--report-format",
-        "cyclonedx",
+        "ReqPack",         "--log-console", "--log-pattern",     "[%l] %v",
+        "--backtrace",     "--no-security", "--abort-on-unsafe", "--prompt-on-unresolved-version",
+        "--report-format", "cyclonedx",
     };
     std::vector<char*> argv;
     for (std::string& argument : arguments) {
         argv.push_back(argument.data());
     }
 
-    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(
-        static_cast<int>(argv.size()),
-        argv.data()
-    );
+    const ReqPackConfigOverrides overrides = extract_cli_config_overrides(static_cast<int>(argv.size()), argv.data());
 
     CHECK(overrides.consoleOutput.value());
     REQUIRE(overrides.logPattern.has_value());

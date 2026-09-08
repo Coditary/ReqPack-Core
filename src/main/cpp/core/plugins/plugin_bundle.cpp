@@ -16,9 +16,8 @@ namespace {
 using boost::property_tree::ptree;
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -103,8 +102,8 @@ std::optional<PluginBundleMetadata> parse_metadata_json(const std::filesystem::p
     metadata.homepage = trim_copy(tree.get<std::string>("homepage", {}));
     metadata.tags = load_string_array(tree.get_child_optional("tags"));
 
-    if (metadata.formatVersion != 1 || metadata.name.empty() || metadata.version.empty() ||
-        metadata.summary.empty() || metadata.description.empty() || metadata.license.empty()) {
+    if (metadata.formatVersion != 1 || metadata.name.empty() || metadata.version.empty() || metadata.summary.empty() ||
+        metadata.description.empty() || metadata.license.empty()) {
         return std::nullopt;
     }
 
@@ -197,7 +196,7 @@ std::optional<Package> parse_dependency_spec(const std::string& spec) {
     return dependency;
 }
 
-}  // namespace
+} // namespace
 
 std::optional<PluginBundleProbe> plugin_bundle_probe_directory(const std::filesystem::path& directory) {
     std::error_code error;
@@ -267,7 +266,8 @@ std::optional<PluginBundleLayout> plugin_bundle_read_directory(const std::filesy
     return layout;
 }
 
-std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem::path& basePath, const std::string& expectedPluginId) {
+std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem::path& basePath,
+                                                          const std::string& expectedPluginId) {
     std::vector<std::filesystem::path> candidates;
     if (!expectedPluginId.empty()) {
         const std::string normalized = to_lower_copy(expectedPluginId);
@@ -296,21 +296,24 @@ std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem:
     return std::nullopt;
 }
 
-std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConfig& config, const std::string& pluginId) {
+std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConfig& config,
+                                                               const std::string& pluginId) {
     const std::string normalized = to_lower_copy(pluginId);
     if (normalized.empty()) {
         return std::nullopt;
     }
 
     const std::filesystem::path configuredPath = std::filesystem::path(config.registry.pluginDirectory) / normalized;
-    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(configuredPath); layout.has_value()) {
+    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(configuredPath);
+        layout.has_value()) {
         return layout;
     }
 
     std::error_code error;
     const std::filesystem::path workspacePath = std::filesystem::current_path(error) / "plugins" / normalized;
     if (!error && workspacePath != configuredPath) {
-        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(workspacePath); layout.has_value()) {
+        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(workspacePath);
+            layout.has_value()) {
             return layout;
         }
     }

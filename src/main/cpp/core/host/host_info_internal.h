@@ -13,4 +13,4 @@ std::optional<std::string> optional_trimmed(const std::string& value);
 std::int64_t current_epoch_seconds();
 HostInfoSnapshot collect_live_snapshot(const std::string& refreshReason);
 
-}  // namespace host_info_internal
+} // namespace host_info_internal

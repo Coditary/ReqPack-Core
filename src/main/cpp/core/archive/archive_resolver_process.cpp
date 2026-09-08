@@ -24,8 +24,8 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <windows.h>
 #include <io.h>
+#include <windows.h>
 #else
 #include <fcntl.h>
 #include <sys/wait.h>
@@ -51,7 +51,7 @@ int normalize_exit_code(const int status) {
 #endif
 
 class TerminalEchoGuard {
-public:
+  public:
     explicit TerminalEchoGuard(const int fd) : fd_(fd) {
 #if defined(_WIN32)
         if (fd_ < 0 || !_isatty(fd_)) {
@@ -103,7 +103,7 @@ public:
         return active_;
     }
 
-private:
+  private:
     int fd_{-1};
 #if defined(_WIN32)
     DWORD originalMode_{0};
@@ -114,8 +114,8 @@ private:
 };
 
 bool output_contains(const archive_resolver_internal::CommandResult& result, const std::string& token) {
-    return archive_resolver_internal::to_lower_copy(result.output).find(archive_resolver_internal::to_lower_copy(token)) !=
-           std::string::npos;
+    return archive_resolver_internal::to_lower_copy(result.output)
+               .find(archive_resolver_internal::to_lower_copy(token)) != std::string::npos;
 }
 
 std::vector<std::string> parse_seven_zip_entries(const std::string& content) {
@@ -146,14 +146,13 @@ std::vector<std::string> parse_seven_zip_entries(const std::string& content) {
     return entries;
 }
 
-}  // namespace
+} // namespace
 
 namespace archive_resolver_internal {
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -171,11 +170,9 @@ std::string single_file_archive_output_name(const std::filesystem::path& archive
     return outputName.empty() ? "payload" : outputName;
 }
 
-std::filesystem::path single_file_archive_output_path(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const std::string& suffix
-) {
+std::filesystem::path single_file_archive_output_path(const std::filesystem::path& archivePath,
+                                                      const std::filesystem::path& outputDirectory,
+                                                      const std::string& suffix) {
     return outputDirectory / single_file_archive_output_name(archivePath, suffix);
 }
 
@@ -183,7 +180,8 @@ std::filesystem::path make_unique_directory(const std::filesystem::path& root, c
     return reqpack_make_unique_directory(root, prefix);
 }
 
-std::filesystem::path make_unique_file_path(const std::filesystem::path& root, const std::string& stem, const std::string& suffix) {
+std::filesystem::path make_unique_file_path(const std::filesystem::path& root, const std::string& stem,
+                                            const std::string& suffix) {
     const std::filesystem::path tempDirectory = make_unique_directory(root, stem);
     std::filesystem::path filename = stem;
     if (!suffix.empty()) {
@@ -353,7 +351,8 @@ bool zip_has_invalid_password(const CommandResult& result) {
 }
 
 bool seven_zip_password_error(const CommandResult& result) {
-    return output_contains(result, "cannot open encrypted archive. wrong password?") || output_contains(result, "headers error");
+    return output_contains(result, "cannot open encrypted archive. wrong password?") ||
+           output_contains(result, "headers error");
 }
 
 bool gpg_password_error(const CommandResult& result) {
@@ -396,11 +395,8 @@ std::string invalid_archive_password_message(const std::filesystem::path& path) 
     return "invalid archive password: " + path.string();
 }
 
-std::string zip_extract_command(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const std::string& password
-) {
+std::string zip_extract_command(const std::filesystem::path& archivePath, const std::filesystem::path& outputDirectory,
+                                const std::string& password) {
     std::string command = "unzip -o ";
     if (!password.empty()) {
         command += "-P " + escape_shell_arg(password) + " ";
@@ -413,27 +409,19 @@ std::string seven_zip_password_flag(const std::string& password) {
     return std::string("-p") + escape_shell_arg(password);
 }
 
-std::string seven_zip_extract_command(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const std::string& password
-) {
+std::string seven_zip_extract_command(const std::filesystem::path& archivePath,
+                                      const std::filesystem::path& outputDirectory, const std::string& password) {
     return "7z x -y " + seven_zip_password_flag(password) + " -o" + escape_shell_arg(outputDirectory.string()) + " " +
            escape_shell_arg(archivePath.string());
 }
 
-std::vector<std::string> seven_zip_entries(
-    const std::filesystem::path& archivePath,
-    std::string password,
-    const bool interactive,
-    const std::filesystem::path& promptPath
-) {
+std::vector<std::string> seven_zip_entries(const std::filesystem::path& archivePath, std::string password,
+                                           const bool interactive, const std::filesystem::path& promptPath) {
     bool canPrompt = interactive;
 
     while (true) {
-        const CommandResult result = run_command_capture_status(
-            "7z l -slt " + seven_zip_password_flag(password) + " " + escape_shell_arg(archivePath.string())
-        );
+        const CommandResult result = run_command_capture_status("7z l -slt " + seven_zip_password_flag(password) + " " +
+                                                                escape_shell_arg(archivePath.string()));
         if (result.exitCode == 0) {
             return parse_seven_zip_entries(result.output);
         }
@@ -455,17 +443,16 @@ std::vector<std::string> seven_zip_entries(
     }
 }
 
-void extract_zip_archive_to_directory(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const ArchiveExtractionOptions& options,
-    const std::filesystem::path& promptPath
-) {
+void extract_zip_archive_to_directory(const std::filesystem::path& archivePath,
+                                      const std::filesystem::path& outputDirectory,
+                                      const ArchiveExtractionOptions& options,
+                                      const std::filesystem::path& promptPath) {
     std::string password = options.password;
     bool canPrompt = options.interactive;
 
     while (true) {
-        const CommandResult result = run_command_capture_status(zip_extract_command(archivePath, outputDirectory, password));
+        const CommandResult result =
+            run_command_capture_status(zip_extract_command(archivePath, outputDirectory, password));
         if (result.exitCode == 0) {
             return;
         }
@@ -491,17 +478,16 @@ void extract_zip_archive_to_directory(
     }
 }
 
-void extract_seven_zip_archive_to_directory(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const ArchiveExtractionOptions& options,
-    const std::filesystem::path& promptPath
-) {
+void extract_seven_zip_archive_to_directory(const std::filesystem::path& archivePath,
+                                            const std::filesystem::path& outputDirectory,
+                                            const ArchiveExtractionOptions& options,
+                                            const std::filesystem::path& promptPath) {
     std::string password = options.password;
     bool canPrompt = options.interactive;
 
     while (true) {
-        const CommandResult result = run_command_capture_status(seven_zip_extract_command(archivePath, outputDirectory, password));
+        const CommandResult result =
+            run_command_capture_status(seven_zip_extract_command(archivePath, outputDirectory, password));
         if (result.exitCode == 0) {
             return;
         }
@@ -523,4 +509,4 @@ void extract_seven_zip_archive_to_directory(
     }
 }
 
-}  // namespace archive_resolver_internal
+} // namespace archive_resolver_internal

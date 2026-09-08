@@ -63,12 +63,9 @@ std::vector<std::string> zip_archive_entries(const std::filesystem::path& archiv
     throw std::runtime_error("failed to inspect archive");
 }
 
-std::vector<std::string> archive_entries(
-    const std::filesystem::path& archivePath,
-    const std::string& suffix,
-    const ArchiveExtractionOptions& options,
-    const std::filesystem::path& promptPath
-) {
+std::vector<std::string> archive_entries(const std::filesystem::path& archivePath, const std::string& suffix,
+                                         const ArchiveExtractionOptions& options,
+                                         const std::filesystem::path& promptPath) {
     if (suffix == ".zip") {
         return zip_archive_entries(archivePath);
     }
@@ -78,7 +75,8 @@ std::vector<std::string> archive_entries(
     if (is_single_file_archive_suffix(suffix)) {
         return {single_file_archive_output_name(archivePath, suffix)};
     }
-    return split_lines(run_command_capture("tar -tf " + archive_resolver_internal::escape_shell_arg(archivePath.string())));
+    return split_lines(
+        run_command_capture("tar -tf " + archive_resolver_internal::escape_shell_arg(archivePath.string())));
 }
 
 void validate_archive_entries(const std::vector<std::string>& entries) {
@@ -106,8 +104,7 @@ void verify_extracted_tree(const std::filesystem::path& root) {
 
     bool hasEntries = false;
     for (auto it = std::filesystem::recursive_directory_iterator(root, error);
-         it != std::filesystem::recursive_directory_iterator();
-         it.increment(error)) {
+         it != std::filesystem::recursive_directory_iterator(); it.increment(error)) {
         if (error) {
             throw std::runtime_error("failed to inspect extracted archive");
         }
@@ -125,12 +122,10 @@ void verify_extracted_tree(const std::filesystem::path& root) {
     }
 }
 
-void extract_archive_layer_to_directory(
-    const std::filesystem::path& archivePath,
-    const std::filesystem::path& outputDirectory,
-    const ArchiveExtractionOptions& options,
-    const std::filesystem::path& promptPath
-) {
+void extract_archive_layer_to_directory(const std::filesystem::path& archivePath,
+                                        const std::filesystem::path& outputDirectory,
+                                        const ArchiveExtractionOptions& options,
+                                        const std::filesystem::path& promptPath) {
     const std::string suffix = generic_archive_suffix(archivePath);
     if (suffix.empty()) {
         return;
@@ -140,8 +135,8 @@ void extract_archive_layer_to_directory(
 
     const std::string archive = archive_resolver_internal::escape_shell_arg(archivePath.string());
     const std::string output = archive_resolver_internal::escape_shell_arg(outputDirectory.string());
-    const std::string singleFileOutput =
-        archive_resolver_internal::escape_shell_arg(single_file_archive_output_path(archivePath, outputDirectory, suffix).string());
+    const std::string singleFileOutput = archive_resolver_internal::escape_shell_arg(
+        single_file_archive_output_path(archivePath, outputDirectory, suffix).string());
     if (suffix == ".zip") {
         extract_zip_archive_to_directory(archivePath, outputDirectory, options, promptPath);
     } else if (suffix == ".7z") {
@@ -170,31 +165,25 @@ void extract_archive_layer_to_directory(
     verify_extracted_tree(outputDirectory);
 }
 
-}  // namespace
+} // namespace
 
 namespace archive_resolver_internal {
 
-std::filesystem::path decrypt_wrapper_to_temp_file(
-    const std::filesystem::path& inputPath,
-    const ArchiveExtractionOptions& options,
-    const std::filesystem::path& promptPath,
-    std::vector<std::filesystem::path>& cleanupPaths,
-    const std::filesystem::path& workingRoot
-) {
+std::filesystem::path decrypt_wrapper_to_temp_file(const std::filesystem::path& inputPath,
+                                                   const ArchiveExtractionOptions& options,
+                                                   const std::filesystem::path& promptPath,
+                                                   std::vector<std::filesystem::path>& cleanupPaths,
+                                                   const std::filesystem::path& workingRoot) {
     std::string password = options.password;
     bool canPrompt = options.interactive;
-    const std::filesystem::path outputPath = make_unique_file_path(
-        workingRoot,
-        "decrypt",
-        gpg_output_suffix(inputPath)
-    );
+    const std::filesystem::path outputPath =
+        make_unique_file_path(workingRoot, "decrypt", gpg_output_suffix(inputPath));
     cleanupPaths.push_back(outputPath.parent_path());
 
     while (true) {
         const CommandResult result = run_command_capture_status(
             "gpg --batch --yes --pinentry-mode loopback --passphrase " + escape_shell_arg(password) + " -o " +
-            escape_shell_arg(outputPath.string()) + " -d " + escape_shell_arg(inputPath.string())
-        );
+            escape_shell_arg(outputPath.string()) + " -d " + escape_shell_arg(inputPath.string()));
         if (result.exitCode == 0) {
             return outputPath;
         }
@@ -216,12 +205,10 @@ std::filesystem::path decrypt_wrapper_to_temp_file(
     }
 }
 
-ProcessedArchivePath process_archive_layers(
-    const std::filesystem::path& inputPath,
-    const ArchiveExtractionOptions& options,
-    std::vector<std::filesystem::path>& cleanupPaths,
-    const std::filesystem::path& workingRoot
-) {
+ProcessedArchivePath process_archive_layers(const std::filesystem::path& inputPath,
+                                            const ArchiveExtractionOptions& options,
+                                            std::vector<std::filesystem::path>& cleanupPaths,
+                                            const std::filesystem::path& workingRoot) {
     ProcessedArchivePath result{.path = inputPath};
     std::filesystem::path currentPath = inputPath;
     const std::filesystem::path promptPath = inputPath;
@@ -250,11 +237,11 @@ ProcessedArchivePath process_archive_layers(
             throw;
         }
         result.path = is_single_file_archive_suffix(archiveSuffix)
-            ? single_file_archive_output_path(currentPath, outputDirectory, archiveSuffix)
-            : outputDirectory;
+                          ? single_file_archive_output_path(currentPath, outputDirectory, archiveSuffix)
+                          : outputDirectory;
         result.changed = true;
         return result;
     }
 }
 
-}  // namespace archive_resolver_internal
+} // namespace archive_resolver_internal

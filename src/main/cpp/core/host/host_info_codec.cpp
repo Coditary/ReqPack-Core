@@ -185,7 +185,8 @@ std::optional<HostGpuInfo> gpu_from_ptree(const ptree& tree) {
     gpu.model = optional_tree_string(tree, "model");
     gpu.driverVersion = optional_tree_string(tree, "driverVersion");
     gpu.backend = optional_tree_string(tree, "backend");
-    if (!gpu.vendor.has_value() && !gpu.model.has_value() && !gpu.driverVersion.has_value() && !gpu.backend.has_value()) {
+    if (!gpu.vendor.has_value() && !gpu.model.has_value() && !gpu.driverVersion.has_value() &&
+        !gpu.backend.has_value()) {
         return std::nullopt;
     }
     return gpu;
@@ -296,7 +297,8 @@ std::map<std::string, std::string> parse_key_value_lines(const std::string& cont
 
         std::string key = trim_copy(trimmed.substr(0, pos));
         std::string value = trim_copy(trimmed.substr(pos + 1));
-        if (value.size() >= 2 && ((value.front() == '"' && value.back() == '"') || (value.front() == '\'' && value.back() == '\''))) {
+        if (value.size() >= 2 &&
+            ((value.front() == '"' && value.back() == '"') || (value.front() == '\'' && value.back() == '\''))) {
             value = value.substr(1, value.size() - 2);
         }
         if (!key.empty()) {
@@ -306,7 +308,7 @@ std::map<std::string, std::string> parse_key_value_lines(const std::string& cont
     return values;
 }
 
-}  // namespace
+} // namespace
 
 std::string normalize_host_architecture(const std::string& value) {
     const std::string normalized = to_lower_copy(trim_copy(value));
@@ -316,7 +318,8 @@ std::string normalize_host_architecture(const std::string& value) {
     if (normalized == "aarch64" || normalized == "arm64") {
         return "aarch64";
     }
-    if (normalized == "x86" || normalized == "i386" || normalized == "i486" || normalized == "i586" || normalized == "i686") {
+    if (normalized == "x86" || normalized == "i386" || normalized == "i486" || normalized == "i586" ||
+        normalized == "i686") {
         return "x86";
     }
     if (normalized == "armv7l" || normalized == "armv7") {

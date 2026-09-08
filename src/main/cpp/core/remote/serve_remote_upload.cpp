@@ -40,16 +40,13 @@ std::string sanitize_upload_filename(std::string filename) {
     return filename;
 }
 
-ScopedPathCleanup::ScopedPathCleanup(std::filesystem::path path)
-    : path_(std::move(path)) {
-}
+ScopedPathCleanup::ScopedPathCleanup(std::filesystem::path path) : path_(std::move(path)) {}
 
 ScopedPathCleanup::~ScopedPathCleanup() {
     reset();
 }
 
-ScopedPathCleanup::ScopedPathCleanup(ScopedPathCleanup&& other) noexcept
-    : path_(std::move(other.path_)) {
+ScopedPathCleanup::ScopedPathCleanup(ScopedPathCleanup&& other) noexcept : path_(std::move(other.path_)) {
     other.path_.clear();
 }
 

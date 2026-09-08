@@ -13,10 +13,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -29,12 +29,12 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
 class ScopedCurrentPath {
-public:
+  public:
     explicit ScopedCurrentPath(const std::filesystem::path& target) : original_(std::filesystem::current_path()) {
         std::filesystem::current_path(target);
     }
@@ -44,7 +44,7 @@ public:
         std::filesystem::current_path(original_, error);
     }
 
-private:
+  private:
     std::filesystem::path original_;
 };
 
@@ -55,13 +55,10 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-std::filesystem::path build_rqp_package(
-    const std::filesystem::path& root,
-    const std::string& name,
-    const std::string& installLua,
-    const std::optional<std::pair<std::string, std::string>>& payloadFile,
-    const std::optional<std::string>& overrideHash = std::nullopt
-) {
+std::filesystem::path build_rqp_package(const std::filesystem::path& root, const std::string& name,
+                                        const std::string& installLua,
+                                        const std::optional<std::pair<std::string, std::string>>& payloadFile,
+                                        const std::optional<std::string>& overrideHash = std::nullopt) {
     const std::filesystem::path packageRoot = root / (name + "-pkg");
     const std::filesystem::path payloadRoot = packageRoot / "payload-tree";
     const std::filesystem::path controlRoot = packageRoot / "control";
@@ -73,11 +70,15 @@ std::filesystem::path build_rqp_package(
         write_file(payloadRoot / payloadFile->first, payloadFile->second);
         const std::string payloadTar = (controlRoot / "payload" / "payload.tar").string();
         const std::string payloadTarZst = (controlRoot / "payload" / "payload.tar.zst").string();
-        REQUIRE(std::system(("tar -C " + escape_shell_arg(payloadRoot.string()) + " -cf " + escape_shell_arg(payloadTar) + " .").c_str()) == 0);
-        REQUIRE(std::system(("zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst)).c_str()) == 0);
+        REQUIRE(std::system(
+                    ("tar -C " + escape_shell_arg(payloadRoot.string()) + " -cf " + escape_shell_arg(payloadTar) + " .")
+                        .c_str()) == 0);
+        REQUIRE(std::system(("zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst))
+                                .c_str()) == 0);
         std::string hash = overrideHash.value_or("");
         if (!overrideHash.has_value()) {
-            const std::string hashOutput = run_command_capture("openssl dgst -sha256 " + escape_shell_arg(payloadTarZst));
+            const std::string hashOutput =
+                run_command_capture("openssl dgst -sha256 " + escape_shell_arg(payloadTarZst));
             const std::size_t pos = hashOutput.rfind(' ');
             REQUIRE(pos != std::string::npos);
             hash = hashOutput.substr(pos + 1, 64);
@@ -85,46 +86,53 @@ std::filesystem::path build_rqp_package(
         write_file(controlRoot / "hashes" / "payload.sha256", hash + "  payload/payload.tar.zst\n");
     }
 
-    const std::string metadata = payloadFile.has_value()
-        ? "{\n"
-          "  \"formatVersion\": 1,\n"
-          "  \"name\": \"" + name + "\",\n"
-          "  \"version\": \"1.0.0\",\n"
-          "  \"release\": 1,\n"
-          "  \"revision\": 0,\n"
-          "  \"summary\": \"test package\",\n"
-          "  \"description\": \"reader test package\",\n"
-          "  \"license\": \"MIT\",\n"
-          "  \"architecture\": \"noarch\",\n"
-          "  \"vendor\": \"ReqPack Tests\",\n"
-          "  \"maintainerEmail\": \"tests@example.org\",\n"
-          "  \"tags\": [\"test\"],\n"
-          "  \"url\": \"https://example.test/" + name + ".rqp\",\n"
-          "  \"payload\": {\n"
-          "    \"path\": \"payload/payload.tar.zst\",\n"
-          "    \"archive\": \"tar\",\n"
-          "    \"compression\": \"zstd\",\n"
-          "    \"hashAlgorithm\": \"sha256\",\n"
-          "    \"hashFile\": \"hashes/payload.sha256\",\n"
-          "    \"sizeCompressed\": 0,\n"
-          "    \"sizeInstalledExpected\": 0\n"
-          "  }\n"
-          "}\n"
-        : "{\n"
-          "  \"formatVersion\": 1,\n"
-          "  \"name\": \"" + name + "\",\n"
-          "  \"version\": \"1.0.0\",\n"
-          "  \"release\": 1,\n"
-          "  \"revision\": 0,\n"
-          "  \"summary\": \"test package\",\n"
-          "  \"description\": \"reader test package\",\n"
-          "  \"license\": \"MIT\",\n"
-          "  \"architecture\": \"noarch\",\n"
-          "  \"vendor\": \"ReqPack Tests\",\n"
-          "  \"maintainerEmail\": \"tests@example.org\",\n"
-          "  \"tags\": [\"test\"],\n"
-          "  \"url\": \"https://example.test/" + name + ".rqp\"\n"
-          "}\n";
+    const std::string metadata = payloadFile.has_value() ? "{\n"
+                                                           "  \"formatVersion\": 1,\n"
+                                                           "  \"name\": \"" +
+                                                               name +
+                                                               "\",\n"
+                                                               "  \"version\": \"1.0.0\",\n"
+                                                               "  \"release\": 1,\n"
+                                                               "  \"revision\": 0,\n"
+                                                               "  \"summary\": \"test package\",\n"
+                                                               "  \"description\": \"reader test package\",\n"
+                                                               "  \"license\": \"MIT\",\n"
+                                                               "  \"architecture\": \"noarch\",\n"
+                                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                               "  \"tags\": [\"test\"],\n"
+                                                               "  \"url\": \"https://example.test/" +
+                                                               name +
+                                                               ".rqp\",\n"
+                                                               "  \"payload\": {\n"
+                                                               "    \"path\": \"payload/payload.tar.zst\",\n"
+                                                               "    \"archive\": \"tar\",\n"
+                                                               "    \"compression\": \"zstd\",\n"
+                                                               "    \"hashAlgorithm\": \"sha256\",\n"
+                                                               "    \"hashFile\": \"hashes/payload.sha256\",\n"
+                                                               "    \"sizeCompressed\": 0,\n"
+                                                               "    \"sizeInstalledExpected\": 0\n"
+                                                               "  }\n"
+                                                               "}\n"
+                                                         : "{\n"
+                                                           "  \"formatVersion\": 1,\n"
+                                                           "  \"name\": \"" +
+                                                               name +
+                                                               "\",\n"
+                                                               "  \"version\": \"1.0.0\",\n"
+                                                               "  \"release\": 1,\n"
+                                                               "  \"revision\": 0,\n"
+                                                               "  \"summary\": \"test package\",\n"
+                                                               "  \"description\": \"reader test package\",\n"
+                                                               "  \"license\": \"MIT\",\n"
+                                                               "  \"architecture\": \"noarch\",\n"
+                                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                               "  \"tags\": [\"test\"],\n"
+                                                               "  \"url\": \"https://example.test/" +
+                                                               name +
+                                                               ".rqp\"\n"
+                                                               "}\n";
 
     write_file(controlRoot / "metadata.json", metadata);
     write_file(controlRoot / "reqpack.lua", R"(
@@ -138,24 +146,28 @@ return {
     write_file(controlRoot / "scripts" / "install.lua", installLua);
 
     const std::filesystem::path packagePath = root / (name + ".rqp");
-    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " + escape_shell_arg(packagePath.string()) + " .").c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " +
+                         escape_shell_arg(packagePath.string()) + " .")
+                            .c_str()) == 0);
     return packagePath;
 }
 
 std::string base_metadata_json(const std::string& name, const std::optional<std::string>& payloadBlock = std::nullopt) {
-    std::string metadata =
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"" + name + "\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"test package\",\n"
-        "  \"description\": \"reader test package\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/" + name + ".rqp\"";
+    std::string metadata = "{\n"
+                           "  \"formatVersion\": 1,\n"
+                           "  \"name\": \"" +
+                           name +
+                           "\",\n"
+                           "  \"version\": \"1.0.0\",\n"
+                           "  \"release\": 1,\n"
+                           "  \"revision\": 0,\n"
+                           "  \"summary\": \"test package\",\n"
+                           "  \"description\": \"reader test package\",\n"
+                           "  \"license\": \"MIT\",\n"
+                           "  \"vendor\": \"ReqPack Tests\",\n"
+                           "  \"maintainerEmail\": \"tests@example.org\",\n"
+                           "  \"url\": \"https://example.test/" +
+                           name + ".rqp\"";
     if (payloadBlock.has_value()) {
         metadata += ",\n  \"payload\": " + payloadBlock.value();
     }
@@ -177,30 +189,26 @@ return {
 }
 
 std::string payload_block_json() {
-    return
-        "{\n"
-        "    \"path\": \"payload/payload.tar.zst\",\n"
-        "    \"archive\": \"tar\",\n"
-        "    \"compression\": \"zstd\",\n"
-        "    \"hashAlgorithm\": \"sha256\",\n"
-        "    \"hashFile\": \"hashes/payload.sha256\",\n"
-        "    \"sizeCompressed\": 0,\n"
-        "    \"sizeInstalledExpected\": 0\n"
-        "  }";
+    return "{\n"
+           "    \"path\": \"payload/payload.tar.zst\",\n"
+           "    \"archive\": \"tar\",\n"
+           "    \"compression\": \"zstd\",\n"
+           "    \"hashAlgorithm\": \"sha256\",\n"
+           "    \"hashFile\": \"hashes/payload.sha256\",\n"
+           "    \"sizeCompressed\": 0,\n"
+           "    \"sizeInstalledExpected\": 0\n"
+           "  }";
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("rqp package reader loads valid rqp and extracts payload", "[unit][rq_package][core]") {
     TempDir tempDir{"reqpack-rqp-reader-valid"};
     const std::filesystem::path packagePath = build_rqp_package(
-        tempDir.path(),
-        "valid",
-        "return true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello"))
-    );
+        tempDir.path(), "valid", "return true\n", std::make_pair(std::string("payload.txt"), std::string("hello")));
 
-    const RqPackageLayout layout = RqPackageReader::load(packagePath, tempDir.path() / "work", tempDir.path() / "state");
+    const RqPackageLayout layout =
+        RqPackageReader::load(packagePath, tempDir.path() / "work", tempDir.path() / "state");
 
     CHECK(layout.metadata.name == "valid");
     CHECK(layout.identity == "valid@1.0.0-1+r0");
@@ -210,77 +218,65 @@ TEST_CASE("rqp package reader loads valid rqp and extracts payload", "[unit][rq_
 
 TEST_CASE("rqp package reader rejects payload hash mismatch", "[unit][rq_package][core]") {
     TempDir tempDir{"reqpack-rqp-reader-bad-hash"};
-    const std::filesystem::path packagePath = build_rqp_package(
-        tempDir.path(),
-        "bad-hash",
-        "return true\n",
-        std::make_pair(std::string("payload.txt"), std::string("hello")),
-        std::string(64, 'a')
-    );
+    const std::filesystem::path packagePath =
+        build_rqp_package(tempDir.path(), "bad-hash", "return true\n",
+                          std::make_pair(std::string("payload.txt"), std::string("hello")), std::string(64, 'a'));
 
-    REQUIRE_THROWS_WITH(
-        RqPackageReader::load(packagePath, tempDir.path() / "work", tempDir.path() / "state"),
-        Catch::Matchers::Contains("payload sha256 mismatch")
-    );
+    REQUIRE_THROWS_WITH(RqPackageReader::load(packagePath, tempDir.path() / "work", tempDir.path() / "state"),
+                        Catch::Matchers::Contains("payload sha256 mismatch"));
 }
 
 TEST_CASE("rqp metadata parser normalizes missing architecture and system", "[unit][rq_package][core]") {
-    const RqMetadata metadata = rq_parse_metadata_json(
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"portable\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"portable\",\n"
-        "  \"description\": \"portable\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/portable.rqp\"\n"
-        "}\n"
-    );
+    const RqMetadata metadata = rq_parse_metadata_json("{\n"
+                                                       "  \"formatVersion\": 1,\n"
+                                                       "  \"name\": \"portable\",\n"
+                                                       "  \"version\": \"1.0.0\",\n"
+                                                       "  \"release\": 1,\n"
+                                                       "  \"revision\": 0,\n"
+                                                       "  \"summary\": \"portable\",\n"
+                                                       "  \"description\": \"portable\",\n"
+                                                       "  \"license\": \"MIT\",\n"
+                                                       "  \"vendor\": \"ReqPack Tests\",\n"
+                                                       "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                       "  \"url\": \"https://example.test/portable.rqp\"\n"
+                                                       "}\n");
 
     CHECK(metadata.architecture == "noarch");
     CHECK(metadata.systems == std::vector<std::string>{"nosys"});
 }
 
 TEST_CASE("rqp metadata parser accepts system string and array", "[unit][rq_package][core]") {
-    const RqMetadata stringMetadata = rq_parse_metadata_json(
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"debian-tool\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"tool\",\n"
-        "  \"description\": \"tool\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"\",\n"
-        "  \"system\": \"Debian\",\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/debian-tool.rqp\"\n"
-        "}\n"
-    );
+    const RqMetadata stringMetadata = rq_parse_metadata_json("{\n"
+                                                             "  \"formatVersion\": 1,\n"
+                                                             "  \"name\": \"debian-tool\",\n"
+                                                             "  \"version\": \"1.0.0\",\n"
+                                                             "  \"release\": 1,\n"
+                                                             "  \"revision\": 0,\n"
+                                                             "  \"summary\": \"tool\",\n"
+                                                             "  \"description\": \"tool\",\n"
+                                                             "  \"license\": \"MIT\",\n"
+                                                             "  \"architecture\": \"\",\n"
+                                                             "  \"system\": \"Debian\",\n"
+                                                             "  \"vendor\": \"ReqPack Tests\",\n"
+                                                             "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                             "  \"url\": \"https://example.test/debian-tool.rqp\"\n"
+                                                             "}\n");
 
-    const RqMetadata arrayMetadata = rq_parse_metadata_json(
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"multi-tool\",\n"
-        "  \"version\": \"1.0.0\",\n"
-        "  \"release\": 1,\n"
-        "  \"revision\": 0,\n"
-        "  \"summary\": \"tool\",\n"
-        "  \"description\": \"tool\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"noarch\",\n"
-        "  \"system\": [\"ubuntu\", \"linux\", \"Ubuntu\"],\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"url\": \"https://example.test/multi-tool.rqp\"\n"
-        "}\n"
-    );
+    const RqMetadata arrayMetadata = rq_parse_metadata_json("{\n"
+                                                            "  \"formatVersion\": 1,\n"
+                                                            "  \"name\": \"multi-tool\",\n"
+                                                            "  \"version\": \"1.0.0\",\n"
+                                                            "  \"release\": 1,\n"
+                                                            "  \"revision\": 0,\n"
+                                                            "  \"summary\": \"tool\",\n"
+                                                            "  \"description\": \"tool\",\n"
+                                                            "  \"license\": \"MIT\",\n"
+                                                            "  \"architecture\": \"noarch\",\n"
+                                                            "  \"system\": [\"ubuntu\", \"linux\", \"Ubuntu\"],\n"
+                                                            "  \"vendor\": \"ReqPack Tests\",\n"
+                                                            "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                            "  \"url\": \"https://example.test/multi-tool.rqp\"\n"
+                                                            "}\n");
 
     CHECK(stringMetadata.systems == std::vector<std::string>{"debian"});
     CHECK(stringMetadata.architecture == "noarch");
@@ -312,7 +308,8 @@ TEST_CASE("rqp package builder builds control only package", "[unit][rq_package]
     CHECK_FALSE(result.hasPayload);
     CHECK(std::filesystem::exists(result.outputPath));
 
-    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work", tempDir.path() / "state", default_reqpack_config(), false);
+    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work",
+                                                         tempDir.path() / "state", default_reqpack_config(), false);
     CHECK(layout.metadata.name == "control-only");
     CHECK_FALSE(layout.hasPayload);
 }
@@ -367,7 +364,8 @@ TEST_CASE("rqp package builder builds payload from payload tree", "[unit][rq_pac
     CHECK(result.metadata.payload->path == "payload/payload.tar.zst");
     CHECK(result.metadata.payload->hashFile == "hashes/payload.sha256");
 
-    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work", tempDir.path() / "state", default_reqpack_config(), false);
+    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work",
+                                                         tempDir.path() / "state", default_reqpack_config(), false);
     CHECK(layout.hasPayload);
     CHECK(std::filesystem::exists(layout.payloadDir / "bin" / "demo.txt"));
 }
@@ -388,7 +386,8 @@ TEST_CASE("rqp package builder accepts external payload dir", "[unit][rq_package
     });
 
     CHECK(result.hasPayload);
-    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work", tempDir.path() / "state", default_reqpack_config(), false);
+    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work",
+                                                         tempDir.path() / "state", default_reqpack_config(), false);
     CHECK(std::filesystem::exists(layout.payloadDir / "etc" / "demo.conf"));
 }
 
@@ -402,8 +401,12 @@ TEST_CASE("rqp package builder rebuilds validated prebuilt payload", "[unit][rq_
 
     const std::string payloadTar = (tempDir.path() / "payload.tar").string();
     const std::string payloadTarZst = (projectRoot / "payload" / "payload.tar.zst").string();
-    REQUIRE(std::system(("tar -C " + escape_shell_arg((projectRoot / "payload-tree").string()) + " -cf " + escape_shell_arg(payloadTar) + " .").c_str()) == 0);
-    REQUIRE(std::system(("zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst)).c_str()) == 0);
+    REQUIRE(std::system(("tar -C " + escape_shell_arg((projectRoot / "payload-tree").string()) + " -cf " +
+                         escape_shell_arg(payloadTar) + " .")
+                            .c_str()) == 0);
+    REQUIRE(std::system(
+                ("zstd -q -f " + escape_shell_arg(payloadTar) + " -o " + escape_shell_arg(payloadTarZst)).c_str()) ==
+            0);
     const std::string hashOutput = run_command_capture("openssl dgst -sha256 " + escape_shell_arg(payloadTarZst));
     const std::size_t pos = hashOutput.rfind(' ');
     REQUIRE(pos != std::string::npos);
@@ -419,7 +422,8 @@ TEST_CASE("rqp package builder rebuilds validated prebuilt payload", "[unit][rq_
     });
 
     CHECK(result.hasPayload);
-    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work", tempDir.path() / "state", default_reqpack_config(), false);
+    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work",
+                                                         tempDir.path() / "state", default_reqpack_config(), false);
     CHECK(std::filesystem::exists(layout.payloadDir / "demo.txt"));
 }
 
@@ -431,37 +435,34 @@ TEST_CASE("rqp package builder rejects ambiguous payload sources", "[unit][rq_pa
     std::filesystem::create_directories(projectRoot / "payload");
     std::filesystem::create_directories(projectRoot / "hashes");
 
-    REQUIRE_THROWS_WITH(
-        rq_build_package({
-            .projectRoot = projectRoot,
-            .outputPath = tempDir.path() / "ambiguous-demo.rqp",
-            .force = true,
-            .interactive = false,
-        }),
-        Catch::Matchers::Contains("payload-tree/")
-    );
+    REQUIRE_THROWS_WITH(rq_build_package({
+                            .projectRoot = projectRoot,
+                            .outputPath = tempDir.path() / "ambiguous-demo.rqp",
+                            .force = true,
+                            .interactive = false,
+                        }),
+                        Catch::Matchers::Contains("payload-tree/"));
 }
 
 TEST_CASE("rqp package builder skips host compatibility during self validation", "[unit][rq_package][core]") {
     TempDir tempDir{"reqpack-rqp-pack-cross-target"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "cross-target");
-    write_file(projectRoot / "metadata.json",
-               "{\n"
-               "  \"formatVersion\": 1,\n"
-               "  \"name\": \"cross-target\",\n"
-               "  \"version\": \"1.0.0\",\n"
-               "  \"release\": 1,\n"
-               "  \"revision\": 0,\n"
-               "  \"summary\": \"test\",\n"
-               "  \"description\": \"test\",\n"
-               "  \"license\": \"MIT\",\n"
-               "  \"architecture\": \"mips64\",\n"
-               "  \"system\": [\"imaginary-os\"],\n"
-               "  \"vendor\": \"ReqPack Tests\",\n"
-               "  \"maintainerEmail\": \"tests@example.org\",\n"
-               "  \"url\": \"https://example.test/cross-target.rqp\"\n"
-               "}\n");
+    write_file(projectRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"cross-target\",\n"
+                                              "  \"version\": \"1.0.0\",\n"
+                                              "  \"release\": 1,\n"
+                                              "  \"revision\": 0,\n"
+                                              "  \"summary\": \"test\",\n"
+                                              "  \"description\": \"test\",\n"
+                                              "  \"license\": \"MIT\",\n"
+                                              "  \"architecture\": \"mips64\",\n"
+                                              "  \"system\": [\"imaginary-os\"],\n"
+                                              "  \"vendor\": \"ReqPack Tests\",\n"
+                                              "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                              "  \"url\": \"https://example.test/cross-target.rqp\"\n"
+                                              "}\n");
 
     const RqPackageBuildResult result = rq_build_package({
         .projectRoot = projectRoot,
@@ -473,40 +474,38 @@ TEST_CASE("rqp package builder skips host compatibility during self validation",
 
     REQUIRE_THROWS_WITH(
         RqPackageReader::load(result.outputPath, tempDir.path() / "work-host", tempDir.path() / "state-host"),
-        Catch::Matchers::Contains("package architecture does not match host")
-    );
+        Catch::Matchers::Contains("package architecture does not match host"));
 }
 
 TEST_CASE("rqp metadata parser reads optional dependency and binary fields", "[unit][rq_package][core]") {
-    const RqMetadata metadata = rq_parse_metadata_json(
-        "{\n"
-        "  \"formatVersion\": 1,\n"
-        "  \"name\": \"rich\",\n"
-        "  \"version\": \"2.0.0\",\n"
-        "  \"release\": 2,\n"
-        "  \"revision\": 1,\n"
-        "  \"summary\": \"rich package\",\n"
-        "  \"description\": \"rich description\",\n"
-        "  \"license\": \"MIT\",\n"
-        "  \"architecture\": \"x86_64\",\n"
-        "  \"system\": [\"linux\", \"fedora\"],\n"
-        "  \"vendor\": \"ReqPack Tests\",\n"
-        "  \"maintainerEmail\": \"tests@example.org\",\n"
-        "  \"tags\": [\"cli\", \"tool\"],\n"
-        "  \"url\": \"https://example.test/rich.rqp\",\n"
-        "  \"homepage\": \"https://example.test\",\n"
-        "  \"sourceUrl\": \"https://src.example.test/rich\",\n"
-        "  \"packager\": \"builder\",\n"
-        "  \"buildDate\": \"2026-01-01\",\n"
-        "  \"depends\": [\"lib-a\"],\n"
-        "  \"provides\": [\"tool\"],\n"
-        "  \"conflicts\": [\"legacy\"],\n"
-        "  \"replaces\": [\"old-tool\"],\n"
-        "  \"binaries\": [\n"
-        "    {\"name\": \"rich\", \"installPath\": \"/usr/bin/rich\", \"primary\": true}\n"
-        "  ]\n"
-        "}\n"
-    );
+    const RqMetadata metadata =
+        rq_parse_metadata_json("{\n"
+                               "  \"formatVersion\": 1,\n"
+                               "  \"name\": \"rich\",\n"
+                               "  \"version\": \"2.0.0\",\n"
+                               "  \"release\": 2,\n"
+                               "  \"revision\": 1,\n"
+                               "  \"summary\": \"rich package\",\n"
+                               "  \"description\": \"rich description\",\n"
+                               "  \"license\": \"MIT\",\n"
+                               "  \"architecture\": \"x86_64\",\n"
+                               "  \"system\": [\"linux\", \"fedora\"],\n"
+                               "  \"vendor\": \"ReqPack Tests\",\n"
+                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                               "  \"tags\": [\"cli\", \"tool\"],\n"
+                               "  \"url\": \"https://example.test/rich.rqp\",\n"
+                               "  \"homepage\": \"https://example.test\",\n"
+                               "  \"sourceUrl\": \"https://src.example.test/rich\",\n"
+                               "  \"packager\": \"builder\",\n"
+                               "  \"buildDate\": \"2026-01-01\",\n"
+                               "  \"depends\": [\"lib-a\"],\n"
+                               "  \"provides\": [\"tool\"],\n"
+                               "  \"conflicts\": [\"legacy\"],\n"
+                               "  \"replaces\": [\"old-tool\"],\n"
+                               "  \"binaries\": [\n"
+                               "    {\"name\": \"rich\", \"installPath\": \"/usr/bin/rich\", \"primary\": true}\n"
+                               "  ]\n"
+                               "}\n");
 
     CHECK(metadata.name == "rich");
     CHECK(metadata.version == "2.0.0");
@@ -572,59 +571,50 @@ TEST_CASE("rqp metadata json round-trips optional fields", "[unit][rq_package][c
 }
 
 TEST_CASE("rqp metadata parser rejects unsupported format versions", "[unit][rq_package][core]") {
-    REQUIRE_THROWS_WITH(
-        rq_parse_metadata_json(
-            "{\n"
-            "  \"formatVersion\": 99,\n"
-            "  \"name\": \"bad\",\n"
-            "  \"version\": \"1.0.0\",\n"
-            "  \"release\": 1,\n"
-            "  \"revision\": 0,\n"
-            "  \"summary\": \"bad\",\n"
-            "  \"description\": \"bad\",\n"
-            "  \"license\": \"MIT\",\n"
-            "  \"vendor\": \"ReqPack Tests\",\n"
-            "  \"maintainerEmail\": \"tests@example.org\",\n"
-            "  \"url\": \"https://example.test/bad.rqp\"\n"
-            "}\n"
-        ),
-        Catch::Matchers::Contains("unsupported rqp format version")
-    );
+    REQUIRE_THROWS_WITH(rq_parse_metadata_json("{\n"
+                                               "  \"formatVersion\": 99,\n"
+                                               "  \"name\": \"bad\",\n"
+                                               "  \"version\": \"1.0.0\",\n"
+                                               "  \"release\": 1,\n"
+                                               "  \"revision\": 0,\n"
+                                               "  \"summary\": \"bad\",\n"
+                                               "  \"description\": \"bad\",\n"
+                                               "  \"license\": \"MIT\",\n"
+                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                               "  \"url\": \"https://example.test/bad.rqp\"\n"
+                                               "}\n"),
+                        Catch::Matchers::Contains("unsupported rqp format version"));
 }
 
 TEST_CASE("rqp metadata parser rejects invalid system field shape", "[unit][rq_package][core]") {
-    REQUIRE_THROWS_WITH(
-        rq_parse_metadata_json(
-            "{\n"
-            "  \"formatVersion\": 1,\n"
-            "  \"name\": \"bad-system\",\n"
-            "  \"version\": \"1.0.0\",\n"
-            "  \"release\": 1,\n"
-            "  \"revision\": 0,\n"
-            "  \"summary\": \"bad\",\n"
-            "  \"description\": \"bad\",\n"
-            "  \"license\": \"MIT\",\n"
-            "  \"system\": {\"os\": \"linux\"},\n"
-            "  \"vendor\": \"ReqPack Tests\",\n"
-            "  \"maintainerEmail\": \"tests@example.org\",\n"
-            "  \"url\": \"https://example.test/bad-system.rqp\"\n"
-            "}\n"
-        ),
-        Catch::Matchers::Contains("metadata field must be string or array of strings")
-    );
+    REQUIRE_THROWS_WITH(rq_parse_metadata_json("{\n"
+                                               "  \"formatVersion\": 1,\n"
+                                               "  \"name\": \"bad-system\",\n"
+                                               "  \"version\": \"1.0.0\",\n"
+                                               "  \"release\": 1,\n"
+                                               "  \"revision\": 0,\n"
+                                               "  \"summary\": \"bad\",\n"
+                                               "  \"description\": \"bad\",\n"
+                                               "  \"license\": \"MIT\",\n"
+                                               "  \"system\": {\"os\": \"linux\"},\n"
+                                               "  \"vendor\": \"ReqPack Tests\",\n"
+                                               "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                               "  \"url\": \"https://example.test/bad-system.rqp\"\n"
+                                               "}\n"),
+                        Catch::Matchers::Contains("metadata field must be string or array of strings"));
 }
 
 TEST_CASE("rqp reqpack hooks parser reads install and remove hooks", "[unit][rq_package][core]") {
     TempDir tempDir{"reqpack-rqp-hooks-parser"};
     const std::filesystem::path reqpackLua = tempDir.path() / "reqpack.lua";
-    write_file(reqpackLua,
-        "return {\n"
-        "  apiVersion = 1,\n"
-        "  hooks = {\n"
-        "    install = \"scripts/install.lua\",\n"
-        "    remove = \"scripts/remove.lua\"\n"
-        "  }\n"
-        "}\n");
+    write_file(reqpackLua, "return {\n"
+                           "  apiVersion = 1,\n"
+                           "  hooks = {\n"
+                           "    install = \"scripts/install.lua\",\n"
+                           "    remove = \"scripts/remove.lua\"\n"
+                           "  }\n"
+                           "}\n");
 
     const std::map<std::string, std::string> hooks = rq_parse_reqpack_hooks(reqpackLua);
     REQUIRE(hooks.size() == 2);
@@ -637,10 +627,7 @@ TEST_CASE("rqp reqpack hooks parser rejects missing install hook", "[unit][rq_pa
     const std::filesystem::path reqpackLua = tempDir.path() / "reqpack.lua";
     write_file(reqpackLua, "return { apiVersion = 1, hooks = { remove = \"scripts/remove.lua\" } }\n");
 
-    REQUIRE_THROWS_WITH(
-        rq_parse_reqpack_hooks(reqpackLua),
-        Catch::Matchers::Contains("missing hooks.install")
-    );
+    REQUIRE_THROWS_WITH(rq_parse_reqpack_hooks(reqpackLua), Catch::Matchers::Contains("missing hooks.install"));
 }
 
 TEST_CASE("rqp package builder rejects missing project files and incomplete payload dirs", "[unit][rq_package][core]") {
@@ -648,23 +635,21 @@ TEST_CASE("rqp package builder rejects missing project files and incomplete payl
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     std::filesystem::create_directories(projectRoot);
 
-    REQUIRE_THROWS_WITH(
-        rq_build_package({.projectRoot = tempDir.path() / "missing", .force = true}),
-        Catch::Matchers::Contains("pack project directory not found")
-    );
+    REQUIRE_THROWS_WITH(rq_build_package({.projectRoot = tempDir.path() / "missing", .force = true}),
+                        Catch::Matchers::Contains("pack project directory not found"));
 
-    write_file(projectRoot / "metadata.json", "{\"formatVersion\":1,\"name\":\"x\",\"version\":\"1.0.0\",\"release\":1,\"revision\":0,\"summary\":\"x\",\"description\":\"x\",\"license\":\"MIT\",\"vendor\":\"t\",\"maintainerEmail\":\"t@e\",\"url\":\"https://e\"}\n");
-    REQUIRE_THROWS_WITH(
-        rq_build_package({.projectRoot = projectRoot, .force = true}),
-        Catch::Matchers::Contains("missing reqpack.lua")
-    );
+    write_file(projectRoot / "metadata.json",
+               "{\"formatVersion\":1,\"name\":\"x\",\"version\":\"1.0.0\",\"release\":1,\"revision\":0,\"summary\":"
+               "\"x\",\"description\":\"x\",\"license\":\"MIT\",\"vendor\":\"t\",\"maintainerEmail\":\"t@e\",\"url\":"
+               "\"https://e\"}\n");
+    REQUIRE_THROWS_WITH(rq_build_package({.projectRoot = projectRoot, .force = true}),
+                        Catch::Matchers::Contains("missing reqpack.lua"));
 
     write_pack_project(projectRoot, "incomplete-payload");
     std::filesystem::create_directories(projectRoot / "payload");
     REQUIRE_THROWS_WITH(
         rq_build_package({.projectRoot = projectRoot, .outputPath = tempDir.path() / "incomplete.rqp", .force = true}),
-        Catch::Matchers::Contains("payload/ and hashes/ must both be present")
-    );
+        Catch::Matchers::Contains("payload/ and hashes/ must both be present"));
 }
 
 TEST_CASE("rqp package builder rejects existing output without force", "[unit][rq_package][core]") {
@@ -674,15 +659,13 @@ TEST_CASE("rqp package builder rejects existing output without force", "[unit][r
     const std::filesystem::path outputPath = tempDir.path() / "existing-output.rqp";
     write_file(outputPath, "already exists\n");
 
-    REQUIRE_THROWS_WITH(
-        rq_build_package({
-            .projectRoot = projectRoot,
-            .outputPath = outputPath,
-            .force = false,
-            .interactive = false,
-        }),
-        Catch::Matchers::Contains("output file already exists")
-    );
+    REQUIRE_THROWS_WITH(rq_build_package({
+                            .projectRoot = projectRoot,
+                            .outputPath = outputPath,
+                            .force = false,
+                            .interactive = false,
+                        }),
+                        Catch::Matchers::Contains("output file already exists"));
 }
 
 TEST_CASE("rqp package builder rejects external payload when embedded tree exists", "[unit][rq_package][core]") {
@@ -693,39 +676,34 @@ TEST_CASE("rqp package builder rejects external payload when embedded tree exist
     write_file(projectRoot / "payload-tree" / "demo.txt", "hello");
     write_file(payloadRoot / "demo.txt", "hello");
 
-    REQUIRE_THROWS_WITH(
-        rq_build_package({
-            .projectRoot = projectRoot,
-            .outputPath = tempDir.path() / "external-conflict.rqp",
-            .payloadRoot = payloadRoot,
-            .force = true,
-            .interactive = false,
-        }),
-        Catch::Matchers::Contains("payload-tree/")
-    );
+    REQUIRE_THROWS_WITH(rq_build_package({
+                            .projectRoot = projectRoot,
+                            .outputPath = tempDir.path() / "external-conflict.rqp",
+                            .payloadRoot = payloadRoot,
+                            .force = true,
+                            .interactive = false,
+                        }),
+                        Catch::Matchers::Contains("payload-tree/"));
 }
 
 TEST_CASE("rqp package builder rejects missing hook script files", "[unit][rq_package][core]") {
     TempDir tempDir{"reqpack-rqp-pack-missing-hook"};
     const std::filesystem::path projectRoot = tempDir.path() / "project";
     write_pack_project(projectRoot, "missing-hook");
-    write_file(projectRoot / "reqpack.lua",
-        "return {\n"
-        "  apiVersion = 1,\n"
-        "  hooks = {\n"
-        "    install = \"scripts/missing-install.lua\",\n"
-        "    remove = \"scripts/remove.lua\"\n"
-        "  }\n"
-        "}\n");
+    write_file(projectRoot / "reqpack.lua", "return {\n"
+                                            "  apiVersion = 1,\n"
+                                            "  hooks = {\n"
+                                            "    install = \"scripts/missing-install.lua\",\n"
+                                            "    remove = \"scripts/remove.lua\"\n"
+                                            "  }\n"
+                                            "}\n");
     write_file(projectRoot / "scripts" / "remove.lua", "return true\n");
 
-    REQUIRE_THROWS_WITH(
-        rq_build_package({
-            .projectRoot = projectRoot,
-            .outputPath = tempDir.path() / "missing-hook.rqp",
-            .force = true,
-            .interactive = false,
-        }),
-        Catch::Matchers::Contains("hook file not found")
-    );
+    REQUIRE_THROWS_WITH(rq_build_package({
+                            .projectRoot = projectRoot,
+                            .outputPath = tempDir.path() / "missing-hook.rqp",
+                            .force = true,
+                            .interactive = false,
+                        }),
+                        Catch::Matchers::Contains("hook file not found"));
 }

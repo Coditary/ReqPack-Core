@@ -10,9 +10,8 @@ namespace {
 constexpr std::size_t MAX_PROXY_RESOLUTION_DEPTH = 4;
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -26,7 +25,7 @@ std::string item_id_for_request(const Request& request) {
     return {};
 }
 
-}  // namespace
+} // namespace
 
 RequestResolutionService::RequestResolutionService(Registry* registry, const ReqPackConfig& config)
     : registry(registry), config(config) {}
@@ -49,7 +48,8 @@ PluginCallContext RequestResolutionService::buildProxyContext(IPlugin* plugin, c
     };
 }
 
-std::optional<Request> RequestResolutionService::resolveRequest(const Request& request, std::string* errorMessage) const {
+std::optional<Request> RequestResolutionService::resolveRequest(const Request& request,
+                                                                std::string* errorMessage) const {
     if (errorMessage != nullptr) {
         errorMessage->clear();
     }
@@ -62,7 +62,8 @@ std::optional<Request> RequestResolutionService::resolveRequest(const Request& r
     return this->resolveRequestRecursive(request, visitedSystems, 0, errorMessage);
 }
 
-std::optional<std::vector<Request>> RequestResolutionService::resolveRequests(const std::vector<Request>& requests, std::string* errorMessage) const {
+std::optional<std::vector<Request>> RequestResolutionService::resolveRequests(const std::vector<Request>& requests,
+                                                                              std::string* errorMessage) const {
     std::vector<Request> resolvedRequests;
     resolvedRequests.reserve(requests.size());
 
@@ -77,12 +78,10 @@ std::optional<std::vector<Request>> RequestResolutionService::resolveRequests(co
     return resolvedRequests;
 }
 
-std::optional<Request> RequestResolutionService::resolveRequestRecursive(
-    const Request& request,
-    std::vector<std::string>& visitedSystems,
-    std::size_t depth,
-    std::string* errorMessage
-) const {
+std::optional<Request> RequestResolutionService::resolveRequestRecursive(const Request& request,
+                                                                         std::vector<std::string>& visitedSystems,
+                                                                         std::size_t depth,
+                                                                         std::string* errorMessage) const {
     Request current = request;
     current.system = this->registry->resolvePluginName(current.system);
     if (current.system.empty()) {
@@ -140,8 +139,8 @@ std::optional<Request> RequestResolutionService::resolveRequestRecursive(
         return std::nullopt;
     }
 
-    if (const std::optional<ProxyConfig> proxyConfig = proxy_config_for_system(this->config, current.system); proxyConfig.has_value() &&
-        !proxyConfig->targets.empty()) {
+    if (const std::optional<ProxyConfig> proxyConfig = proxy_config_for_system(this->config, current.system);
+        proxyConfig.has_value() && !proxyConfig->targets.empty()) {
         const auto targetIt = std::find(proxyConfig->targets.begin(), proxyConfig->targets.end(), resolvedTarget);
         if (targetIt == proxyConfig->targets.end()) {
             if (errorMessage != nullptr) {
@@ -175,7 +174,8 @@ std::optional<Request> RequestResolutionService::resolveRequestRecursive(
         next.usesLocalTarget = false;
     }
 
-    const std::optional<Request> resolved = this->resolveRequestRecursive(next, visitedSystems, depth + 1, errorMessage);
+    const std::optional<Request> resolved =
+        this->resolveRequestRecursive(next, visitedSystems, depth + 1, errorMessage);
     visitedSystems.pop_back();
     return resolved;
 }

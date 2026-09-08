@@ -6,9 +6,8 @@
 namespace {
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return value;
 }
 
@@ -24,7 +23,7 @@ bool is_update_command_token(const std::string& normalizedCommand) {
     return normalizedCommand == "update" || normalizedCommand == "up";
 }
 
-}  // namespace
+} // namespace
 
 ActionType parse_action_token(const std::string& command) {
     const std::string normalizedCommand = to_lower_copy(command);

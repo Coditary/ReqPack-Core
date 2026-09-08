@@ -10,7 +10,8 @@
 #include <vector>
 
 Planner::Planner(Registry* registry, RegistryDatabase* database, const ReqPackConfig& config)
-    : config(config), downloader(database, config), registry(registry), securityGateway(registry, security_settings_from(config)) {
+    : config(config), downloader(database, config), registry(registry),
+      securityGateway(registry, security_settings_from(config)) {
     this->registry = registry;
 }
 

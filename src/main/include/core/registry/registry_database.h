@@ -40,7 +40,7 @@ class RegistryDatabase {
     mutable bool initialized{false};
     mutable bool bootstrapped{false};
 
-public:
+  public:
     RegistryDatabase(const ReqPackConfig& config = default_reqpack_config());
     ~RegistryDatabase();
 
@@ -57,18 +57,14 @@ public:
     std::optional<std::string> getMetaValue(const std::string& key) const;
     bool putMetaValue(const std::string& key, const std::string& value) const;
 
-private:
+  private:
     bool initStorage() const;
     bool bootstrap_registry() const;
     bool should_refresh_registry() const;
     bool sync_main_registry(bool* changed = nullptr, bool forceRefresh = false) const;
-    bool sync_records(
-        const std::vector<RegistryRecord>& records,
-        bool fetchPayloads,
-        bool replaceMissing,
-        const std::map<std::string, std::string>& metaValues = {},
-        const std::vector<std::string>& originPathsToDelete = {}
-    ) const;
+    bool sync_records(const std::vector<RegistryRecord>& records, bool fetchPayloads, bool replaceMissing,
+                      const std::map<std::string, std::string>& metaValues = {},
+                      const std::vector<std::string>& originPathsToDelete = {}) const;
     bool write_records(const RegistrySourceMap& sources) const;
     std::vector<RegistryRecord> load_all_records() const;
     std::optional<std::string> load_meta_value(const std::string& key) const;

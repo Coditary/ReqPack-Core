@@ -2,7 +2,8 @@
 
 #include <filesystem>
 
-std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& name) {
+std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, MDB_dbi database,
+                                                          const std::string& name) {
     const std::string normalized = registry_database_to_lower_copy(name);
     MDB_val key{normalized.size(), const_cast<char*>(normalized.data())};
     MDB_val value;
@@ -10,7 +11,8 @@ std::optional<RegistryRecord> get_record_from_transaction(MDB_txn* transaction, 
         return std::nullopt;
     }
 
-    return registry_database_deserialize_record(normalized, std::string(static_cast<const char*>(value.mv_data), value.mv_size));
+    return registry_database_deserialize_record(normalized,
+                                                std::string(static_cast<const char*>(value.mv_data), value.mv_size));
 }
 
 bool put_record_into_transaction(MDB_txn* transaction, MDB_dbi database, const RegistryRecord& record) {
@@ -38,13 +40,15 @@ std::optional<std::string> get_string_from_transaction(MDB_txn* transaction, MDB
     return std::string(static_cast<const char*>(value.mv_data), value.mv_size);
 }
 
-bool put_string_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key, const std::string& value) {
+bool put_string_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::string& key,
+                                 const std::string& value) {
     MDB_val keyValue{key.size(), const_cast<char*>(key.data())};
     MDB_val storedValue{value.size(), const_cast<char*>(value.data())};
     return mdb_put(transaction, database, &keyValue, &storedValue, 0) == MDB_SUCCESS;
 }
 
-bool put_meta_values_into_transaction(MDB_txn* transaction, MDB_dbi database, const std::map<std::string, std::string>& values) {
+bool put_meta_values_into_transaction(MDB_txn* transaction, MDB_dbi database,
+                                      const std::map<std::string, std::string>& values) {
     for (const auto& [key, value] : values) {
         if (!put_string_into_transaction(transaction, database, key, value)) {
             return false;

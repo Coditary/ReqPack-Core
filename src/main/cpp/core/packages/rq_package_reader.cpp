@@ -15,17 +15,13 @@ std::filesystem::path make_unique_directory(const std::filesystem::path& parent,
     return reqpack_make_unique_directory(parent, prefix);
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_package_internal {
 
-RqPackageLayout load_package_layout_impl(
-    const std::filesystem::path& packagePath,
-    const std::filesystem::path& workRoot,
-    const std::filesystem::path& stateRoot,
-    const ReqPackConfig& config,
-    const bool validateHostCompatibility
-) {
+RqPackageLayout load_package_layout_impl(const std::filesystem::path& packagePath,
+                                         const std::filesystem::path& workRoot, const std::filesystem::path& stateRoot,
+                                         const ReqPackConfig& config, const bool validateHostCompatibility) {
     if (!std::filesystem::is_regular_file(packagePath)) {
         throw std::runtime_error("rqp package not found: " + packagePath.string());
     }
@@ -90,8 +86,7 @@ RqPackageLayout load_package_layout_impl(
         if (!rq_system_matches(layout.metadata.systems, hostSystems, aliases)) {
             throw std::runtime_error(
                 "package system does not match host\npackage systems: " + rq_join_systems(layout.metadata.systems) +
-                "\nhost systems: " + rq_join_systems(std::vector<std::string>(hostSystems.begin(), hostSystems.end()))
-            );
+                "\nhost systems: " + rq_join_systems(std::vector<std::string>(hostSystems.begin(), hostSystems.end())));
         }
     }
 
@@ -127,4 +122,4 @@ RqPackageLayout load_package_layout_impl(
     return layout;
 }
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal

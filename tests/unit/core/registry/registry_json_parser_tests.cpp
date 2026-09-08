@@ -9,10 +9,10 @@
 namespace {
 
 class TempDir {
-public:
+  public:
     explicit TempDir(const std::string& prefix)
         : path_(std::filesystem::temp_directory_path() /
-            (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
+                (prefix + "-" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()))) {
         std::filesystem::create_directories(path_);
     }
 
@@ -25,7 +25,7 @@ public:
         return path_;
     }
 
-private:
+  private:
     std::filesystem::path path_;
 };
 
@@ -36,7 +36,7 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
     output << content;
 }
 
-}  // namespace
+} // namespace
 
 TEST_CASE("registry json parser builds main and alias records", "[unit][registry_json_parser][core]") {
     TempDir tempDir{"reqpack-registry-json-parser"};

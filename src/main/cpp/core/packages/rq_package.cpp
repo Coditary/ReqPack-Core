@@ -15,11 +15,9 @@
 
 namespace {
 
-std::unordered_set<std::string> expand_system_token(
-    const std::string& token,
-    const std::map<std::string, std::vector<std::string>>& aliases,
-    std::unordered_set<std::string>& visiting
-) {
+std::unordered_set<std::string> expand_system_token(const std::string& token,
+                                                    const std::map<std::string, std::vector<std::string>>& aliases,
+                                                    std::unordered_set<std::string>& visiting) {
     std::unordered_set<std::string> expanded;
     if (token.empty()) {
         return expanded;
@@ -49,10 +47,8 @@ std::unordered_set<std::string> expand_system_token(
     return expanded;
 }
 
-std::unordered_set<std::string> expand_system_token(
-    const std::string& token,
-    const std::map<std::string, std::vector<std::string>>& aliases
-) {
+std::unordered_set<std::string> expand_system_token(const std::string& token,
+                                                    const std::map<std::string, std::vector<std::string>>& aliases) {
     std::unordered_set<std::string> visiting;
     return expand_system_token(token, aliases, visiting);
 }
@@ -65,17 +61,15 @@ void validate_hook_path(const std::string& hookPathText) {
     rq_package_internal::validate_outer_entry_path(hookPathText);
 }
 
-}  // namespace
+} // namespace
 
 namespace rq_package_internal {
 
 std::string trim_copy(std::string value) {
-    value.erase(value.begin(), std::find_if(value.begin(), value.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-    value.erase(std::find_if(value.rbegin(), value.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), value.end());
+    value.erase(value.begin(),
+                std::find_if(value.begin(), value.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+    value.erase(std::find_if(value.rbegin(), value.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(),
+                value.end());
     return value;
 }
 
@@ -102,9 +96,8 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 }
 
 std::string to_lower_copy(std::string value) {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(std::tolower(ch));
-    });
+    std::transform(value.begin(), value.end(), value.begin(),
+                   [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
     return value;
 }
 
@@ -172,11 +165,7 @@ void validate_outer_entry_path(const std::string& rawPath) {
 
     const std::string topLevel = (*path.begin()).string();
     static const std::set<std::string> allowedTopLevels{
-        "metadata.json",
-        "reqpack.lua",
-        "hashes",
-        "scripts",
-        "payload",
+        "metadata.json", "reqpack.lua", "hashes", "scripts", "payload",
     };
 
     if (!allowedTopLevels.contains(topLevel)) {
@@ -196,7 +185,7 @@ void validate_hook_files(const std::map<std::string, std::string>& hooks, const 
     }
 }
 
-}  // namespace rq_package_internal
+} // namespace rq_package_internal
 
 RqMetadata rq_parse_metadata_json(const std::string& content) {
     return rq_package_internal::parse_metadata_json_impl(content);
@@ -219,7 +208,8 @@ std::string rq_host_architecture() {
 }
 
 std::string rq_package_identity(const RqMetadata& metadata) {
-    return metadata.name + "@" + metadata.version + "-" + std::to_string(metadata.release) + "+r" + std::to_string(metadata.revision);
+    return metadata.name + "@" + metadata.version + "-" + std::to_string(metadata.release) + "+r" +
+           std::to_string(metadata.revision);
 }
 
 bool rq_architecture_matches(const std::string& packageArchitecture, const std::string& hostArchitecture) {
@@ -261,9 +251,10 @@ std::set<std::string> rq_host_system_tokens(const HostInfoSnapshot& snapshot) {
     std::set<std::string> tokens;
     const std::string family = rq_package_internal::to_lower_copy(rq_package_internal::trim_copy(snapshot.os.family));
     const std::string id = rq_package_internal::to_lower_copy(rq_package_internal::trim_copy(snapshot.os.id));
-    const std::string distroId = snapshot.os.distroId.has_value()
-        ? rq_package_internal::to_lower_copy(rq_package_internal::trim_copy(snapshot.os.distroId.value()))
-        : std::string{};
+    const std::string distroId =
+        snapshot.os.distroId.has_value()
+            ? rq_package_internal::to_lower_copy(rq_package_internal::trim_copy(snapshot.os.distroId.value()))
+            : std::string{};
 
     if (!family.empty()) {
         tokens.insert(family);
@@ -283,11 +274,8 @@ std::set<std::string> rq_host_system_tokens(const HostInfoSnapshot& snapshot) {
     return tokens;
 }
 
-bool rq_system_matches(
-    const std::vector<std::string>& packageSystems,
-    const std::set<std::string>& hostSystems,
-    const std::map<std::string, std::vector<std::string>>& aliases
-) {
+bool rq_system_matches(const std::vector<std::string>& packageSystems, const std::set<std::string>& hostSystems,
+                       const std::map<std::string, std::vector<std::string>>& aliases) {
     for (const std::string& packageSystem : rq_normalize_systems(packageSystems)) {
         if (packageSystem == "nosys") {
             return true;
@@ -324,14 +312,11 @@ std::string rq_metadata_json(const RqMetadata& metadata) {
     return rq_package_internal::metadata_json_impl(metadata);
 }
 
-RqPackageLayout RqPackageReader::load(
-    const std::filesystem::path& packagePath,
-    const std::filesystem::path& workRoot,
-    const std::filesystem::path& stateRoot,
-    const ReqPackConfig& config,
-    const bool validateHostCompatibility
-) {
-    return rq_package_internal::load_package_layout_impl(packagePath, workRoot, stateRoot, config, validateHostCompatibility);
+RqPackageLayout RqPackageReader::load(const std::filesystem::path& packagePath, const std::filesystem::path& workRoot,
+                                      const std::filesystem::path& stateRoot, const ReqPackConfig& config,
+                                      const bool validateHostCompatibility) {
+    return rq_package_internal::load_package_layout_impl(packagePath, workRoot, stateRoot, config,
+                                                         validateHostCompatibility);
 }
 
 RqPackageBuildResult rq_build_package(const RqPackageBuildRequest& request, const ReqPackConfig& config) {

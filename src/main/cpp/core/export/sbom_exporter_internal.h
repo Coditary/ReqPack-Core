@@ -13,4 +13,4 @@ std::string sbom_component_ref(const Package& package);
 std::string package_display_name(const Package& package);
 bool table_colors_enabled();
 
-}  // namespace sbom_exporter_internal
+} // namespace sbom_exporter_internal

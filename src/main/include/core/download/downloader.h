@@ -5,8 +5,8 @@
 
 #include <curl/curl.h>
 
-#include <optional>
 #include <filesystem>
+#include <optional>
 #include <string>
 
 struct DownloadProgressSnapshot {
@@ -24,7 +24,7 @@ struct DownloadFailureDetails {
     std::string message{};
 };
 
-using DownloadProgressCallback = int(*)(const DownloadProgressSnapshot& snapshot, void* userData);
+using DownloadProgressCallback = int (*)(const DownloadProgressSnapshot& snapshot, void* userData);
 
 class Downloader {
     ReqPackConfig config;
@@ -32,33 +32,25 @@ class Downloader {
 
     static std::size_t write_to_file(void* contents, std::size_t size, std::size_t nmemb, void* userp);
 
-public:
+  public:
     Downloader(RegistryDatabase* database, const ReqPackConfig& config = default_reqpack_config());
 
     bool downloadPlugin(const std::string& system) const;
     bool download(const std::string& source, const std::string& destinationPath) const;
-    bool download(const std::string& source,
-                  const std::string& destinationPath,
+    bool download(const std::string& source, const std::string& destinationPath,
                   DownloadFailureDetails* failureDetails) const;
-    bool download(const std::string& source,
-                  const std::string& destinationPath,
-                  DownloadProgressCallback progressCallback,
-                  void* progressUserData) const;
-    bool download(const std::string& source,
-                  const std::string& destinationPath,
-                  DownloadProgressCallback progressCallback,
-                  void* progressUserData,
+    bool download(const std::string& source, const std::string& destinationPath,
+                  DownloadProgressCallback progressCallback, void* progressUserData) const;
+    bool download(const std::string& source, const std::string& destinationPath,
+                  DownloadProgressCallback progressCallback, void* progressUserData,
                   DownloadFailureDetails* failureDetails) const;
 
-private:
+  private:
     bool download_to_path(const std::string& source, const std::filesystem::path& targetPath) const;
-    bool download_to_path(const std::string& source,
-                          const std::filesystem::path& targetPath,
+    bool download_to_path(const std::string& source, const std::filesystem::path& targetPath,
                           DownloadFailureDetails* failureDetails) const;
-    bool download_to_path(const std::string& source,
-                          const std::filesystem::path& targetPath,
-                          DownloadProgressCallback progressCallback,
-                          void* progressUserData,
+    bool download_to_path(const std::string& source, const std::filesystem::path& targetPath,
+                          DownloadProgressCallback progressCallback, void* progressUserData,
                           DownloadFailureDetails* failureDetails) const;
     std::string resolve_plugin_name(const std::string& system) const;
     std::optional<RegistryRecord> plugin_record_for(const std::string& system) const;
