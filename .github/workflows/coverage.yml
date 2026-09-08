@@ -1,0 +1,60 @@
+name: Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      COVERAGE_BUILD_DIR: build/coverage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout ReqPack CLI (output sources)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/ReqPack
+          path: reqpack-cli
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates cmake curl gcovr git pkg-config python3 \
+            libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
+            liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
+
+      - name: Install sol2 headers
+        run: |
+          mkdir -p third_party/include
+          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
+          cp -r /tmp/sol2/include/sol third_party/include/
+
+      - name: Build and measure coverage
+        run: |
+          make test-coverage \
+            REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli \
+            SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include
+
+      - name: Publish coverage badge on main
+        if: github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update coverage badge"
+          file_pattern: .github/badges/coverage.json

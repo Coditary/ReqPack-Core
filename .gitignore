@@ -1,0 +1,8 @@
+build/
+coverage-summary.txt
+*.profraw
+*.profdata
+crash-*
+leak-*
+timeout-*
+slow-unit-*

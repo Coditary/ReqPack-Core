@@ -1,0 +1,95 @@
+name: Quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format
+      - run: make format-check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout ReqPack CLI (output sources)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/ReqPack
+          path: reqpack-cli
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates clang clang-tidy cmake curl git pkg-config \
+            libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
+            liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
+      - name: Install sol2 headers
+        run: |
+          mkdir -p third_party/include
+          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
+          cp -r /tmp/sol2/include/sol third_party/include/
+      - run: make lint CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include
+
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout ReqPack CLI (output sources)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/ReqPack
+          path: reqpack-cli
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates clang cmake curl git pkg-config \
+            libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
+            liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
+      - name: Install sol2 headers
+        run: |
+          mkdir -p third_party/include
+          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
+          cp -r /tmp/sol2/include/sol third_party/include/
+      - run: make fuzz CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include FUZZ_RUNS=8192 FUZZ_MAX_TIME=30
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout ReqPack CLI (output sources)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/ReqPack
+          path: reqpack-cli
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates cmake curl git pkg-config \
+            libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
+            liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
+      - name: Install sol2 headers
+        run: |
+          mkdir -p third_party/include
+          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
+          cp -r /tmp/sol2/include/sol third_party/include/
+      - run: make test-unit REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include

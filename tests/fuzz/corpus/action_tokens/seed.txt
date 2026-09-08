@@ -1,0 +1,17 @@
+install
+update
+search
+list
+info
+audit
+sbom
+outdated
+host
+snapshot
+pack
+serve
+remote
+i
+rm
+up
+unknown-command

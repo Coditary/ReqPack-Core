@@ -1,0 +1,33 @@
+---
+Checks: >
+  bugprone-use-after-move,
+  bugprone-dangling-handle,
+  bugprone-undelegated-constructor,
+  bugprone-forward-declaration-namespace,
+  bugprone-infinite-loop,
+  bugprone-argument-comment,
+  clang-analyzer-core.CallAndMessage,
+  clang-analyzer-core.DivideZero,
+  clang-analyzer-core.NonNullParamChecker,
+  clang-analyzer-cplusplus.NewDelete,
+  clang-analyzer-cplusplus.NewDeleteLeaks,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  performance-unnecessary-value-param,
+  performance-for-range-copy,
+  readability-redundant-member-init,
+  readability-const-return-type,
+  readability-simplify-boolean-expr,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-braces-around-statements,
+  -readability-implicit-bool-conversion,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*/(src/main/include/|src/main/cpp/|tests/).*\.(h|cpp)$'
+FormatStyle: file
