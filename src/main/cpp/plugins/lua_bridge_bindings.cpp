@@ -10,10 +10,13 @@
 
 namespace {
 
-template <typename Class, typename Member> auto lua_member(Member Class::* member) {
+// clang-format off
+template <typename Class, typename Member>
+auto lua_member(Member Class::* member) {
     return sol::property([member](const Class& object) { return object.*member; },
                          [member](Class& object, Member value) { object.*member = std::move(value); });
 }
+// clang-format on
 
 sol::table make_string_array_table(sol::state& lua, const std::vector<std::string>& values) {
     sol::table table = lua.create_table(static_cast<int>(values.size()), 0);
