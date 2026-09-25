@@ -121,6 +121,16 @@ void Planner::addPackageToGraph(Graph& graph, const Package& package) const {
                 normalizedDependency.directRequest = false;
                 normalizedDependencies.push_back(std::move(normalizedDependency));
             }
+            for (Package dependency : plugin_bundle_project_packages(layout.value())) {
+                Package normalizedDependency = planner_internal::resolve_dependency_system(
+                    planner_normalize_dependency(std::move(dependency), currentPackage.system), this->registry);
+                if (currentPackage.action == ActionType::ENSURE) {
+                    normalizedDependency.action = ActionType::ENSURE;
+                    planner_internal::propagate_internal_ensure_order_flag(currentPackage, normalizedDependency);
+                }
+                normalizedDependency.directRequest = false;
+                normalizedDependencies.push_back(std::move(normalizedDependency));
+            }
 
             for (const Package& missingDependency : this->filterMissingDependencies(normalizedDependencies)) {
                 const Graph::vertex_descriptor dependencyVertex =

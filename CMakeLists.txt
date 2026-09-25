@@ -314,6 +314,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         tests/unit/core/luaenv/lua_env_ffi_tests.cpp
         tests/unit/core/host/host_info_tests.cpp
         tests/unit/core/manifest/manifest_loader_tests.cpp
+        tests/unit/core/manifest/manifest_path_resolver_tests.cpp
         tests/unit/core/packages/rq_package_tests.cpp
         tests/unit/core/packages/rq_repository_tests.cpp
         tests/unit/core/planning/planner_core_tests.cpp

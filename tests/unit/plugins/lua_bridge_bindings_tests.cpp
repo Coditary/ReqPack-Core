@@ -416,3 +416,49 @@ TEST_CASE("lua bridge bindings expose detailed host kernel and storage fields", 
     REQUIRE(result.valid());
     CHECK(result.get<bool>());
 }
+
+TEST_CASE("lua bridge bindings expose reqpack.manifest resolve and load", "[unit][lua_bridge_bindings]") {
+    TempDir tempDir {"reqpack-lua-bridge-bindings-manifest"};
+    ReqPackConfig config;
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path(), "demo", R"(
+plugin = {}
+function plugin.getName() return "demo" end
+function plugin.getVersion() return "1.0.0" end
+function plugin.getRequirements() return {} end
+function plugin.getCategories() return { "test" } end
+function plugin.getMissingPackages(packages) return packages end
+function plugin.install(context, packages)
+  local resolved = reqpack.manifest.resolve("drivers/tool/reqpack.lua")
+  local manifest = reqpack.manifest.load("drivers/tool")
+  return resolved ~= nil
+    and manifest ~= nil
+    and manifest.packages[1].system == "dnf"
+    and manifest.packages[1].name == "curl"
+end
+function plugin.installLocal(context, path) return true end
+function plugin.remove(context, packages) return true end
+function plugin.update(context, packages) return true end
+function plugin.list(context) return {} end
+function plugin.search(context, prompt) return {} end
+function plugin.info(context, package) return { name = package, version = "1.0.0" } end
+function plugin.shutdown() return true end
+)");
+    write_file(tempDir.path() / "demo" / "drivers" / "tool" / "reqpack.lua",
+               "return { packages = { { system = \"dnf\", name = \"curl\" } } }\n");
+
+    LuaBridge bridge(scriptPath.string(), config);
+    REQUIRE(bridge.init());
+
+    PluginCallContext context {
+        .pluginId = bridge.getPluginId(),
+        .pluginDirectory = bridge.getPluginDirectory(),
+        .scriptPath = bridge.getScriptPath(),
+        .host = bridge.getRuntimeHost(),
+        .hostInfo = HostInfoService::currentSnapshot(),
+    };
+
+    Package request;
+    request.name = "demo";
+    CHECK(bridge.install(context, {request}));
+    CHECK(bridge.shutdown());
+}

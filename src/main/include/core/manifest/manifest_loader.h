@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -42,4 +43,8 @@ class ManifestLoader {
     /// @throws std::runtime_error if the file is missing, cannot be parsed,
     ///         or contains invalid entries.
     static std::vector<ManifestEntry> load(const std::filesystem::path& manifestPath);
+
+    /// Loads project-style package entries when the manifest exposes a `packages` table.
+    /// Returns std::nullopt when the file is missing or has no `packages` table.
+    static std::optional<std::vector<ManifestEntry>> tryLoadPackages(const std::filesystem::path& manifestPath);
 };

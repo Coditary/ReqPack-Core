@@ -330,6 +330,50 @@ TEST_CASE("planner topologically sorts graph when configured", "[unit][planner_d
     CHECK(graph_contains_package(*graph, "dep", "runtime"));
 }
 
+TEST_CASE("planner expands plugin reqpack.lua manifests and packages into ensure dependencies",
+          "[unit][planner_dependency]") {
+    TempDir tempDir {"reqpack-planner-plugin-manifests"};
+    ReqPackConfig config = make_planner_config(tempDir.path());
+
+    const std::filesystem::path pluginDirectory = tempDir.path() / "plugins" / "app";
+    write_file(pluginDirectory / "drivers" / "ffmpeg" / "reqpack.lua",
+               "return { packages = { { system = \"dep\", name = \"ffmpeg\" } } }\n");
+    write_file(pluginDirectory / "metadata.json", "{\n"
+                                                  "  \"formatVersion\": 1,\n"
+                                                  "  \"name\": \"app\",\n"
+                                                  "  \"version\": \"1.0.0\",\n"
+                                                  "  \"summary\": \"app plugin\",\n"
+                                                  "  \"description\": \"app plugin bundle\",\n"
+                                                  "  \"license\": \"MIT\"\n"
+                                                  "}\n");
+    write_file(pluginDirectory / "reqpack.lua", R"(
+return {
+  apiVersion = 1,
+  depends = { "dep:runtime" },
+  manifests = { "drivers/ffmpeg/reqpack.lua" },
+  packages = {
+    { system = "dep", name = "inline" },
+  },
+}
+)");
+    write_file(pluginDirectory / "run.lua", APP_PLUGIN);
+    write_file(pluginDirectory / "scripts" / "install.lua", "return true\n");
+    write_file(pluginDirectory / "scripts" / "remove.lua", "return true\n");
+    add_plugin_script(tempDir.path() / "plugins", "dep", DEP_PLUGIN);
+
+    Registry registry(config);
+    registry.scanDirectory(config.registry.pluginDirectory);
+    Planner planner(&registry, registry.getDatabase(), config);
+
+    std::unique_ptr<Graph> graph(
+        planner.plan({Request {.action = ActionType::INSTALL, .system = "app", .packages = {"demo"}}}));
+    REQUIRE(graph != nullptr);
+    CHECK(graph_contains_package(*graph, "app", "demo"));
+    CHECK(graph_contains_package(*graph, "dep", "runtime"));
+    CHECK(graph_contains_package(*graph, "dep", "inline"));
+    CHECK(graph_contains_package(*graph, "dep", "ffmpeg"));
+}
+
 TEST_CASE("planner passes security gateway systems through install filtering", "[unit][planner_dependency]") {
     TempDir tempDir {"reqpack-planner-gateway"};
     ReqPackConfig config = make_planner_config(tempDir.path());

@@ -2,6 +2,8 @@
 
 #include "core/config/configuration.h"
 #include "core/host/host_info.h"
+#include "core/manifest/manifest_loader.h"
+#include "core/manifest/manifest_path_resolver.h"
 #include "output/progress_metrics_lua.h"
 #include "plugins/lua_bridge_binding_helpers.h"
 #include "plugins/lua_bridge_value_mapper.h"
@@ -17,6 +19,27 @@ sol::table make_string_array_table(sol::state& lua, const std::vector<std::strin
         table[static_cast<int>(index + 1)] = values[index];
     }
     return table;
+}
+
+sol::table make_manifest_entry_table(sol::state& lua, const ManifestEntry& entry) {
+    sol::table manifestEntry = lua.create_table();
+    manifestEntry["system"] = entry.system;
+    manifestEntry["name"] = entry.name;
+    if (!entry.version.empty()) {
+        manifestEntry["version"] = entry.version;
+    }
+    if (!entry.flags.empty()) {
+        manifestEntry["flags"] = make_string_array_table(lua, entry.flags);
+    }
+    return manifestEntry;
+}
+
+sol::table make_manifest_entries_table(sol::state& lua, const std::vector<ManifestEntry>& entries) {
+    sol::table packages = lua.create_table(static_cast<int>(entries.size()), 0);
+    for (std::size_t index = 0; index < entries.size(); ++index) {
+        packages[static_cast<int>(index + 1)] = make_manifest_entry_table(lua, entries[index]);
+    }
+    return packages;
 }
 
 void set_string_field_if_present(sol::table& table, const std::string& key, const std::string& value) {
@@ -433,4 +456,32 @@ void LuaBridgeBindings::registerReqpackNamespace() {
     exec.set_function("run", [this](const std::string& command) { return m_hostRuntime.runCommand(command); });
     reqpack["exec"] = exec;
     reqpack["host"] = make_host_info_table(lua, *HostInfoService::currentSnapshot());
+
+    sol::table manifest = lua.create_table();
+    manifest.set_function("resolve", [this](const std::string& argument) -> sol::object {
+        const std::optional<std::filesystem::path> resolvedPath =
+            resolve_plugin_manifest_path(argument, m_hostRuntime.pluginDirectory());
+        if (!resolvedPath.has_value()) {
+            return sol::lua_nil;
+        }
+        return sol::make_object(m_runtime.state(), resolvedPath.value().string());
+    });
+    manifest.set_function("load", [this](const std::string& argument) -> sol::object {
+        const std::optional<std::filesystem::path> resolvedPath =
+            resolve_plugin_manifest_path(argument, m_hostRuntime.pluginDirectory());
+        if (!resolvedPath.has_value()) {
+            return sol::lua_nil;
+        }
+
+        try {
+            const std::vector<ManifestEntry> entries = ManifestLoader::load(resolvedPath.value());
+            sol::table result = m_runtime.state().create_table();
+            result["path"] = resolvedPath.value().string();
+            result["packages"] = make_manifest_entries_table(m_runtime.state(), entries);
+            return sol::make_object(m_runtime.state(), result);
+        } catch (...) {
+            return sol::lua_nil;
+        }
+    });
+    reqpack["manifest"] = manifest;
 }

@@ -81,6 +81,10 @@ bool Planner::pluginRequirementsSatisfied(const std::string& system) const {
         requirements.push_back(planner_internal::resolve_dependency_system(
             planner_normalize_dependency(std::move(dependency), system), this->registry));
     }
+    for (Package dependency : plugin_bundle_project_packages(layout.value())) {
+        requirements.push_back(planner_internal::resolve_dependency_system(
+            planner_normalize_dependency(std::move(dependency), system), this->registry));
+    }
 
     return this->filterMissingDependencies(requirements).empty();
 }
@@ -164,6 +168,13 @@ std::vector<Package> Planner::collectPluginDependencies(const std::vector<Reques
         }
 
         for (Package dependency : plugin_bundle_dependency_packages(layout.value())) {
+            Package normalizedDependency = planner_internal::resolve_dependency_system(
+                planner_normalize_dependency(std::move(dependency), request.system), this->registry);
+            normalizedDependency.action = ActionType::ENSURE;
+            planner_internal::set_internal_ensure_order_flag(normalizedDependency, requestIndex);
+            dependencies.push_back(std::move(normalizedDependency));
+        }
+        for (Package dependency : plugin_bundle_project_packages(layout.value())) {
             Package normalizedDependency = planner_internal::resolve_dependency_system(
                 planner_normalize_dependency(std::move(dependency), request.system), this->registry);
             normalizedDependency.action = ActionType::ENSURE;

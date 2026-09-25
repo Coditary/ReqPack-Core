@@ -2,6 +2,7 @@
 
 #include "core/common/types.h"
 #include "core/config/configuration.h"
+#include "core/manifest/manifest_loader.h"
 
 #include <filesystem>
 #include <optional>
@@ -23,6 +24,8 @@ struct PluginBundleMetadata {
 struct PluginBundleManifest {
     int apiVersion {0};
     std::vector<std::string> dependencySpecs;
+    std::vector<std::string> nestedManifestPaths;
+    std::vector<ManifestEntry> inlinePackageEntries;
 };
 
 struct PluginBundleLayout {
@@ -50,6 +53,7 @@ std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem:
 std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConfig& config,
                                                                const std::string& pluginId);
 std::vector<Package> plugin_bundle_dependency_packages(const PluginBundleLayout& layout);
+std::vector<Package> plugin_bundle_project_packages(const PluginBundleLayout& layout);
 std::filesystem::path plugin_bundle_ready_marker_path(const std::filesystem::path& directory);
 std::filesystem::path plugin_bundle_manifest_path(const std::filesystem::path& directory);
 std::filesystem::path plugin_bundle_source_path(const std::filesystem::path& directory);

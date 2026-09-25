@@ -73,6 +73,10 @@ class LuaBridgeHostRuntime {
 
     void setExecOverride(ExecOverride execOverride);
 
+    const std::string& pluginDirectory() const {
+        return m_pluginDirectory;
+    }
+
   private:
     bool shouldEnforceExecutionPolicy() const;
     ExecResult denyExecution(const std::string& message) const;

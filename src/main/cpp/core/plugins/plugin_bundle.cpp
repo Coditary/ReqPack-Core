@@ -1,5 +1,7 @@
 #include "core/plugins/plugin_bundle.h"
 
+#include "core/manifest/manifest_path_resolver.h"
+
 #include <sol/sol.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
@@ -159,7 +161,64 @@ std::optional<PluginBundleManifest> parse_reqpack_manifest(const std::filesystem
         }
     }
 
+    const sol::object manifestsObject = manifestTable["manifests"];
+    if (manifestsObject.valid() && manifestsObject.get_type() == sol::type::table) {
+        for (const auto& [_, value] : manifestsObject.as<sol::table>()) {
+            if (value.get_type() != sol::type::string) {
+                return std::nullopt;
+            }
+            const std::string manifestPath = trim_copy(value.as<std::string>());
+            if (manifestPath.empty()) {
+                continue;
+            }
+            manifest.nestedManifestPaths.push_back(manifestPath);
+        }
+    }
+
+    const sol::object packagesObject = manifestTable["packages"];
+    if (packagesObject.valid() && packagesObject.get_type() == sol::type::table) {
+        for (const auto& [_, value] : packagesObject.as<sol::table>()) {
+            if (value.get_type() != sol::type::table) {
+                return std::nullopt;
+            }
+
+            const sol::table pkg = value.as<sol::table>();
+            const sol::optional<std::string> system = pkg["system"];
+            const sol::optional<std::string> name = pkg["name"];
+            if (!system.has_value() || system.value().empty() || !name.has_value() || name.value().empty()) {
+                return std::nullopt;
+            }
+
+            ManifestEntry entry;
+            entry.system = system.value();
+            entry.name = name.value();
+            const sol::optional<std::string> version = pkg["version"];
+            if (version.has_value() && !version.value().empty()) {
+                entry.version = version.value();
+            }
+            const sol::optional<sol::table> flags = pkg["flags"];
+            if (flags.has_value()) {
+                for (const auto& [__, flagVal] : flags.value()) {
+                    if (flagVal.get_type() == sol::type::string) {
+                        entry.flags.push_back(flagVal.as<std::string>());
+                    }
+                }
+            }
+            manifest.inlinePackageEntries.push_back(std::move(entry));
+        }
+    }
+
     return manifest;
+}
+
+Package manifest_entry_to_package(const ManifestEntry& entry) {
+    Package package;
+    package.action = ActionType::INSTALL;
+    package.system = entry.system;
+    package.name = entry.name;
+    package.version = entry.version;
+    package.flags = entry.flags;
+    return package;
 }
 
 std::optional<Package> parse_dependency_spec(const std::string& spec) {
@@ -332,6 +391,34 @@ std::vector<Package> plugin_bundle_dependency_packages(const PluginBundleLayout&
         dependencies.push_back(dependency.value());
     }
     return dependencies;
+}
+
+std::vector<Package> plugin_bundle_project_packages(const PluginBundleLayout& layout) {
+    std::vector<Package> packages;
+    packages.reserve(layout.manifest.inlinePackageEntries.size());
+
+    for (const ManifestEntry& entry : layout.manifest.inlinePackageEntries) {
+        packages.push_back(manifest_entry_to_package(entry));
+    }
+
+    for (const std::string& nestedManifestPath : layout.manifest.nestedManifestPaths) {
+        const std::optional<std::filesystem::path> resolvedPath =
+            resolve_plugin_manifest_path(nestedManifestPath, layout.rootDir);
+        if (!resolvedPath.has_value()) {
+            continue;
+        }
+
+        const std::optional<std::vector<ManifestEntry>> entries = ManifestLoader::tryLoadPackages(resolvedPath.value());
+        if (!entries.has_value()) {
+            continue;
+        }
+
+        for (const ManifestEntry& entry : entries.value()) {
+            packages.push_back(manifest_entry_to_package(entry));
+        }
+    }
+
+    return packages;
 }
 
 std::filesystem::path plugin_bundle_ready_marker_path(const std::filesystem::path& directory) {
