@@ -351,6 +351,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         BEFORE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
         ${SOL2_INCLUDE_DIR}
+        ${LUA_INCLUDE_DIR}
         tests/cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/plugins
     )
@@ -386,6 +387,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         BEFORE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
         ${SOL2_INCLUDE_DIR}
+        ${LUA_INCLUDE_DIR}
         tests/cpp
     )
 
