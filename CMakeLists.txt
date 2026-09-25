@@ -452,13 +452,31 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         registry_json_fuzzer
         manifest_loader_fuzzer
     )
-    set(REQPACK_CORE_FUZZ_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g -O1)
+    set(REQPACK_CORE_FUZZ_EXE_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g -O1)
+    set(REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS -fsanitize=fuzzer,undefined -fno-omit-frame-pointer -g -O1)
 
     foreach(fuzzer IN LISTS REQPACK_CORE_FUZZ_TARGETS)
-        add_executable(${fuzzer} tests/fuzz/${fuzzer}.cpp)
-        target_link_libraries(${fuzzer} PRIVATE reqpack_core reqpack_output)
-        target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_FLAGS})
-        target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_FLAGS})
+        if(fuzzer STREQUAL "manifest_loader_fuzzer")
+            add_executable(${fuzzer}
+                tests/fuzz/${fuzzer}.cpp
+                src/main/cpp/core/manifest/manifest_loader.cpp
+                src/main/cpp/core/luaenv/lua_env_ffi.cpp
+            )
+            target_include_directories(${fuzzer} PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+                ${SOL2_INCLUDE_DIR}
+                ${LUA_INCLUDE_DIR}
+            )
+            target_compile_definitions(${fuzzer} PRIVATE SOL_ALL_SAFETIES_ON=1)
+            target_link_libraries(${fuzzer} PRIVATE lua_cffi ${LUA_LIBRARIES} ${CMAKE_DL_LIBS})
+            target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS})
+            target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS})
+        else()
+            add_executable(${fuzzer} tests/fuzz/${fuzzer}.cpp)
+            target_link_libraries(${fuzzer} PRIVATE reqpack_core reqpack_output)
+            target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_EXE_FLAGS})
+            target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_EXE_FLAGS})
+        endif()
 
         string(REPLACE "_fuzzer" "" fuzzer_corpus_name ${fuzzer})
         set(corpus_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests/fuzz/corpus/${fuzzer_corpus_name})
