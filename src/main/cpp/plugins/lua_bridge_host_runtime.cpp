@@ -25,8 +25,10 @@ std::uint64_t LuaBridgeHostRuntime::retainRuntimeBindingContext(const PluginCall
     m_runtimeBindingContexts[contextId] = LuaBridgeRuntimeBindingContext {
         .host = context.host,
         .pluginId = context.pluginId,
+        .pluginDirectory = context.pluginDirectory,
         .sourceId = context.currentItemId.empty() ? context.pluginId : context.currentItemId,
         .flags = context.flags,
+        .runtimeActions = context.runtimeActions,
     };
     return contextId;
 }

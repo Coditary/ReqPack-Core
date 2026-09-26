@@ -19,8 +19,10 @@
 struct LuaBridgeRuntimeBindingContext {
     IPluginRuntimeHost* host {nullptr};
     std::string pluginId;
+    std::string pluginDirectory;
     std::string sourceId;
     std::vector<std::string> flags;
+    PluginRuntimeActions runtimeActions {};
 };
 
 class LuaBridgeHostRuntime {

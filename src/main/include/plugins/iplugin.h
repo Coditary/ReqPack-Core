@@ -7,6 +7,7 @@
 #include "output/progress_metrics.h"
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -30,6 +31,19 @@ struct DownloadResult {
 struct PluginEventRecord {
     std::string name;
     std::string payload;
+};
+
+struct PluginRuntimeActions {
+    std::function<bool(const std::vector<Package>&)> ensurePackages;
+    std::function<bool(const std::string&)> installRqpLocal;
+
+    [[nodiscard]] bool canEnsurePackages() const {
+        return static_cast<bool>(ensurePackages);
+    }
+
+    [[nodiscard]] bool canInstallRqpLocal() const {
+        return static_cast<bool>(installRqpLocal);
+    }
 };
 
 class IPluginRuntimeHost {
@@ -67,6 +81,7 @@ struct PluginCallContext {
     std::string currentItemId {};
     std::vector<RepositoryEntry> repositories {};
     std::shared_ptr<const HostInfoSnapshot> hostInfo {};
+    PluginRuntimeActions runtimeActions {};
 
     ExecResult execute(const std::string& command) const {
         return host != nullptr ? host->execute(pluginId, command) : ExecResult {};
@@ -156,6 +171,14 @@ struct PluginCallContext {
         if (host != nullptr) {
             host->registerArtifact(pluginId, payload);
         }
+    }
+
+    bool ensurePackages(const std::vector<Package>& packages) const {
+        return runtimeActions.ensurePackages != nullptr && runtimeActions.ensurePackages(packages);
+    }
+
+    bool installRqpLocal(const std::string& localPath) const {
+        return runtimeActions.installRqpLocal != nullptr && runtimeActions.installRqpLocal(localPath);
     }
 };
 

@@ -462,3 +462,68 @@ function plugin.shutdown() return true end
     CHECK(bridge.install(context, {request}));
     CHECK(bridge.shutdown());
 }
+
+TEST_CASE("lua bridge bindings expose context packages ensure and manifest ensure", "[unit][lua_bridge_bindings]") {
+    TempDir tempDir {"reqpack-lua-bridge-bindings-runtime-actions"};
+    ReqPackConfig config;
+    const std::filesystem::path scriptPath = write_plugin_bundle(tempDir.path(), "demo", R"(
+plugin = {}
+function plugin.getName() return "demo" end
+function plugin.getVersion() return "1.0.0" end
+function plugin.getRequirements() return {} end
+function plugin.getCategories() return { "test" } end
+function plugin.getMissingPackages(packages) return packages end
+function plugin.install(context, packages)
+  local ensured = context.packages.ensure({
+    { system = "dnf", name = "curl" },
+  })
+  local manifestEnsured = context.manifest.ensure("drivers/tool")
+  return ensured and manifestEnsured
+end
+function plugin.installLocal(context, path) return true end
+function plugin.remove(context, packages) return true end
+function plugin.update(context, packages) return true end
+function plugin.list(context) return {} end
+function plugin.search(context, prompt) return {} end
+function plugin.info(context, package) return { name = package, version = "1.0.0" } end
+function plugin.shutdown() return true end
+)");
+    write_file(tempDir.path() / "demo" / "drivers" / "tool" / "reqpack.lua",
+               "return { packages = { { system = \"dnf\", name = \"make\" } } }\n");
+
+    LuaBridge bridge(scriptPath.string(), config);
+    REQUIRE(bridge.init());
+
+    bool packagesEnsured = false;
+    bool manifestEnsured = false;
+    PluginCallContext context {
+        .pluginId = bridge.getPluginId(),
+        .pluginDirectory = bridge.getPluginDirectory(),
+        .scriptPath = bridge.getScriptPath(),
+        .host = bridge.getRuntimeHost(),
+        .hostInfo = HostInfoService::currentSnapshot(),
+        .runtimeActions =
+            PluginRuntimeActions {
+                .ensurePackages =
+                    [&](const std::vector<Package>& packages) {
+                        if (packagesEnsured) {
+                            manifestEnsured = packages.size() == 1 && packages.front().system == "dnf" &&
+                                              packages.front().name == "make" &&
+                                              packages.front().action == ActionType::ENSURE;
+                            return manifestEnsured;
+                        }
+                        packagesEnsured = packages.size() == 1 && packages.front().system == "dnf" &&
+                                          packages.front().name == "curl" &&
+                                          packages.front().action == ActionType::ENSURE;
+                        return packagesEnsured;
+                    },
+            },
+    };
+
+    Package request;
+    request.name = "demo";
+    CHECK(bridge.install(context, {request}));
+    CHECK(packagesEnsured);
+    CHECK(manifestEnsured);
+    CHECK(bridge.shutdown());
+}

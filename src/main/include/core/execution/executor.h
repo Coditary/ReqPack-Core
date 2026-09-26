@@ -108,4 +108,6 @@ class Executer {
     std::vector<PackageInfo> search(const Request& request) const;
     PackageInfo info(const Request& request) const;
     std::optional<Package> resolvePackage(const Request& request, const Package& package) const;
+    bool ensurePackages(const std::vector<Package>& packages) const;
+    bool installRqpLocal(const std::string& localPath) const;
 };

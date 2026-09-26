@@ -42,6 +42,68 @@ sol::table make_manifest_entries_table(sol::state& lua, const std::vector<Manife
     return packages;
 }
 
+std::vector<Package> packages_from_manifest_entries(const std::vector<ManifestEntry>& entries) {
+    std::vector<Package> packages;
+    packages.reserve(entries.size());
+    for (const ManifestEntry& entry : entries) {
+        Package package;
+        package.action = ActionType::ENSURE;
+        package.system = entry.system;
+        package.name = entry.name;
+        package.version = entry.version;
+        package.flags = entry.flags;
+        packages.push_back(std::move(package));
+    }
+    return packages;
+}
+
+bool ensure_packages_from_lua_object(const PluginRuntimeActions& runtimeActions, const sol::object& value) {
+    if (!runtimeActions.canEnsurePackages()) {
+        return false;
+    }
+
+    const std::optional<std::vector<Package>> packages = LuaBridgeValueMapper::packagesFromObject(value);
+    if (!packages.has_value() || packages.value().empty()) {
+        return false;
+    }
+
+    std::vector<Package> normalizedPackages = packages.value();
+    for (Package& package : normalizedPackages) {
+        if (package.action == ActionType::UNKNOWN) {
+            package.action = ActionType::ENSURE;
+        }
+    }
+    return runtimeActions.ensurePackages(normalizedPackages);
+}
+
+bool ensure_manifest_from_argument(const PluginRuntimeActions& runtimeActions, const std::string& pluginDirectory,
+                                   const std::string& argument) {
+    if (!runtimeActions.canEnsurePackages() || argument.empty()) {
+        return false;
+    }
+
+    std::optional<std::filesystem::path> resolvedPath;
+    if (!argument.empty() && (argument.front() == '.' || argument.front() == '/')) {
+        resolvedPath = resolve_manifest_path(argument);
+    } else {
+        resolvedPath = resolve_plugin_manifest_path(argument, pluginDirectory);
+    }
+    if (!resolvedPath.has_value()) {
+        return false;
+    }
+
+    try {
+        const std::optional<std::vector<ManifestEntry>> entries =
+            ManifestLoader::tryLoadPackages(resolvedPath.value());
+        if (!entries.has_value() || entries.value().empty()) {
+            return true;
+        }
+        return runtimeActions.ensurePackages(packages_from_manifest_entries(entries.value()));
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
 void set_string_field_if_present(sol::table& table, const std::string& key, const std::string& value) {
     if (!value.empty()) {
         table[key] = value;
@@ -446,6 +508,42 @@ void LuaBridgeBindings::registerContextTypes() {
                 return result.success;
             });
             return net;
+        }),
+        "packages", sol::readonly_property([this, &lua](const PluginCallContext& context) {
+            sol::table packages = lua.create_table();
+            const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
+            packages.set_function("ensure", [this, contextId](const sol::object& value) {
+                const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                if (binding == nullptr) {
+                    return false;
+                }
+                return ensure_packages_from_lua_object(binding->runtimeActions, value);
+            });
+            return packages;
+        }),
+        "rqp", sol::readonly_property([this, &lua](const PluginCallContext& context) {
+            sol::table rqp = lua.create_table();
+            const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
+            rqp.set_function("installLocal", [this, contextId](const std::string& localPath) {
+                const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                if (binding == nullptr || !binding->runtimeActions.canInstallRqpLocal()) {
+                    return false;
+                }
+                return binding->runtimeActions.installRqpLocal(localPath);
+            });
+            return rqp;
+        }),
+        "manifest", sol::readonly_property([this, &lua](const PluginCallContext& context) {
+            sol::table manifest = lua.create_table();
+            const std::uint64_t contextId = m_hostRuntime.retainRuntimeBindingContext(context);
+            manifest.set_function("ensure", [this, contextId](const std::string& argument) {
+                const LuaBridgeRuntimeBindingContext* binding = m_hostRuntime.runtimeBindingContext(contextId);
+                if (binding == nullptr) {
+                    return false;
+                }
+                return ensure_manifest_from_argument(binding->runtimeActions, binding->pluginDirectory, argument);
+            });
+            return manifest;
         }));
 }
 

@@ -31,7 +31,18 @@ PluginCallContext Executer::buildPluginContext(IPlugin* plugin, const TaskGroup&
                               .proxy = proxy_config_for_system(this->config, plugin->getPluginId()),
                               .currentItemId = itemId,
                               .repositories = repositories_for_ecosystem(this->config, plugin->getPluginId()),
-                              .hostInfo = HostInfoService::currentSnapshot()};
+                              .hostInfo = HostInfoService::currentSnapshot(),
+                              .runtimeActions =
+                                  PluginRuntimeActions {
+                                      .ensurePackages =
+                                          [this](const std::vector<Package>& packages) {
+                                              return this->ensurePackages(packages);
+                                          },
+                                      .installRqpLocal =
+                                          [this](const std::string& localPath) {
+                                              return this->installRqpLocal(localPath);
+                                          },
+                                  }};
 }
 
 std::vector<Executer::TransactionRecord> Executer::executeTaskGroup(const TaskGroup& taskGroup,
