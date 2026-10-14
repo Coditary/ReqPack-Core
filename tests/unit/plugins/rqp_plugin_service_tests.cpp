@@ -638,6 +638,28 @@ TEST_CASE("rqp plugin resolvePackage prefers installed versions", "[unit][rqp_pl
     CHECK(resolved->version.find("3.3.3") != std::string::npos);
 }
 
+TEST_CASE("rqp plugin list includes every installed version with the same display name", "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-list-multi-version"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    const std::filesystem::path packageV1 = build_rqp_package(tempDir.path() / "v1", "multi-list", "1.0.0");
+    const std::filesystem::path packageV2 = build_rqp_package(tempDir.path() / "v2", "multi-list", "2.0.0");
+
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+    REQUIRE(plugin.installLocal(context, packageV1.string()));
+    REQUIRE(plugin.installLocal(context, packageV2.string()));
+
+    const std::vector<PackageInfo> packages = plugin.list(context);
+    std::size_t matchingRows = 0;
+    for (const PackageInfo& info : packages) {
+        if (info.name == "multi-list") {
+            ++matchingRows;
+        }
+    }
+    CHECK(matchingRows == 2);
+}
+
 TEST_CASE("rqp plugin info reports multiple installed versions message", "[unit][rqp_plugin]") {
     TempDir tempDir {"reqpack-rqp-plugin-info-multi"};
     ReqPackConfig config = make_plugin_config(tempDir);
@@ -652,7 +674,16 @@ TEST_CASE("rqp plugin info reports multiple installed versions message", "[unit]
 
     const PackageInfo info = plugin.info(context, "multi-info");
     CHECK(info.name == "multi-info");
-    CHECK(info.summary == "multiple installed versions");
+    CHECK(info.summary.find("multiple installed versions") != std::string::npos);
+    CHECK(info.summary.find("1.0.0") != std::string::npos);
+    CHECK(info.summary.find("2.0.0") != std::string::npos);
+    CHECK(info.status == "installed");
+    CHECK(info.version.find("1.0.0") != std::string::npos);
+    CHECK(info.version.find("2.0.0") != std::string::npos);
+    CHECK(info.description.find("multi-info@1.0.0") != std::string::npos);
+    CHECK(info.description.find("multi-info@2.0.0") != std::string::npos);
+    CHECK(info.description.find("rqp remove rqp multi-info@1.0.0") != std::string::npos);
+    CHECK(info.description.find("rqp info rqp multi-info@2.0.0") != std::string::npos);
 }
 
 TEST_CASE("rqp plugin remove uninstalls repository-installed package", "[unit][rqp_plugin]") {
@@ -768,6 +799,58 @@ TEST_CASE("rqp plugin install records unavailable events for missing packages", 
     REQUIRE(events.size() == 1);
     CHECK(events.front().name == "unavailable");
     CHECK(events.front().payload == "ghost-package@9.9.9");
+}
+
+TEST_CASE("rqp plugin remove fails when requested package is not installed", "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-remove-missing"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+
+    Package request;
+    request.name = "wuji-ai";
+    request.version = "111.111.111";
+    CHECK_FALSE(plugin.remove(context, {request}));
+}
+
+TEST_CASE("rqp plugin getMissingPackages matches remove requests by full installed version string",
+          "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-missing-remove-evr"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "evr-remove", "1.2.3");
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+    REQUIRE(plugin.installLocal(context, packagePath.string()));
+
+    const std::vector<Package> removeRequest {Package {.action = ActionType::REMOVE,
+                                                      .system = "rqp",
+                                                      .name = "evr-remove",
+                                                      .version = "1.2.3-1+r0"}};
+    const std::vector<Package> missing = plugin.getMissingPackages(removeRequest);
+    REQUIRE(missing.size() == 1);
+    CHECK(missing.front().version == "1.2.3-1+r0");
+}
+
+TEST_CASE("rqp plugin getMissingPackages returns installed packages for remove", "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-missing-remove"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    const std::filesystem::path packagePath = build_rqp_package(tempDir.path(), "remove-filter", "1.0.0");
+
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+    REQUIRE(plugin.installLocal(context, packagePath.string()));
+
+    const std::vector<Package> removeInstalled {
+        Package {.action = ActionType::REMOVE, .system = "rqp", .name = "remove-filter", .version = "1.0.0"},
+    };
+    const std::vector<Package> removeAbsent {
+        Package {.action = ActionType::REMOVE, .system = "rqp", .name = "ghost", .version = "9.9.9"},
+    };
+    CHECK(plugin.getMissingPackages(removeInstalled).size() == 1);
+    CHECK(plugin.getMissingPackages(removeAbsent).empty());
 }
 
 TEST_CASE("rqp plugin remove reports multiple installed versions", "[unit][rqp_plugin]") {
@@ -924,6 +1007,62 @@ return true
     return packagePath;
 }
 
+std::filesystem::path build_rqp_package_with_shared_manifest(const std::filesystem::path& root,
+                                                             const std::string& name, const std::string& version,
+                                                             const std::filesystem::path& sharedFile) {
+    const std::filesystem::path packageRoot = root / (name + "-pkg");
+    const std::filesystem::path controlRoot = packageRoot / "control";
+    std::filesystem::create_directories(controlRoot / "scripts");
+    write_file(controlRoot / "scripts" / "seed.txt", "shared-content\n");
+
+    write_file(controlRoot / "metadata.json", "{\n"
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"" +
+                                                  name +
+                                                  "\",\n"
+                                                  "  \"version\": \"" +
+                                                  version +
+                                                  "\",\n"
+                                                  "  \"release\": 1,\n"
+                                                  "  \"revision\": 0,\n"
+                                                  "  \"summary\": \"shared manifest package\",\n"
+                                                  "  \"description\": \"shared manifest package\",\n"
+                                                  "  \"license\": \"MIT\",\n"
+                                                  "  \"architecture\": \"noarch\",\n"
+                                                  "  \"vendor\": \"ReqPack Tests\",\n"
+                                                  "  \"maintainerEmail\": \"tests@example.org\",\n"
+                                                  "  \"tags\": [\"test\"],\n"
+                                                  "  \"url\": \"https://example.test/" +
+                                                  name +
+                                                  ".rqp\"\n"
+                                                  "}\n");
+    write_file(controlRoot / "reqpack.lua", R"(
+return {
+  apiVersion = 1,
+  hooks = {
+    install = "scripts/install.lua",
+    remove = "scripts/remove.lua"
+  }
+}
+)");
+    write_file(controlRoot / "scripts" / "install.lua",
+               "local target = [[" + sharedFile.string() +
+                   "]]\n"
+                   "context.fs.mkdir([[" +
+                   sharedFile.parent_path().string() +
+                   "]])\n"
+                   "context.fs.copy(context.paths.controlDir .. \"/scripts/seed.txt\", target)\n"
+                   "context.artifacts.register_file(target)\n"
+                   "return true\n");
+    write_file(controlRoot / "scripts" / "remove.lua", "return true\n");
+
+    const std::filesystem::path packagePath = root / (name + "-" + version + ".rqp");
+    REQUIRE(std::system(("tar -C " + escape_shell_arg(controlRoot.string()) + " -cf " +
+                         escape_shell_arg(packagePath.string()) + " .")
+                            .c_str()) == 0);
+    return packagePath;
+}
+
 TEST_CASE("rqp plugin getMissingPackages filters already installed packages", "[unit][rqp_plugin]") {
     TempDir tempDir {"reqpack-rqp-plugin-missing-packages"};
     ReqPackConfig config = make_plugin_config(tempDir);
@@ -1040,6 +1179,60 @@ TEST_CASE("rqp plugin install and remove persist and clean manifest artifacts", 
     CHECK(plugin.remove(context, {request}));
     CHECK_FALSE(std::filesystem::exists(installed.front().stateDir / "installed.txt"));
     CHECK(RqpStateStore(config).findInstalled("manifest-demo", "1.0.0").empty());
+}
+
+TEST_CASE("rqp plugin remove succeeds when manifest artifact is already missing", "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-manifest-missing-file"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    const std::filesystem::path packagePath =
+        build_rqp_package_with_manifest_install(tempDir.path(), "manifest-missing", "1.0.0");
+
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+    REQUIRE(plugin.installLocal(context, packagePath.string()));
+
+    const std::vector<RqpInstalledPackage> installed =
+        RqpStateStore(config).findInstalled("manifest-missing", "1.0.0");
+    REQUIRE(installed.size() == 1);
+    std::filesystem::remove(installed.front().stateDir / "installed.txt");
+
+    Package request;
+    request.name = "manifest-missing";
+    request.version = "1.0.0";
+    CHECK(plugin.remove(context, {request}));
+    CHECK(RqpStateStore(config).findInstalled("manifest-missing", "1.0.0").empty());
+}
+
+TEST_CASE("rqp plugin remove keeps shared manifest artifact while another version remains",
+          "[unit][rqp_plugin]") {
+    TempDir tempDir {"reqpack-rqp-plugin-manifest-shared"};
+    ReqPackConfig config = make_plugin_config(tempDir);
+    const std::filesystem::path sharedRoot = tempDir.path() / "shared";
+    const std::filesystem::path packageV1 = build_rqp_package_with_shared_manifest(
+        tempDir.path() / "v1", "shared-demo", "1.0.0", sharedRoot / "binary.txt");
+    const std::filesystem::path packageV2 = build_rqp_package_with_shared_manifest(
+        tempDir.path() / "v2", "shared-demo", "2.0.0", sharedRoot / "binary.txt");
+
+    RqpPlugin plugin(config);
+    REQUIRE(plugin.init());
+    const PluginCallContext context = make_plugin_context(plugin);
+    REQUIRE(plugin.installLocal(context, packageV1.string()));
+    REQUIRE(plugin.installLocal(context, packageV2.string()));
+    REQUIRE(std::filesystem::exists(sharedRoot / "binary.txt"));
+
+    Package removeV1;
+    removeV1.name = "shared-demo";
+    removeV1.version = "1.0.0";
+    CHECK(plugin.remove(context, {removeV1}));
+    CHECK(std::filesystem::exists(sharedRoot / "binary.txt"));
+    CHECK(RqpStateStore(config).findInstalled("shared-demo", "2.0.0").size() == 1);
+
+    Package removeV2;
+    removeV2.name = "shared-demo";
+    removeV2.version = "2.0.0";
+    CHECK(plugin.remove(context, {removeV2}));
+    CHECK_FALSE(std::filesystem::exists(sharedRoot / "binary.txt"));
 }
 
 TEST_CASE("rqp plugin remove cleans empty manifest directories", "[unit][rqp_plugin]") {
@@ -1214,6 +1407,7 @@ TEST_CASE("rqp plugin list exposes request name aliases for installed packages",
     REQUIRE(alias != packages.end());
     CHECK(alias->packageType == "alias");
     CHECK(alias->name == "friendly-name");
+    CHECK(alias->packageId == canonical->packageId);
 }
 
 TEST_CASE("rqp plugin info returns empty package for unknown names", "[unit][rqp_plugin]") {

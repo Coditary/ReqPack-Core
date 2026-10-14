@@ -79,6 +79,12 @@ std::string package_specifier_from_request(const Request& request) {
 std::string registry_lookup_name_from_request(const Request& request) {
     const std::string packageSpecifier = package_specifier_from_request(request);
     const std::size_t versionSeparator = packageSpecifier.rfind('@');
+    if (!request.packages.empty()) {
+        if (versionSeparator == std::string::npos || versionSeparator == 0) {
+            return packageSpecifier;
+        }
+        return packageSpecifier.substr(0, versionSeparator);
+    }
     if (versionSeparator == std::string::npos || versionSeparator == 0) {
         return request.system;
     }

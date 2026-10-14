@@ -75,7 +75,12 @@ class RqpPlugin final : public IPlugin {
     static std::vector<ManifestEntry> parseManifestJson(const std::string& content);
     static std::string manifestJson(const std::vector<ManifestEntry>& manifest);
     static PackageInfo packageInfoFromInstalled(const RqpInstalledPackage& installed);
+    static PackageInfo packageInfoMultipleInstalled(const std::string& name, std::vector<RqpInstalledPackage> matches);
     static std::string installedVersionString(const RqMetadata& metadata);
+    static std::string multipleInstalledVersionsFailure(const std::string& requestName,
+                                                        std::vector<RqpInstalledPackage> matches);
+    static std::string multipleInstalledVersionsDetail(const std::string& requestName,
+                                                       std::vector<RqpInstalledPackage> matches);
     static int compareInstalledVersions(const RqpInstalledPackage& left, const RqpInstalledPackage& right);
     static bool repositoryCandidateIsNewer(const RqpInstalledPackage& installed, const RqRepositoryPackage& candidate);
     std::vector<RqRepositoryIndex> loadRepositoryIndexes(const PluginCallContext& context) const;

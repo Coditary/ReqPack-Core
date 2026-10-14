@@ -222,7 +222,13 @@ std::vector<Executer::TaskGroup> Executer::filterExecutableTaskGroups(const std:
             filteredTaskGroups.push_back(std::move(filteredTaskGroup));
             continue;
         }
-        filteredTaskGroup.packages = plugin->getMissingPackages(taskGroup.packages);
+        std::vector<Package> packagesForFilter = taskGroup.packages;
+        for (Package& package : packagesForFilter) {
+            if (package.action == ActionType::UNKNOWN) {
+                package.action = taskGroup.action;
+            }
+        }
+        filteredTaskGroup.packages = plugin->getMissingPackages(packagesForFilter);
         if (!filteredTaskGroup.packages.empty()) {
             filteredTaskGroups.push_back(std::move(filteredTaskGroup));
         }

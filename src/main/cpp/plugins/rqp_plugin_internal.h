@@ -16,3 +16,4 @@ std::vector<std::string> rqp_plugin_take_runtime_host_artifacts();
 
 std::optional<std::filesystem::path> rqp_plugin_unique_nested_file_with_extension(const std::filesystem::path& root,
                                                                                   const std::string& extension);
+

@@ -19,6 +19,11 @@ bool iequals(const std::string& left, const std::string& right) {
     return true;
 }
 
+std::string installed_metadata_version_string(const RqpInstalledPackage& installed) {
+    return installed.metadata.version + "-" + std::to_string(installed.metadata.release) + "+r" +
+           std::to_string(installed.metadata.revision);
+}
+
 bool installed_name_matches(const RqpInstalledPackage& installed, const std::string& name) {
     if (iequals(installed.metadata.name, name)) {
         return true;
@@ -39,7 +44,11 @@ bool installed_version_matches(const RqpInstalledPackage& installed, const std::
     if (version.empty()) {
         return true;
     }
-    if (installed.metadata.version == version || installed.identity == version) {
+    const std::string installedVersion = installed_metadata_version_string(installed);
+    if (installed.metadata.version == version || installed.identity == version || installedVersion == version) {
+        return true;
+    }
+    if (iequals(installedVersion, version)) {
         return true;
     }
 

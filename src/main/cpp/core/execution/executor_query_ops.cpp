@@ -67,21 +67,60 @@ std::vector<PackageInfo> apply_package_result_filters(std::vector<PackageInfo> r
     return results;
 }
 
+bool package_info_matches_list_filter(const PackageInfo& info, const std::string& requestedName) {
+    if (requestedName.empty()) {
+        return false;
+    }
+
+    const auto iequals = [](const std::string& left, const std::string& right) {
+        if (left.size() != right.size()) {
+            return false;
+        }
+        for (std::size_t index = 0; index < left.size(); ++index) {
+            if (std::tolower(static_cast<unsigned char>(left[index])) !=
+                std::tolower(static_cast<unsigned char>(right[index]))) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    if (!info.name.empty() && iequals(info.name, requestedName)) {
+        return true;
+    }
+    if (!info.packageId.empty() && iequals(info.packageId, requestedName)) {
+        return true;
+    }
+    if (!info.packageId.empty() && info.packageId.size() > requestedName.size() + 1 &&
+        iequals(info.packageId.substr(0, requestedName.size()), requestedName) &&
+        info.packageId[requestedName.size()] == '@') {
+        return true;
+    }
+    return false;
+}
+
 std::vector<PackageInfo> apply_requested_package_subset(std::vector<PackageInfo> results,
                                                         const std::vector<std::string>& packageSpecifiers) {
     if (packageSpecifiers.empty()) {
         return results;
     }
 
-    std::set<std::string> requestedNames;
+    std::vector<std::string> requestedNames;
     for (const std::string& specifier : packageSpecifiers) {
         const std::size_t versionSeparator = specifier.find('@');
-        requestedNames.insert(specifier.substr(0, versionSeparator));
+        requestedNames.push_back(specifier.substr(0, versionSeparator));
     }
 
     results.erase(std::remove_if(results.begin(), results.end(),
                                  [&](const PackageInfo& info) {
-                                     return info.name.empty() || !requestedNames.contains(info.name);
+                                     if (info.name.empty() && info.packageId.empty()) {
+                                         return true;
+                                     }
+                                     return std::none_of(requestedNames.begin(), requestedNames.end(),
+                                                         [&](const std::string& requestedName) {
+                                                             return package_info_matches_list_filter(info,
+                                                                                                      requestedName);
+                                                         });
                                  }),
                   results.end());
     return results;

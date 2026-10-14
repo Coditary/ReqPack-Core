@@ -108,7 +108,8 @@ inline bool actionUsesDesiredStateFilter(const ActionType action) {
 }
 
 inline bool actionUsesMissingPackageFilter(const ActionType action) {
-    return action == ActionType::INSTALL || action == ActionType::ENSURE;
+    return action == ActionType::INSTALL || action == ActionType::ENSURE || action == ActionType::REMOVE ||
+           action == ActionType::UPDATE;
 }
 
 inline bool actionSupportsRecoveryReconciliation(const ActionType action) {

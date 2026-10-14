@@ -130,14 +130,18 @@ bool Executer::execute(Graph* graph) {
                     itemIds.push_back(package_item_id(tg.system, pkg));
                 }
             }
-            Logger::instance().displaySessionBegin(displayModeFromAction(allTaskGroups.front().action), itemIds);
+            const ActionType skippedAction = allTaskGroups.front().action;
+            const std::string skippedReason = skippedAction == ActionType::REMOVE     ? "not installed"
+                                              : skippedAction == ActionType::UPDATE ? "already up to date"
+                                                                                    : "already installed";
+            Logger::instance().displaySessionBegin(displayModeFromAction(skippedAction), itemIds);
             for (const TaskGroup& tg : allTaskGroups) {
                 if (tg.usesLocalTarget) {
-                    Logger::instance().displayItemSkipped(tg.system + ":local");
+                    Logger::instance().displayItemSkipped(tg.system + ":local", skippedReason);
                     continue;
                 }
                 for (const Package& pkg : tg.packages) {
-                    Logger::instance().displayItemSkipped(package_item_id(tg.system, pkg));
+                    Logger::instance().displayItemSkipped(package_item_id(tg.system, pkg), skippedReason);
                 }
             }
         }

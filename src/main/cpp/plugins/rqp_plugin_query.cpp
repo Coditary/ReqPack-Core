@@ -281,6 +281,18 @@ bool iequals(const std::string& left, const std::string& right) {
     return true;
 }
 
+std::string rqp_list_dedup_key(const PackageInfo& info) {
+    const std::string packageId = to_lower_copy(info.packageId);
+    const std::string name = to_lower_copy(info.name);
+    if (!packageId.empty()) {
+        return packageId + '\1' + name;
+    }
+    if (!info.version.empty()) {
+        return name + '\1' + to_lower_copy(info.version);
+    }
+    return name;
+}
+
 std::vector<std::string> installed_request_names(const RqpInstalledPackage& installed) {
     std::vector<std::string> names;
     const auto appendUnique = [&](const std::string& candidate) {
@@ -313,7 +325,17 @@ std::vector<Package> RqpPlugin::getMissingPackages(const std::vector<Package>& p
     const RqpStateStore stateStore(config_);
     const std::vector<RqpInstalledPackage> installedPackages = stateStore.listInstalled();
     for (const Package& package : packages) {
-        if (stateStore.findInstalledAmong(installedPackages, package.name, package.version).empty()) {
+        const bool installed =
+            !stateStore.findInstalledAmong(installedPackages, package.name, package.version).empty();
+        const ActionType action =
+            package.action == ActionType::UNKNOWN ? ActionType::INSTALL : package.action;
+        if (action == ActionType::REMOVE || action == ActionType::UPDATE) {
+            if (installed) {
+                missingPackages.push_back(package);
+            }
+            continue;
+        }
+        if (!installed) {
             missingPackages.push_back(package);
         }
     }
@@ -323,7 +345,8 @@ std::vector<Package> RqpPlugin::getMissingPackages(const std::vector<Package>& p
 std::vector<PackageInfo> RqpPlugin::list(const PluginCallContext& context) {
     (void)context;
     std::vector<PackageInfo> packages;
-    std::set<std::string> emittedNames;
+    std::set<std::string> emittedListKeys;
+    std::set<std::string> emittedAliasNameVersions;
     std::map<std::string, std::string> installedVersions;
     std::map<std::string, RegistryRecord> recordsByName;
     std::vector<RegistryRecord> aliasRecords;
@@ -345,8 +368,15 @@ std::vector<PackageInfo> RqpPlugin::list(const PluginCallContext& context) {
     }
 
     const auto appendPackage = [&](PackageInfo info) {
-        const std::string normalizedName = to_lower_copy(info.name);
-        if (normalizedName.empty() || !emittedNames.insert(normalizedName).second) {
+        if (info.packageType == "alias") {
+            const std::string aliasNameVersion =
+                to_lower_copy(info.name) + '\1' + to_lower_copy(info.version);
+            if (aliasNameVersion.size() <= 1 || !emittedAliasNameVersions.insert(aliasNameVersion).second) {
+                return;
+            }
+        }
+        const std::string listKey = rqp_list_dedup_key(info);
+        if (listKey.empty() || !emittedListKeys.insert(listKey).second) {
             return;
         }
         packages.push_back(std::move(info));
@@ -370,7 +400,6 @@ std::vector<PackageInfo> RqpPlugin::list(const PluginCallContext& context) {
             }
             PackageInfo aliasInfo = packageInfoFromInstalled(installed);
             aliasInfo.name = requestName;
-            aliasInfo.packageId = requestName;
             aliasInfo.packageType = "alias";
             if (aliasInfo.summary.empty()) {
                 aliasInfo.summary = "Alias for " + installed.metadata.name;
@@ -425,7 +454,7 @@ std::vector<PackageInfo> RqpPlugin::outdated(const PluginCallContext& context) {
 
 std::vector<PackageInfo> RqpPlugin::search(const PluginCallContext& context, const std::string& prompt) {
     std::vector<PackageInfo> results;
-    std::set<std::string> emittedNames;
+    std::set<std::string> emittedListKeys;
     const std::vector<std::string> terms = search_terms_from_prompt(prompt);
 
     for (PackageInfo info : this->list(context)) {
@@ -433,8 +462,8 @@ std::vector<PackageInfo> RqpPlugin::search(const PluginCallContext& context, con
             continue;
         }
 
-        const std::string normalizedName = to_lower_copy(info.name);
-        if (normalizedName.empty() || !emittedNames.insert(normalizedName).second) {
+        const std::string listKey = rqp_list_dedup_key(info);
+        if (listKey.empty() || !emittedListKeys.insert(listKey).second) {
             continue;
         }
 
@@ -447,17 +476,16 @@ std::vector<PackageInfo> RqpPlugin::search(const PluginCallContext& context, con
             if (registry_record_is_package_entry(record)) {
                 continue;
             }
-            const std::string normalizedName = to_lower_copy(record.name);
-            if (normalizedName.empty() || emittedNames.contains(normalizedName)) {
+            PackageInfo info = registry_plugin_info(record);
+            const std::string listKey = rqp_list_dedup_key(info);
+            if (listKey.empty() || emittedListKeys.contains(listKey)) {
                 continue;
             }
-
-            PackageInfo info = registry_plugin_info(record);
             if (!package_matches_search_terms(info, terms)) {
                 continue;
             }
 
-            emittedNames.insert(normalizedName);
+            emittedListKeys.insert(listKey);
             results.push_back(std::move(info));
         }
     }
@@ -466,10 +494,6 @@ std::vector<PackageInfo> RqpPlugin::search(const PluginCallContext& context, con
     const std::set<std::string> hostSystems = rq_host_system_tokens(*HostInfoService::currentSnapshot());
     for (const RqRepositoryIndex& index : indexes) {
         for (const RqRepositoryPackage& package : index.packages) {
-            const std::string normalizedName = to_lower_copy(package.name);
-            if (normalizedName.empty() || emittedNames.contains(normalizedName)) {
-                continue;
-            }
             if (!rq_architecture_matches(package.architecture, rq_host_architecture())) {
                 continue;
             }
@@ -478,11 +502,15 @@ std::vector<PackageInfo> RqpPlugin::search(const PluginCallContext& context, con
             }
 
             PackageInfo info = rq_repository_info_item(package, false);
+            const std::string listKey = rqp_list_dedup_key(info);
+            if (listKey.empty() || emittedListKeys.contains(listKey)) {
+                continue;
+            }
             if (!package_matches_search_terms(info, terms)) {
                 continue;
             }
 
-            emittedNames.insert(normalizedName);
+            emittedListKeys.insert(listKey);
             results.push_back(std::move(info));
         }
     }
@@ -497,7 +525,7 @@ PackageInfo RqpPlugin::info(const PluginCallContext& context, const std::string&
     std::vector<RqpInstalledPackage> matches = RqpStateStore(config_).findInstalled(resolvedName, requestedVersion);
     if (!matches.empty()) {
         if (matches.size() > 1) {
-            return rq_info_item(resolvedName, {}, "multiple installed versions");
+            return packageInfoMultipleInstalled(resolvedName, std::move(matches));
         }
         return packageInfoFromInstalled(matches.front());
     }

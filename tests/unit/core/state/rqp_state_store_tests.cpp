@@ -117,6 +117,10 @@ TEST_CASE("rqp state store finds exact version match", "[unit][rqp_state_store][
     REQUIRE(installed.size() == 1);
     CHECK(installed.front().metadata.version == "2.0.0");
     CHECK(installed.front().source.source == "repository");
+
+    const std::vector<RqpInstalledPackage> installedByEvr = RqpStateStore(config).findInstalled("tool", "2.0.0-1+r0");
+    REQUIRE(installedByEvr.size() == 1);
+    CHECK(installedByEvr.front().metadata.version == "2.0.0");
 }
 
 TEST_CASE("rqp state store finds installed package by registry request name", "[unit][rqp_state_store][core]") {

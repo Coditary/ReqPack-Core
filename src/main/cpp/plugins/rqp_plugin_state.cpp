@@ -58,6 +58,20 @@ std::string json_escape(const std::string& value) {
     return escaped;
 }
 
+std::string normalize_manifest_path_string(const std::string& path) {
+    std::error_code error;
+    const std::filesystem::path normalized =
+        std::filesystem::weakly_canonical(std::filesystem::path(path), error);
+    if (!error) {
+        return normalized.string();
+    }
+    return std::filesystem::path(path).lexically_normal().string();
+}
+
+bool is_ignorable_remove_error(const std::error_code& error) {
+    return !error || error == std::errc::no_such_file_or_directory;
+}
+
 } // namespace
 
 bool RqpPlugin::persistInstalledState(const RqPackageLayout& layout, const std::string& sourceType,
@@ -108,17 +122,37 @@ bool RqpPlugin::persistInstalledState(const RqPackageLayout& layout, const std::
 bool RqpPlugin::removeManifestArtifacts(const RqpInstalledPackage& installed) const {
     std::vector<ManifestEntry> manifest = parseManifestJson(readTextFile(installed.manifestPath));
     std::reverse(manifest.begin(), manifest.end());
-    std::error_code error;
+
+    const auto pathStillNeededElsewhere = [&](const std::string& path) {
+        const std::string normalizedPath = normalize_manifest_path_string(path);
+        for (const RqpInstalledPackage& other : RqpStateStore(config_).listInstalled()) {
+            if (other.stateDir == installed.stateDir) {
+                continue;
+            }
+            for (const ManifestEntry& otherEntry : parseManifestJson(readTextFile(other.manifestPath))) {
+                if (normalize_manifest_path_string(otherEntry.path) == normalizedPath) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
     for (const ManifestEntry& entry : manifest) {
+        if (entry.path.empty() || pathStillNeededElsewhere(entry.path)) {
+            continue;
+        }
+
+        std::error_code error;
         const std::filesystem::path path(entry.path);
         if (entry.type == "dir") {
             if (std::filesystem::is_directory(path, error) && std::filesystem::is_empty(path, error)) {
                 std::filesystem::remove(path, error);
             }
-        } else {
+        } else if (std::filesystem::exists(path, error)) {
             std::filesystem::remove(path, error);
         }
-        if (error) {
+        if (!is_ignorable_remove_error(error)) {
             return false;
         }
     }
@@ -154,6 +188,35 @@ std::string RqpPlugin::manifestJson(const std::vector<ManifestEntry>& manifest) 
     }
     stream << "]\n";
     return stream.str();
+}
+
+PackageInfo RqpPlugin::packageInfoMultipleInstalled(const std::string& name,
+                                                    std::vector<RqpInstalledPackage> matches) {
+    std::sort(matches.begin(), matches.end(),
+              [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
+                  return compareInstalledVersions(left, right) < 0;
+              });
+
+    PackageInfo info;
+    info.system = BUILTIN_RQP_PLUGIN_ID;
+    info.name = name;
+    info.status = "installed";
+    info.installed = "true";
+
+    std::ostringstream versions;
+    bool firstVersion = true;
+    for (const RqpInstalledPackage& installed : matches) {
+        const std::string version = installedVersionString(installed.metadata);
+        if (!firstVersion) {
+            versions << ", ";
+        }
+        versions << version;
+        firstVersion = false;
+    }
+    info.version = versions.str();
+    info.summary = "multiple installed versions (" + info.version + ")";
+    info.description = multipleInstalledVersionsDetail(name, std::move(matches));
+    return info;
 }
 
 PackageInfo RqpPlugin::packageInfoFromInstalled(const RqpInstalledPackage& installed) {
@@ -201,6 +264,55 @@ int RqpPlugin::compareInstalledVersions(const RqpInstalledPackage& left, const R
         return left.metadata.revision < right.metadata.revision ? -1 : 1;
     }
     return 0;
+}
+
+std::string RqpPlugin::multipleInstalledVersionsFailure(const std::string& requestName,
+                                                      std::vector<RqpInstalledPackage> matches) {
+    std::sort(matches.begin(), matches.end(),
+              [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
+                  return compareInstalledVersions(left, right) < 0;
+              });
+
+    std::ostringstream message;
+    message << "multiple installed versions for \"" << requestName
+            << "\"; specify one version, for example:";
+    bool first = true;
+    for (const RqpInstalledPackage& installed : matches) {
+        const std::string version = installedVersionString(installed.metadata);
+        if (!first) {
+            message << " or";
+        }
+        first = false;
+        message << " " << requestName << "@" << version;
+    }
+    return message.str();
+}
+
+std::string RqpPlugin::multipleInstalledVersionsDetail(const std::string& requestName,
+                                                     std::vector<RqpInstalledPackage> matches) {
+    std::sort(matches.begin(), matches.end(),
+              [](const RqpInstalledPackage& left, const RqpInstalledPackage& right) {
+                  return compareInstalledVersions(left, right) < 0;
+              });
+
+    std::ostringstream description;
+    description << "Multiple versions are installed.\n"
+                << "Installed identities:\n";
+    for (const RqpInstalledPackage& installed : matches) {
+        const std::string version = installedVersionString(installed.metadata);
+        description << "  - " << installed.identity << " (" << version << ")\n";
+    }
+    description << "Inspect one version:\n";
+    for (const RqpInstalledPackage& installed : matches) {
+        const std::string version = installedVersionString(installed.metadata);
+        description << "  rqp info rqp " << requestName << "@" << version << '\n';
+    }
+    description << "Remove one version:\n";
+    for (const RqpInstalledPackage& installed : matches) {
+        const std::string version = installedVersionString(installed.metadata);
+        description << "  rqp remove rqp " << requestName << "@" << version << '\n';
+    }
+    return description.str();
 }
 
 bool RqpPlugin::repositoryCandidateIsNewer(const RqpInstalledPackage& installed, const RqRepositoryPackage& candidate) {

@@ -1,4 +1,5 @@
 build/
+build-clang/
 third_party/
 coverage-summary.txt
 *.profraw

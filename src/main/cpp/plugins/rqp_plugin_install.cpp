@@ -62,10 +62,14 @@ bool RqpPlugin::remove(const PluginCallContext& context, const std::vector<Packa
     for (const Package& package : packages) {
         std::vector<RqpInstalledPackage> matches = stateStore.findInstalled(package.name, package.version);
         if (matches.empty()) {
+            const std::string packageSpec =
+                package.version.empty() ? package.name : package.name + "@" + package.version;
+            context.emitFailure("package not installed: " + packageSpec);
+            allRemoved = false;
             continue;
         }
         if (package.version.empty() && matches.size() > 1) {
-            context.emitFailure("multiple installed versions found for package: " + package.name);
+            context.emitFailure(RqpPlugin::multipleInstalledVersionsFailure(package.name, matches));
             allRemoved = false;
             continue;
         }
@@ -90,7 +94,7 @@ bool RqpPlugin::update(const PluginCallContext& context, const std::vector<Packa
             continue;
         }
         if (package.version.empty() && matches.size() > 1) {
-            context.emitFailure("multiple installed versions found for package: " + package.name);
+            context.emitFailure(RqpPlugin::multipleInstalledVersionsFailure(package.name, matches));
             allUpdated = false;
             continue;
         }
