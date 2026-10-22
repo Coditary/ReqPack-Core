@@ -4,12 +4,17 @@
 #include "output/diagnostic.h"
 #include "output/logger.h"
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace {
+
+bool request_has_flag(const Request& request, const std::string& flag) {
+    return std::find(request.flags.begin(), request.flags.end(), flag) != request.flags.end();
+}
 
 bool has_explicit_version(const std::string& packageSpecifier) {
     const std::size_t versionSeparator = packageSpecifier.rfind('@');
@@ -30,11 +35,10 @@ DiagnosticMessage validation_blocked_finding_diagnostic(const ValidationFinding&
     }
 
     if (finding.kind == "unsupported_ecosystem") {
-        return make_error_diagnostic("security", summary,
-                                     "ReqPack has no vulnerability ecosystem mapping for requested package system.",
-                                     "Configure `security.ecosystemMap` or plugin `osvEcosystem`, or relax strict "
-                                     "ecosystem mapping if risk is acceptable.",
-                                     {}, finding.source, "mapping");
+        return make_error_diagnostic(
+            "security", summary, "ReqPack has no vulnerability ecosystem mapping for requested package system.",
+            "Run `rqp security status`, then set security.osvEcosystemMap or plugin osvEcosystem metadata.", {},
+            finding.source, "mapping");
     }
 
     if (finding.kind == "unresolved_version") {
@@ -46,8 +50,9 @@ DiagnosticMessage validation_blocked_finding_diagnostic(const ValidationFinding&
 
     return make_error_diagnostic(
         "security", summary, "Matched vulnerability data blocks execution under current security policy.",
-        "Review advisory details, choose a safe version, or relax security policy only if that risk is acceptable.", {},
-        finding.source, "policy");
+        "Run `rqp audit` on the same packages for details, upgrade to a fixed version when noted, or adjust "
+        "security policy (ignore/allow lists) only if acceptable.",
+        {}, finding.source, "policy");
 }
 
 } // namespace
@@ -192,10 +197,17 @@ void log_validation_blocked(const std::vector<ValidationFinding>& findings) {
     Logger::instance().diagnostic(make_error_diagnostic(
         "security", "execution blocked by security policy",
         "One or more requested packages violated current vulnerability or ecosystem safety policy.",
-        "Review reported findings, adjust requested versions, or relax security policy only if that risk is "
-        "acceptable.",
+        "Run `rqp audit` on the same target or `rqp security status` to verify database and ecosystem mappings.",
         {}, "validator", "policy"));
     std::size_t shown = 0;
+    std::size_t relevant = 0;
+    for (const ValidationFinding& finding : findings) {
+        if (finding.kind != "vulnerability" && finding.kind != "sync_error" &&
+            finding.kind != "unsupported_ecosystem" && finding.kind != "unresolved_version") {
+            continue;
+        }
+        ++relevant;
+    }
     for (const ValidationFinding& finding : findings) {
         if (finding.kind != "vulnerability" && finding.kind != "sync_error" &&
             finding.kind != "unsupported_ecosystem" && finding.kind != "unresolved_version") {
@@ -203,10 +215,18 @@ void log_validation_blocked(const std::vector<ValidationFinding>& findings) {
         }
         Logger::instance().diagnostic(validation_blocked_finding_diagnostic(finding));
         ++shown;
-        if (shown >= 5) {
+        if (shown >= 12) {
             break;
         }
     }
+    if (relevant > shown) {
+        Logger::instance().logStdout("security: " + std::to_string(relevant - shown) +
+                                     " more finding(s); run `rqp audit` for the full list.");
+    }
+}
+
+bool request_has_flag(const Request& request, const std::string& flag) {
+    return ::request_has_flag(request, flag);
 }
 
 } // namespace orchestrator_internal

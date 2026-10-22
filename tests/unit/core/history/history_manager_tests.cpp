@@ -89,6 +89,8 @@ class RecordingDisplay final : public IDisplay {
     void onTableEnd() override {}
     void flush() override {}
 
+    void onUnindentedText(const std::string& text) override { onMessage(text); }
+
     void onMessage(const std::string& text, const std::string& source = {}) override {
         messages.push_back(source.empty() ? text : ("[" + source + "] " + text));
     }

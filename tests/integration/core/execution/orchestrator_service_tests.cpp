@@ -2039,7 +2039,7 @@ TEST_CASE("orchestrator install local rqp resolves to built-in rqp by extension"
 
     const std::string listOutput = run_reqpack(tempDir.path(), configPath, {"list", "rqp"});
     INFO(listOutput);
-    CHECK(listOutput.find("Target Systems") != std::string::npos);
+    CHECK(listOutput.find("Platform") != std::string::npos);
     CHECK(listOutput.find("noarch") != std::string::npos);
     CHECK(listOutput.find("nosys") != std::string::npos);
 

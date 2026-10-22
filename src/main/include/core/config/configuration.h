@@ -157,6 +157,8 @@ struct SbomConfig {
 struct RqpConfig {
     std::vector<std::string> repositories {};
     std::string statePath {};
+    /// When set, `rqp search <query>` and `rqp <query>` target this single plugin (never all systems).
+    std::string defaultSearchSystem {};
     std::map<std::string, std::vector<std::string>> systemAliases {};
 };
 
@@ -302,6 +304,8 @@ struct ReqPackConfigOverrides {
     std::optional<UnsafeAction> onUnresolvedVersion;
     std::optional<bool> strictEcosystemMapping;
     std::optional<bool> includeWithdrawnInReport;
+    std::optional<std::string> securityPreset;
+    std::optional<bool> auditFailOnFindings;
 
     std::optional<bool> reportEnabled;
     std::optional<ReportFormat> reportFormat;

@@ -29,7 +29,8 @@ void rewrite_security_gateway_package_requests(std::vector<Request>& requests, R
 bool requests_target_plugin_install(const std::vector<Request>& requests);
 bool requests_target_plugin_remove(const std::vector<Request>& requests);
 
-int run_query_action(ActionType action, const std::vector<Request>& requests, Executer* executor);
+int run_query_action(ActionType action, const std::vector<Request>& requests, Executer* executor,
+                     const ReqPackConfig& config);
 int run_pack_request(const Request& request, Registry* registry, const ReqPackConfig& config);
 
 std::vector<Request> resolve_audit_requests(Executer* executor, const std::vector<Request>& requests);
@@ -38,6 +39,7 @@ SbomResolutionResult resolve_sbom_requests(Executer* executor, const ReqPackConf
                                            const std::vector<Request>& requests);
 void log_missing_sbom_packages(const std::vector<std::string>& missingPackages);
 void log_validation_blocked(const std::vector<ValidationFinding>& findings);
+bool request_has_flag(const Request& request, const std::string& flag);
 
 std::vector<std::string> collect_request_item_ids(const std::vector<Request>& requests, const Registry& registry);
 void display_already_satisfied_session(const std::vector<Request>& requests, const Registry& registry,

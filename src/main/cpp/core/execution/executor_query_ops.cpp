@@ -3,6 +3,7 @@
 #include "executor_internal.h"
 
 #include "core/planning/request_resolution.h"
+#include "core/query/package_search_query.h"
 #include "output/logger.h"
 
 #include <algorithm>
@@ -23,6 +24,7 @@ std::string normalize_search_filter_value(std::string value) {
 struct PackageResultFilters {
     std::set<std::string> architectures;
     std::set<std::string> packageTypes;
+    bool installedOnly {false};
 };
 
 PackageResultFilters parse_package_result_filters(const std::vector<std::string>& flags) {
@@ -33,6 +35,9 @@ PackageResultFilters parse_package_result_filters(const std::vector<std::string>
         }
         if (flag.rfind("type=", 0) == 0 && flag.size() > 5) {
             filters.packageTypes.insert(normalize_search_filter_value(flag.substr(5)));
+        }
+        if (flag == "installed") {
+            filters.installedOnly = true;
         }
     }
     return filters;
@@ -51,13 +56,16 @@ bool matches_package_result_filters(const PackageInfo& info, const PackageResult
             return false;
         }
     }
+    if (filters.installedOnly && !package_info_is_installed_for_display(info)) {
+        return false;
+    }
     return true;
 }
 
 std::vector<PackageInfo> apply_package_result_filters(std::vector<PackageInfo> results,
                                                       const std::vector<std::string>& flags) {
     const PackageResultFilters filters = parse_package_result_filters(flags);
-    if (filters.architectures.empty() && filters.packageTypes.empty()) {
+    if (filters.architectures.empty() && filters.packageTypes.empty() && !filters.installedOnly) {
         return results;
     }
     results.erase(
@@ -194,7 +202,9 @@ std::vector<PackageInfo> Executer::search(const Request& request) const {
         prompt += resolvedRequest->packages[index];
     }
     std::vector<PackageInfo> results = plugin->search(this->buildPluginContext(plugin, taskGroup), prompt);
-    return apply_package_result_filters(std::move(results), resolvedRequest->flags);
+    results = apply_package_result_filters(std::move(results), resolvedRequest->flags);
+    sort_package_search_results(results, prompt);
+    return results;
 }
 
 PackageInfo Executer::info(const Request& request) const {

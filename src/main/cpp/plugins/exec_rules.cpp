@@ -6,6 +6,7 @@
 #include <array>
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <optional>
@@ -477,6 +478,64 @@ ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, con
 
 #else
 
+bool is_shell_command_token_boundary(const char ch) {
+    return ch == ' ' || ch == '\t' || ch == '|' || ch == ';' || ch == '&' || ch == '\n';
+}
+
+bool shell_command_uses_privilege_escalation(const std::string& command) {
+    static constexpr std::array<const char*, 2> kPrivilegeCommands {"sudo", "doas"};
+    for (const char* token : kPrivilegeCommands) {
+        const std::size_t tokenLength = std::strlen(token);
+        std::size_t position = 0;
+        while (position < command.size()) {
+            position = command.find(token, position);
+            if (position == std::string::npos) {
+                break;
+            }
+            const bool atStart = position == 0 || is_shell_command_token_boundary(command[position - 1]);
+            const std::size_t afterToken = position + tokenLength;
+            const bool atEnd =
+                afterToken >= command.size() || is_shell_command_token_boundary(command[afterToken]);
+            if (atStart && atEnd) {
+                return true;
+            }
+            position = afterToken;
+        }
+    }
+    return false;
+}
+
+bool privilege_ticket_is_valid() {
+    return std::system("sudo -n true >/dev/null 2>&1") == 0;
+}
+
+bool shell_command_needs_tty_progress_suspend(const std::string& command) {
+    return shell_command_uses_privilege_escalation(command) && !privilege_ticket_is_valid();
+}
+
+class DisplayProgressSuspendGuard {
+public:
+    explicit DisplayProgressSuspendGuard(Logger& logger, const bool enabled) : logger_(logger), enabled_(enabled) {
+        if (!enabled_) {
+            return;
+        }
+        logger_.displayProgressSuspend();
+    }
+
+    ~DisplayProgressSuspendGuard() {
+        if (enabled_) {
+            logger_.displayProgressResume();
+        }
+    }
+
+    DisplayProgressSuspendGuard(const DisplayProgressSuspendGuard&) = delete;
+    DisplayProgressSuspendGuard& operator=(const DisplayProgressSuspendGuard&) = delete;
+
+private:
+    Logger& logger_;
+    bool enabled_;
+};
+
 bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, ExecResult& result,
                        const std::function<void(const std::string&)>& onChunk) {
     std::array<char, 4096> buffer {};
@@ -502,6 +561,7 @@ bool read_fd_to_result(Logger& logger, const std::string& pluginId, int fd, Exec
 ExecResult run_shell_command(Logger& logger, const std::string& pluginScope, const std::string& command,
                              const std::function<void(const std::string&)>& onChunk, const bool silent) {
     ExecResult result;
+    const DisplayProgressSuspendGuard progressGuard(logger, shell_command_needs_tty_progress_suspend(command));
 
     int pipeFds[2] = {-1, -1};
     if (!create_pipe_cloexec(pipeFds)) {
@@ -619,9 +679,19 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
 #else
     ExecResult result;
 
+    const bool suspendForTty = shell_command_needs_tty_progress_suspend(command);
+    if (suspendForTty) {
+        logger.displayProgressSuspend();
+        if (!privilege_ticket_is_valid()) {
+            (void)std::system("sudo -v");
+        }
+    }
     int masterFd = -1;
     const pid_t child = forkpty(&masterFd, nullptr, nullptr, nullptr);
     if (child < 0) {
+        if (suspendForTty) {
+            logger.displayProgressResume();
+        }
         result.stderrText = std::string("failed to create PTY: ") + std::strerror(errno);
         return result;
     }
@@ -688,6 +758,9 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
             result.stderrText = std::string("waitpid failed: ") + std::strerror(errno);
             result.exitCode = 1;
             result.success = false;
+            if (suspendForTty) {
+                logger.displayProgressResume();
+            }
             return result;
         }
     }
@@ -697,11 +770,27 @@ ExecResult run_pty_command(Logger& logger, const std::string& sourceId, const st
     if (!result.success && result.stderrText.empty()) {
         result.stderrText = result.stdoutText;
     }
+    if (suspendForTty) {
+        logger.displayProgressResume();
+    }
     return result;
 #endif
 }
 
 } // namespace
+
+void warm_privilege_ticket_if_needed() {
+#if defined(_WIN32)
+    return;
+#else
+    if (std::system("sudo -n true >/dev/null 2>&1") == 0) {
+        return;
+    }
+    (void)std::system("sudo -v");
+    std::fflush(stdout);
+    std::fflush(stderr);
+#endif
+}
 
 ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
                               const std::string& command, const bool silent) {

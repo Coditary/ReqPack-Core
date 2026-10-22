@@ -1,5 +1,7 @@
 #include "configuration_internal.h"
 
+#include "rqp/security/security_settings.h"
+
 ReqPackConfig apply_config_overrides(const ReqPackConfig& base, const ReqPackConfigOverrides& overrides) {
     ReqPackConfig config = base;
 
@@ -56,6 +58,12 @@ ReqPackConfig apply_config_overrides(const ReqPackConfig& base, const ReqPackCon
         config.security.strictEcosystemMapping = overrides.strictEcosystemMapping.value();
     if (overrides.includeWithdrawnInReport.has_value())
         config.security.includeWithdrawnInReport = overrides.includeWithdrawnInReport.value();
+    if (overrides.auditFailOnFindings.has_value())
+        config.security.auditFailOnFindings = overrides.auditFailOnFindings.value();
+    if (overrides.securityPreset.has_value()) {
+        config.security.preset = overrides.securityPreset.value();
+        apply_security_preset(config.security, config.security.preset);
+    }
     if (config.security.indexPath == default_reqpack_security_index_path().string() &&
         config.security.osvDatabasePath != default_reqpack_osv_database_path().string()) {
         config.security.indexPath = config.security.osvDatabasePath;
@@ -366,6 +374,19 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
     }
     if (argument == "--include-withdrawn-in-report") {
         overrides.includeWithdrawnInReport = true;
+        return true;
+    }
+    if (argument == "--security-preset") {
+        if (require_value(value))
+            overrides.securityPreset = value;
+        return true;
+    }
+    if (argument == "--fail-on-findings") {
+        overrides.auditFailOnFindings = true;
+        return true;
+    }
+    if (argument == "--no-fail-on-findings") {
+        overrides.auditFailOnFindings = false;
         return true;
     }
     if (argument == "--report") {

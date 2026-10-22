@@ -22,6 +22,8 @@ TEST_CASE("parse_action_token maps update commands and aliases", "[unit][action_
 
 TEST_CASE("parse_action_token maps search and other known commands", "[unit][action_tokens]") {
     CHECK(parse_action_token("search") == ActionType::SEARCH);
+    CHECK(parse_action_token("s") == ActionType::SEARCH);
+    CHECK(parse_action_token("find") == ActionType::SEARCH);
     CHECK(parse_action_token("list") == ActionType::LIST);
     CHECK(parse_action_token("info") == ActionType::INFO);
     CHECK(parse_action_token("ensure") == ActionType::ENSURE);

@@ -1,5 +1,7 @@
 #include "configuration_internal.h"
 
+#include "rqp/security/security_settings.h"
+
 #include <sol/sol.hpp>
 
 #include <thread>
@@ -64,6 +66,9 @@ void load_security_section(const sol::table& root, ReqPackConfig& config) {
                                                   config.security.strictEcosystemMapping);
         configuration_internal::assign_if_present(security.value(), "includeWithdrawnInReport",
                                                   config.security.includeWithdrawnInReport);
+        configuration_internal::assign_if_present(security.value(), "preset", config.security.preset);
+        configuration_internal::assign_if_present(security.value(), "auditFailOnFindings",
+                                                  config.security.auditFailOnFindings);
 
         const std::vector<std::string> ignoreIds =
             configuration_internal::load_string_array(security.value()["ignoreVulnerabilityIds"]);
@@ -185,6 +190,10 @@ void load_security_section(const sol::table& root, ReqPackConfig& config) {
         if (ghAdvisoryBackend.feedUrl.empty()) {
             ghAdvisoryBackend.feedUrl = "https://codeload.github.com/github/advisory-database/tar.gz/refs/heads/main";
         }
+    }
+
+    if (!config.security.preset.empty()) {
+        apply_security_preset(config.security, config.security.preset);
     }
 }
 
@@ -371,6 +380,7 @@ bool load_rqp_section(const sol::table& root, ReqPackConfig& config, const ReqPa
     if (rqp.has_value()) {
         config.rqp.repositories = configuration_internal::load_string_array(rqp.value()["repositories"]);
         configuration_internal::assign_if_present(rqp.value(), "statePath", config.rqp.statePath);
+        configuration_internal::assign_if_present(rqp.value(), "defaultSearchSystem", config.rqp.defaultSearchSystem);
         bool aliasesOk = true;
         const auto aliases = configuration_internal::load_string_list_map(rqp.value()["systemAliases"], aliasesOk);
         if (!aliasesOk) {
@@ -511,6 +521,24 @@ ReqPackConfig load_config_from_lua(const std::filesystem::path& configPath, cons
     load_repositories_section(root, config);
     load_history_section(root, config);
     load_display_section(root, config);
+
+    const auto merge_security_local = [&](const std::filesystem::path& localPath) {
+        if (!std::filesystem::exists(localPath)) {
+            return;
+        }
+        sol::load_result localLoad = lua.load_file(localPath.string());
+        if (!localLoad.valid()) {
+            return;
+        }
+        const sol::protected_function_result localResult = localLoad();
+        if (!localResult.valid() || localResult.get_type() != sol::type::table) {
+            return;
+        }
+        load_security_section(localResult, config);
+    };
+
+    merge_security_local(resolvedConfigPath.parent_path() / "security.local.lua");
+    merge_security_local(reqpack_config_directory() / "security.local.lua");
 
     return config;
 }

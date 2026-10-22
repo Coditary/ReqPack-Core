@@ -320,6 +320,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         tests/unit/core/planning/planner_core_tests.cpp
         tests/unit/core/planning/request_resolution_tests.cpp
         tests/unit/core/planning/planner_dependency_policy_tests.cpp
+        tests/unit/core/query/package_search_query_tests.cpp
         tests/unit/core/execution/executor_update_tests.cpp
         tests/unit/core/execution/executor_task_graph_tests.cpp
         tests/unit/core/registry/registry_database_tests.cpp

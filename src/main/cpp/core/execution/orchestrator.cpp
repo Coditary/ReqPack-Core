@@ -1,6 +1,8 @@
 #include "core/execution/orchestrator.h"
 #include "core/security/security_bridge.h"
 
+#include <rqp/security/security_status.h>
+
 #include "orchestrator_internal.h"
 
 #include "output/diagnostic.h"
@@ -9,6 +11,7 @@
 
 #include <boost/graph/graph_traits.hpp>
 #include <filesystem>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -91,7 +94,8 @@ int Orchestrator::run() {
     const ActionType action = this->requests.front().action;
     if (action == ActionType::LIST || action == ActionType::OUTDATED || action == ActionType::SEARCH ||
         action == ActionType::INFO) {
-        const int exitCode = orchestrator_internal::run_query_action(action, this->requests, this->executor);
+        const int exitCode =
+            orchestrator_internal::run_query_action(action, this->requests, this->executor, this->config);
         orchestrator_internal::cleanup_temp_files(tempFiles);
         return exitCode;
     }
@@ -149,6 +153,12 @@ int Orchestrator::run() {
         return exported ? 0 : 1;
     }
     if (action == ActionType::AUDIT) {
+        if (orchestrator_internal::request_has_flag(this->requests.front(), "doctor")) {
+            const SecurityStatusReport status = build_security_status(security_settings_from(this->config), this->registry);
+            std::ostringstream statusOutput;
+            print_security_status_report(status, statusOutput);
+            Logger::instance().logStdout(statusOutput.str());
+        }
         const std::vector<ValidationFinding> findings = this->validator->audit(graph);
         const bool exported =
             graph != nullptr && this->auditExporter->exportGraph(*graph, findings, this->requests.front());
@@ -157,7 +167,10 @@ int Orchestrator::run() {
         if (!exported) {
             return 1;
         }
-        if (!this->requests.front().outputPath.empty()) {
+        const Request& auditRequest = this->requests.front();
+        const bool failOnFindings = this->config.security.auditFailOnFindings ||
+                                    orchestrator_internal::request_has_flag(auditRequest, "fail-on-findings");
+        if (!auditRequest.outputPath.empty() && !failOnFindings) {
             return 0;
         }
         return findings.empty() ? 0 : 1;

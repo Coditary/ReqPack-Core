@@ -4,6 +4,7 @@
 
 #include "output/logger.h"
 #include "output/run_result_json.h"
+#include "plugins/exec_rules.h"
 
 #include <algorithm>
 #include <vector>
@@ -64,6 +65,11 @@ bool Executer::execute(Graph* graph) {
     }
 
     const bool jsonOutput = this->config.display.jsonOutput;
+    if (!taskGroups.empty() && !jsonOutput && !this->config.execution.dryRun &&
+        actionUsesMissingPackageFilter(taskGroups.front().action)) {
+        warm_privilege_ticket_if_needed();
+    }
+
     bool sessionBegun = false;
     if (!taskGroups.empty() && !jsonOutput) {
         std::vector<std::string> itemIds;
@@ -77,6 +83,7 @@ bool Executer::execute(Graph* graph) {
             }
         }
         Logger::instance().displaySessionBegin(displayModeFromAction(taskGroups.front().action), itemIds);
+        Logger::instance().flushSync();
         sessionBegun = true;
     }
 

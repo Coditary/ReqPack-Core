@@ -16,6 +16,126 @@ local function split_name_arch(value)
     return name, arch
 end
 
+local function normalize_info_key(key)
+    return trim(key):lower():gsub("%s+", " ")
+end
+
+local function is_info_section_header(line)
+    local trimmed = trim(line)
+    return trimmed:match("^%w+ [Pp]ackages$") ~= nil
+end
+
+local function parse_dnf_info_sections(stdout)
+    local sections = {}
+    local current = { header = "", fields = {}, description = {} }
+
+    local function flush_section()
+        if next(current.fields) ~= nil or #current.description > 0 then
+            table.insert(sections, current)
+        end
+        current = { header = "", fields = {}, description = {} }
+    end
+
+    local in_description = false
+    for line in tostring(stdout or ""):gmatch("[^\r\n]+") do
+        if is_info_section_header(line) then
+            flush_section()
+            current.header = trim(line)
+            in_description = false
+        else
+            local key, value = line:match("^%s*([^:]+)%s*:%s*(.*)$")
+            if key ~= nil then
+                local normalized = normalize_info_key(key)
+                if normalized == "description" then
+                    in_description = true
+                    current.description = {}
+                    local first = trim(value)
+                    if first ~= "" then
+                        table.insert(current.description, first)
+                    end
+                else
+                    in_description = false
+                    current.fields[normalized] = trim(value)
+                end
+            elseif in_description then
+                local continuation = line:match("^%s*:%s*(.*)$")
+                if continuation ~= nil then
+                    local text = trim(continuation)
+                    if text ~= "" then
+                        table.insert(current.description, text)
+                    end
+                end
+            end
+        end
+    end
+    flush_section()
+    return sections
+end
+
+local function build_version(fields)
+    local version = fields["version"] or ""
+    local release = fields["release"] or ""
+    if version == "" then
+        return "unknown"
+    end
+    if release ~= "" then
+        version = version .. "-" .. release
+    end
+    local epoch = fields["epoch"]
+    if epoch ~= nil and epoch ~= "" and epoch ~= "0" then
+        version = epoch .. ":" .. version
+    end
+    return version
+end
+
+local function package_info_from_fields(requestedName, fields, description_lines)
+    local description = table.concat(description_lines, "\n")
+    if description == "" then
+        description = fields["summary"] or "DNF Package"
+    end
+    return {
+        name = fields["name"] or requestedName,
+        version = build_version(fields),
+        type = "package",
+        architecture = fields["architecture"] or "",
+        summary = fields["summary"] or "",
+        description = description,
+        size = fields["download size"] or fields["size"] or "",
+        installedSize = fields["installed size"] or "",
+        homepage = fields["url"] or "",
+        license = fields["license"] or "",
+        repository = fields["repository"] or "",
+    }
+end
+
+local function pick_info_section(sections, requestedName)
+    local normalizedRequest = trim(requestedName):lower()
+    for _, section in ipairs(sections) do
+        local sectionName = trim(section.fields["name"] or ""):lower()
+        if sectionName ~= "" and sectionName == normalizedRequest then
+            return section
+        end
+    end
+    for _, section in ipairs(sections) do
+        if section.header:lower():find("installed", 1, true) then
+            return section
+        end
+    end
+    return sections[1]
+end
+
+local function parse_dnf_info(requestedName, stdout)
+    local sections = parse_dnf_info_sections(stdout)
+    if #sections == 0 then
+        return nil
+    end
+    local section = pick_info_section(sections, requestedName)
+    if section == nil then
+        return nil
+    end
+    return package_info_from_fields(requestedName, section.fields, section.description)
+end
+
 function plugin.getName()
     return "Frozen DNF Fixture"
 end
@@ -161,8 +281,10 @@ end
 
 function plugin.info(context, name)
     local result = context.exec.run("dnf info " .. shell_quote(name) .. " --quiet")
-    local description = trim(result.stdout or "")
-    local item = { name = name, version = "unknown", description = description ~= "" and description or "DNF Package" }
+    local item = parse_dnf_info(name, result.stdout or "")
+    if item == nil then
+        item = { name = name, version = "unknown", description = "DNF Package" }
+    end
     context.events.informed(item)
     return item
 end

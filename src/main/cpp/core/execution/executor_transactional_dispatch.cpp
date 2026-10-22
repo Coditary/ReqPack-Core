@@ -72,12 +72,6 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
         records.insert(records.end(), failureRecords.begin(), failureRecords.end());
     };
 
-    auto displaySuccess = [&](const std::vector<Package>& packages) {
-        for (const Package& package : packages) {
-            Logger::instance().displayItemSuccess(package_item_id(taskGroup.system, package));
-        }
-    };
-
     auto containsPackage = [](const std::vector<Package>& packages, const Package& candidate) {
         return std::any_of(packages.begin(), packages.end(),
                            [&](const Package& package) { return samePackage(package, candidate); });
@@ -99,7 +93,6 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
     }
 
     if (this->dispatchTaskGroupToPlugin(executableTaskGroup)) {
-        displaySuccess(executableTaskGroup.packages);
         appendSuccessRecords(executableTaskGroup.packages);
         return records;
     }
@@ -134,7 +127,6 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
         }
     }
 
-    displaySuccess(succeededPackages);
     appendSuccessRecords(succeededPackages);
     for (const Package& package : failedPackages) {
         const bool unavailable = unavailablePackages.find(packageRequestSpec(package)) != unavailablePackages.end();

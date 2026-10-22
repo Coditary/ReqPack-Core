@@ -37,7 +37,7 @@ ActionType parse_action_token(const std::string& command) {
     if (is_update_command_token(normalizedCommand)) {
         return ActionType::UPDATE;
     }
-    if (normalizedCommand == "search") {
+    if (normalizedCommand == "search" || normalizedCommand == "s" || normalizedCommand == "find") {
         return ActionType::SEARCH;
     }
     if (normalizedCommand == "list") {
