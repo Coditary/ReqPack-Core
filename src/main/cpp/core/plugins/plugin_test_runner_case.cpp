@@ -535,6 +535,16 @@ std::filesystem::path resolve_plugin_script(const ReqPackConfig& config, const s
         throw PluginTestError("plugin directory does not contain run.lua: " + scriptPath.string());
     }
 
+    const std::filesystem::path materializedRoot = plugin_bundle_materialized_plugin_path(
+        std::filesystem::path(config.registry.pluginDirectory), pluginArgument);
+    if (!materializedRoot.empty()) {
+        const std::filesystem::path byId = materializedRoot / "run.lua";
+        error.clear();
+        if (std::filesystem::is_regular_file(byId, error) && !error) {
+            return std::filesystem::absolute(byId).lexically_normal();
+        }
+    }
+
     const std::filesystem::path byId =
         std::filesystem::path(config.registry.pluginDirectory) / pluginArgument / "run.lua";
     error.clear();

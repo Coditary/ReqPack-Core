@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <functional>
 #include <sstream>
 #include <system_error>
 
@@ -257,6 +258,10 @@ std::optional<Package> parse_dependency_spec(const std::string& spec) {
 
 } // namespace
 
+bool is_letter_bucket_directory_name(const std::string& name) {
+    return name.size() == 1 && std::islower(static_cast<unsigned char>(name[0]));
+}
+
 std::optional<PluginBundleProbe> plugin_bundle_probe_directory(const std::filesystem::path& directory) {
     std::error_code error;
     if (!std::filesystem::is_directory(directory, error) || error) {
@@ -286,6 +291,68 @@ std::optional<PluginBundleProbe> plugin_bundle_probe_directory(const std::filesy
 
     probe.metadata = metadata.value();
     return probe;
+}
+
+void plugin_bundle_foreach_materialized_plugin(const std::filesystem::path& pluginDirectory,
+                                               const std::function<void(const PluginBundleProbe&)>& visitor) {
+    std::error_code error;
+    if (!std::filesystem::exists(pluginDirectory, error) || error) {
+        return;
+    }
+
+    const auto visitDirectory = [&](const std::filesystem::path& directory) {
+        const std::optional<PluginBundleProbe> probe = plugin_bundle_probe_directory(directory);
+        if (probe.has_value()) {
+            visitor(probe.value());
+        }
+    };
+
+    for (const auto& entry : std::filesystem::directory_iterator(pluginDirectory, error)) {
+        if (error || !entry.is_directory()) {
+            continue;
+        }
+
+        if (const std::optional<PluginBundleProbe> probe = plugin_bundle_probe_directory(entry.path());
+            probe.has_value()) {
+            visitor(probe.value());
+            continue;
+        }
+
+        if (!is_letter_bucket_directory_name(entry.path().filename().string())) {
+            continue;
+        }
+
+        std::error_code nestedError;
+        for (const auto& nested : std::filesystem::directory_iterator(entry.path(), nestedError)) {
+            if (nestedError || !nested.is_directory()) {
+                continue;
+            }
+            visitDirectory(nested.path());
+        }
+    }
+}
+
+std::filesystem::path plugin_bundle_materialized_plugin_path(const std::filesystem::path& pluginDirectory,
+                                                             const std::string& pluginId) {
+    std::string normalized = pluginId;
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                   [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+    if (normalized.empty()) {
+        return {};
+    }
+
+    const std::vector<std::filesystem::path> candidates = {
+        pluginDirectory / normalized,
+        pluginDirectory / normalized.substr(0, 1) / normalized,
+    };
+
+    for (const std::filesystem::path& candidate : candidates) {
+        if (plugin_bundle_probe_directory(candidate).has_value()) {
+            return candidate;
+        }
+    }
+
+    return {};
 }
 
 std::optional<PluginBundleLayout> plugin_bundle_read_directory(const std::filesystem::path& directory) {
@@ -362,13 +429,17 @@ std::optional<PluginBundleLayout> plugin_bundle_find_installed(const ReqPackConf
         return std::nullopt;
     }
 
-    const std::filesystem::path configuredPath = std::filesystem::path(config.registry.pluginDirectory) / normalized;
-    if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(configuredPath);
-        layout.has_value()) {
-        return layout;
+    const std::filesystem::path materializedPath =
+        plugin_bundle_materialized_plugin_path(std::filesystem::path(config.registry.pluginDirectory), normalized);
+    if (!materializedPath.empty()) {
+        if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(materializedPath);
+            layout.has_value()) {
+            return layout;
+        }
     }
 
     std::error_code error;
+    const std::filesystem::path configuredPath = std::filesystem::path(config.registry.pluginDirectory) / normalized;
     const std::filesystem::path workspacePath = std::filesystem::current_path(error) / "plugins" / normalized;
     if (!error && workspacePath != configuredPath) {
         if (const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(workspacePath);

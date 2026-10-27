@@ -5,6 +5,7 @@
 #include "core/manifest/manifest_loader.h"
 
 #include <filesystem>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -47,6 +48,10 @@ struct PluginBundleProbe {
 };
 
 std::optional<PluginBundleProbe> plugin_bundle_probe_directory(const std::filesystem::path& directory);
+void plugin_bundle_foreach_materialized_plugin(const std::filesystem::path& pluginDirectory,
+                                               const std::function<void(const PluginBundleProbe&)>& visitor);
+std::filesystem::path plugin_bundle_materialized_plugin_path(const std::filesystem::path& pluginDirectory,
+                                                             const std::string& pluginId);
 std::optional<PluginBundleLayout> plugin_bundle_read_directory(const std::filesystem::path& directory);
 std::optional<PluginBundleLayout> plugin_bundle_find_root(const std::filesystem::path& basePath,
                                                           const std::string& expectedPluginId = {});

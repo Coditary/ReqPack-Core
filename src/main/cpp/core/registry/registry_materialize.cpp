@@ -205,7 +205,13 @@ void Registry::ensurePluginsDiscovered(const std::vector<std::string>& pluginIds
     };
 
     for (const std::string& pluginId : pendingIds) {
-        registerProbe(std::filesystem::path(this->config.registry.pluginDirectory) / pluginId);
+        const std::filesystem::path materializedPath = plugin_bundle_materialized_plugin_path(
+            std::filesystem::path(this->config.registry.pluginDirectory), pluginId);
+        if (!materializedPath.empty()) {
+            registerProbe(materializedPath);
+        } else {
+            registerProbe(std::filesystem::path(this->config.registry.pluginDirectory) / pluginId);
+        }
         if (m_pluginPaths.find(pluginId) != m_pluginPaths.end()) {
             continue;
         }
@@ -227,27 +233,14 @@ void Registry::scanDirectory(const std::string& path) {
         return;
     }
 
-    const auto registerProbe = [&](const std::filesystem::path& directory) {
-        const std::optional<PluginBundleProbe> probe = plugin_bundle_probe_directory(directory);
-        if (!probe.has_value()) {
-            return;
-        }
-        const std::string& id = probe->metadata.name;
+    plugin_bundle_foreach_materialized_plugin(path, [&](const PluginBundleProbe& probe) {
+        const std::string& id = probe.metadata.name;
         if (id == registry_internal::BUILTIN_RQ_PLUGIN_ID) {
             return;
         }
-        m_pluginPaths[id] = probe->runScriptPath.string();
+        m_pluginPaths[id] = probe.runScriptPath.string();
         if (m_states.find(id) == m_states.end() || m_states[id] == PluginState::NOT_FOUND) {
             m_states[id] = PluginState::REGISTERED;
         }
-    };
-
-    std::error_code error;
-    for (const auto& entry : std::filesystem::directory_iterator(path, error)) {
-        if (error || !entry.is_directory()) {
-            continue;
-        }
-
-        registerProbe(entry.path());
-    }
+    });
 }

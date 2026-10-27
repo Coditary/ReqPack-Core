@@ -25,28 +25,14 @@ std::string to_lower_copy(std::string value) {
 
 void collect_materialized_plugin_scripts(const std::filesystem::path& root,
                                          std::map<std::string, std::filesystem::path>& scriptPaths) {
-    std::error_code error;
-    if (!std::filesystem::exists(root, error) || error) {
-        return;
-    }
-
-    for (const auto& entry : std::filesystem::directory_iterator(root, error)) {
-        if (error || !entry.is_directory()) {
-            continue;
-        }
-
-        const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(entry.path());
-        if (!layout.has_value()) {
-            continue;
-        }
-
-        const std::string pluginId = to_lower_copy(layout->metadata.name);
+    plugin_bundle_foreach_materialized_plugin(root, [&](const PluginBundleProbe& probe) {
+        const std::string pluginId = to_lower_copy(probe.metadata.name);
         if (pluginId == BUILTIN_RQP_PLUGIN_ID) {
-            continue;
+            return;
         }
 
-        scriptPaths[pluginId] = layout->runScriptPath;
-    }
+        scriptPaths[pluginId] = probe.runScriptPath;
+    });
 }
 
 std::map<std::string, std::filesystem::path> installed_plugin_script_paths(const ReqPackConfig& config) {

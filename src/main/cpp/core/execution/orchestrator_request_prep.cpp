@@ -385,20 +385,14 @@ void expand_update_all_requests(std::vector<Request>& requests, Registry* regist
 
     std::set<std::string> pluginNames;
     if (std::filesystem::exists(config.registry.pluginDirectory)) {
-        for (const auto& entry : std::filesystem::directory_iterator(config.registry.pluginDirectory)) {
-            if (!entry.is_directory()) {
-                continue;
-            }
-            const std::optional<PluginBundleLayout> layout = plugin_bundle_read_directory(entry.path());
-            if (!layout.has_value()) {
-                continue;
-            }
-            const std::string& name = layout->metadata.name;
-            if (name.empty() || name == "rqp" || name == "sys") {
-                continue;
-            }
-            pluginNames.insert(name);
-        }
+        plugin_bundle_foreach_materialized_plugin(std::filesystem::path(config.registry.pluginDirectory),
+                                                  [&](const PluginBundleProbe& probe) {
+                                                      const std::string& name = probe.metadata.name;
+                                                      if (name.empty() || name == "rqp" || name == "sys") {
+                                                          return;
+                                                      }
+                                                      pluginNames.insert(name);
+                                                  });
     }
 
     if (registry_database_is_git_source(config.registry.remoteUrl) && !config.registry.remotePluginsPath.empty()) {
