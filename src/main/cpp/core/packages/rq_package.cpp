@@ -165,7 +165,7 @@ void validate_outer_entry_path(const std::string& rawPath) {
 
     const std::string topLevel = (*path.begin()).string();
     static const std::set<std::string> allowedTopLevels {
-        "metadata.json", "reqpack.lua", "hashes", "scripts", "payload",
+        "metadata.json", "reqpack.lua", "hashes", "scripts", "payload", "bundle",
     };
 
     if (!allowedTopLevels.contains(topLevel)) {
@@ -232,8 +232,9 @@ std::vector<std::string> rq_normalize_systems(const std::vector<std::string>& sy
 std::map<std::string, std::vector<std::string>> rq_builtin_system_aliases() {
     return {
         {"darwin-family", {"darwin", "macos"}},
-        {"debian-family", {"debian", "ubuntu", "linuxmint", "pop"}},
-        {"rhel-family", {"almalinux", "centos", "fedora", "rhel", "rocky"}},
+        {"debian-family", {"debian", "ubuntu", "linuxmint", "pop", "dpkg", "apt"}},
+        {"rhel-family", {"almalinux", "centos", "fedora", "rhel", "rocky", "rpm", "dnf", "yum"}},
+        {"nix-family", {"nix", "linux", "fedora", "debian", "ubuntu"}},
     };
 }
 
@@ -320,5 +321,7 @@ RqPackageLayout RqPackageReader::load(const std::filesystem::path& packagePath, 
 }
 
 RqPackageBuildResult rq_build_package(const RqPackageBuildRequest& request, const ReqPackConfig& config) {
-    return rq_package_internal::build_package_impl(request, config);
+    RqPackageBuildRequest effective = request;
+    rq_pack_metadata_overrides_from_environment(effective.metadataOverrides);
+    return rq_package_internal::build_package_impl(effective, config);
 }

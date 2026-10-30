@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/config/configuration.h"
+#include "core/common/types.h"
 #include "core/host/host_info.h"
 
 struct RqBinaryEntry {
@@ -81,7 +82,11 @@ struct RqPackageBuildRequest {
     std::optional<std::filesystem::path> payloadRoot;
     bool force {false};
     bool interactive {true};
+    RqPackMetadataOverrides metadataOverrides {};
 };
+
+void rq_pack_metadata_overrides_from_environment(RqPackMetadataOverrides& overrides);
+void rq_apply_pack_metadata_overrides(RqMetadata& metadata, const RqPackMetadataOverrides& overrides);
 
 struct RqPackageBuildResult {
     RqMetadata metadata;

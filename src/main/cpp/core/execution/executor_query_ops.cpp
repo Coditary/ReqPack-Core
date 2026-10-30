@@ -4,6 +4,7 @@
 
 #include "core/planning/request_resolution.h"
 #include "core/query/package_search_query.h"
+#include "core/registry/registry_database.h"
 #include "output/logger.h"
 
 #include <algorithm>
@@ -134,6 +135,26 @@ std::vector<PackageInfo> apply_requested_package_subset(std::vector<PackageInfo>
     return results;
 }
 
+PackageInfo package_info_from_registry_record(const RegistryRecord& record, const std::string& system) {
+    PackageInfo info;
+    info.system = system;
+    info.name = record.name;
+    info.packageId = record.name;
+    info.packageType = record.role.empty() ? "plugin" : record.role;
+    info.summary = record.description.empty() ? "Registry plugin" : record.description;
+    info.description = info.summary;
+    if (!record.source.empty()) {
+        info.sourceUrl = record.source;
+    }
+    if (!record.bundlePath.empty()) {
+        info.repository = record.bundlePath;
+    }
+    if (!record.targetSystem.empty()) {
+        info.targetSystems = record.targetSystem;
+    }
+    return info;
+}
+
 } // namespace
 
 std::vector<PackageInfo> Executer::list(const Request& request) const {
@@ -225,6 +246,16 @@ PackageInfo Executer::info(const Request& request) const {
     taskGroup.flags = resolvedRequest->flags;
     const std::string packageName =
         resolvedRequest->packages.empty() ? std::string {} : resolvedRequest->packages.front();
+    if (packageName.empty()) {
+        RegistryDatabase database(this->config);
+        if (database.ensureReady()) {
+            if (const std::optional<RegistryRecord> record = database.getRecord(resolvedRequest->system);
+                record.has_value()) {
+                return package_info_from_registry_record(record.value(), resolvedRequest->system);
+            }
+        }
+        return plugin->info(this->buildPluginContext(plugin, taskGroup), resolvedRequest->system);
+    }
     return plugin->info(this->buildPluginContext(plugin, taskGroup), packageName);
 }
 

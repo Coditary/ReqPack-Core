@@ -527,3 +527,21 @@ TEST_CASE("executor executes remove actions without missing-package filtering", 
 
     CHECK(executer.execute(&graph));
 }
+
+TEST_CASE("executor info returns registry metadata for plugin wrapper without package name",
+          "[unit][executor][info]") {
+    TempDir tempDir {"reqpack-executor-info-plugin-wrapper"};
+    ReqPackConfig config = make_executor_graph_config(tempDir.path());
+    add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);
+    Registry registry(config);
+    registry.scanDirectory(config.registry.pluginDirectory);
+    Executer executer(&registry, config);
+
+    Request request;
+    request.action = ActionType::INFO;
+    request.system = "alpha";
+
+    const PackageInfo info = executer.info(request);
+    CHECK(info.name == "alpha");
+    CHECK(info.version == "1.0.0");
+}

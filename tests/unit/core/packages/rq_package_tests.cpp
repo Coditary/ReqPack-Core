@@ -288,6 +288,8 @@ TEST_CASE("rqp system matching supports aliases and nosys", "[unit][rq_package][
 
     CHECK(rq_system_matches({"nosys"}, std::set<std::string> {"fedora", "linux"}, aliases));
     CHECK(rq_system_matches({"debian-family"}, std::set<std::string> {"ubuntu", "linux"}, aliases));
+    CHECK(rq_system_matches({"dpkg"}, std::set<std::string> {"debian", "linux"}, aliases));
+    CHECK(rq_system_matches({"nix"}, std::set<std::string> {"fedora", "linux"}, aliases));
     CHECK(rq_system_matches({"darwin"}, std::set<std::string> {"macos", "darwin"}, aliases));
     CHECK_FALSE(rq_system_matches({"debian"}, std::set<std::string> {"fedora", "linux"}, aliases));
 }
@@ -706,4 +708,74 @@ TEST_CASE("rqp package builder rejects missing hook script files", "[unit][rq_pa
                             .interactive = false,
                         }),
                         Catch::Matchers::Contains("hook file not found"));
+}
+
+TEST_CASE("rqp package builder packs lua plugin bundle directories", "[unit][rq_package][core]") {
+    TempDir tempDir {"reqpack-rqp-pack-plugin-bundle"};
+    const std::filesystem::path projectRoot = tempDir.path() / "dpkg";
+    write_file(projectRoot / "metadata.json", "{\n"
+                                                "  \"formatVersion\": 1,\n"
+                                                "  \"name\": \"dpkg\",\n"
+                                                "  \"version\": \"1.0.0\",\n"
+                                                "  \"summary\": \"dpkg plugin\",\n"
+                                                "  \"description\": \"dpkg plugin bundle\",\n"
+                                                "  \"license\": \"MIT\"\n"
+                                                "}\n");
+    write_file(projectRoot / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
+    write_file(projectRoot / "run.lua", "return {}\n");
+    write_file(projectRoot / "scripts" / "install.lua", "return true\n");
+    write_file(projectRoot / "scripts" / "remove.lua", "return true\n");
+
+    const RqPackageBuildResult result = rq_build_package({
+        .projectRoot = projectRoot,
+        .outputPath = tempDir.path() / "dpkg.rqp",
+        .force = true,
+        .interactive = false,
+    });
+
+    CHECK(result.metadata.name == "dpkg");
+    CHECK(result.metadata.release == 0);
+    CHECK(result.metadata.revision == 0);
+    CHECK(std::filesystem::exists(result.outputPath));
+
+    const RqPackageLayout layout = RqPackageReader::load(result.outputPath, tempDir.path() / "work",
+                                                         tempDir.path() / "state", default_reqpack_config(), false);
+    CHECK(layout.metadata.name == "dpkg");
+    CHECK(layout.hooks.at("install") == "scripts/install_plugin_bundle.lua");
+    CHECK(std::filesystem::exists(layout.controlDir / "bundle" / "run.lua"));
+}
+
+TEST_CASE("rqp package builder applies pack metadata overrides to plugin bundles",
+          "[unit][rq_package][core]") {
+    TempDir tempDir {"reqpack-rqp-pack-plugin-bundle-overrides"};
+    const std::filesystem::path projectRoot = tempDir.path() / "dpkg";
+    write_file(projectRoot / "metadata.json", "{\n"
+                                                "  \"formatVersion\": 1,\n"
+                                                "  \"name\": \"dpkg\",\n"
+                                                "  \"version\": \"1.0.0\",\n"
+                                                "  \"summary\": \"dpkg plugin\",\n"
+                                                "  \"description\": \"dpkg plugin bundle\",\n"
+                                                "  \"license\": \"MIT\"\n"
+                                                "}\n");
+    write_file(projectRoot / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
+    write_file(projectRoot / "run.lua", "return {}\n");
+    write_file(projectRoot / "scripts" / "install.lua", "return true\n");
+    write_file(projectRoot / "scripts" / "remove.lua", "return true\n");
+
+    const RqPackageBuildResult result = rq_build_package({
+        .projectRoot = projectRoot,
+        .outputPath = tempDir.path() / "dpkg.rqp",
+        .force = true,
+        .interactive = false,
+        .metadataOverrides =
+            {
+                .release = 2,
+                .vendor = "Example Org",
+                .systems = {"dpkg", "apt"},
+            },
+    });
+
+    CHECK(result.metadata.release == 2);
+    CHECK(result.metadata.vendor == "Example Org");
+    CHECK(result.metadata.systems == std::vector<std::string>({"apt", "dpkg"}));
 }

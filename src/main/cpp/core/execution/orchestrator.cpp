@@ -36,6 +36,25 @@ Orchestrator::~Orchestrator() {
     delete this->executor;
 }
 
+namespace {
+
+bool requests_include_system_scoped_install_or_ensure(const std::vector<Request>& requests) {
+    for (const Request& request : requests) {
+        if (request.system.empty() || request.usesLocalTarget) {
+            continue;
+        }
+        if (request.action != ActionType::INSTALL && request.action != ActionType::ENSURE) {
+            continue;
+        }
+        if (request.packages.empty()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+}  // namespace
+
 int Orchestrator::countRequestedItems() const {
     int count = 0;
     for (const Request& request : this->requests) {
@@ -133,7 +152,32 @@ int Orchestrator::run() {
     Graph* graph = this->planner->plan(plannedRequests);
     if (graph != nullptr && boost::num_vertices(*graph) == 0) {
         const int requested = this->countRequestedItems();
-        if (requested > 0 && (action == ActionType::INSTALL || action == ActionType::ENSURE)) {
+        if ((requested > 0 || requests_include_system_scoped_install_or_ensure(this->requests)) &&
+            (action == ActionType::INSTALL || action == ActionType::ENSURE)) {
+            for (const Request& request : this->requests) {
+                if (request.system.empty()) {
+                    continue;
+                }
+                if (this->registry->getPlugin(request.system) != nullptr ||
+                    this->registry->loadPlugin(request.system)) {
+                    continue;
+                }
+                Logger::instance().err("unknown or unavailable plugin system: " + request.system);
+                if (this->config.display.jsonOutput) {
+                    RunResultJsonDocument document;
+                    document.ok = false;
+                    document.dryRun = this->config.execution.dryRun;
+                    RunResultJsonItem item;
+                    item.system = request.system;
+                    item.status = "failed";
+                    item.errorMessage = "unknown or unavailable plugin system";
+                    document.items.push_back(std::move(item));
+                    emit_run_result_json(document);
+                }
+                delete graph;
+                orchestrator_internal::cleanup_temp_files(tempFiles);
+                return 1;
+            }
             if (this->config.display.jsonOutput) {
                 emit_run_result_json(orchestrator_internal::build_already_satisfied_json(
                     this->requests, *this->registry, action, this->config.execution.dryRun));

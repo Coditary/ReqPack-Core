@@ -732,6 +732,21 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(requests.front().flags == std::vector<std::string> {"force"});
     }
 
+    SECTION("pack builtin parses pack metadata override flags") {
+        const std::vector<Request> requests = cli.parse(
+            std::vector<std::string> {"pack", "./demo", "--pack-release", "3", "--pack-revision", "1", "--pack-vendor",
+                                      "CI Org", "--pack-system", "dpkg", "--pack-system", "apt"},
+            config);
+        REQUIRE(requests.size() == 1);
+        REQUIRE(requests.front().packMetadata.release.has_value());
+        CHECK(requests.front().packMetadata.release.value() == 3);
+        REQUIRE(requests.front().packMetadata.revision.has_value());
+        CHECK(requests.front().packMetadata.revision.value() == 1);
+        REQUIRE(requests.front().packMetadata.vendor.has_value());
+        CHECK(requests.front().packMetadata.vendor.value() == "CI Org");
+        CHECK(requests.front().packMetadata.systems == std::vector<std::string> {"dpkg", "apt"});
+    }
+
     SECTION("pack builtin defaults project path to current directory") {
         const std::vector<Request> requests =
             cli.parse(std::vector<std::string> {"pack", "--output", "./dist/demo.rqp", "--force"}, config);

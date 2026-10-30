@@ -9,6 +9,19 @@
 
 inline constexpr const char* INTERNAL_RQP_REPOSITORY_FLAG_PREFIX = "__reqpack-internal-rqp-repository=";
 
+struct RqPackMetadataOverrides {
+    std::optional<std::string> version;
+    std::optional<int> release;
+    std::optional<int> revision;
+    std::optional<std::string> vendor;
+    std::optional<std::string> maintainerEmail;
+    std::optional<std::string> url;
+    std::optional<std::string> homepage;
+    std::optional<std::string> sourceUrl;
+    std::optional<std::string> architecture;
+    std::vector<std::string> systems {};
+};
+
 struct Request {
     ActionType action {ActionType::UNKNOWN};
     std::string system;
@@ -19,6 +32,7 @@ struct Request {
     std::string payloadPath;
     std::string localPath;
     bool usesLocalTarget {false};
+    RqPackMetadataOverrides packMetadata {};
 };
 
 struct ProxyResolution {

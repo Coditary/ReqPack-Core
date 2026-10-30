@@ -190,7 +190,7 @@ void print_plugin_test_help(std::ostream& output) {
            << "  rqp test-plugin --plugin <path-or-id> --cases <directory> [--report <file.json>]\n"
            << "\n"
            << "Options:\n"
-           << "  --plugin <value>        Plugin script path, plugin directory, or plugin id\n"
+           << "  --plugin <value>        Plugin script path, plugin directory, plugin id, or .rqp package\n"
            << "  --preset <name>         Adds built-in preset cases from <plugin>/.reqpack-test/<name>/\n"
            << "  --case <file.lua>       Adds one Lua test case file\n"
            << "  --cases <directory>     Adds all *.lua test case files from directory\n"
@@ -200,5 +200,6 @@ void print_plugin_test_help(std::ostream& output) {
            << "\n"
            << "Known presets: core, live\n"
            << "Hermetic case files use request, fakeExec, and expect sections.\n"
-           << "Live case files use request and expect (optional expect.minItems, expect.containsName).\n";
+           << "Live case files use request and expect (optional expect.minItems, expect.maxItems,\n"
+           << "expect.containsName, expect.notContainsName, expect.versionEquals, expect.errorContains).\n";
 }

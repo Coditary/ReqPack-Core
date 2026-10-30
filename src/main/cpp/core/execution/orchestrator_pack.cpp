@@ -68,6 +68,7 @@ int run_pack_request(const Request& request, Registry* registry, const ReqPackCo
             if (!request.payloadPath.empty()) {
                 buildRequest.payloadRoot = std::filesystem::path(request.payloadPath);
             }
+            buildRequest.metadataOverrides = request.packMetadata;
 
             const RqPackageBuildResult result = rq_build_package(buildRequest, config);
             render_command_output(builtin_pack_output(result));

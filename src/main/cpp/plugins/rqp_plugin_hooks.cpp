@@ -334,6 +334,7 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
     paths["workDir"] = layout.workDir.string();
     paths["stateDir"] = layout.stateDir.string();
     paths["installRoot"] = "/";
+    paths["pluginDirectory"] = config_.registry.pluginDirectory;
     contextTable["paths"] = paths;
 
     sol::table host = lua.create_table();
@@ -473,6 +474,7 @@ bool RqpPlugin::runInstalledHook(const PluginCallContext& context, const RqpInst
     paths["workDir"] = "";
     paths["stateDir"] = installed.stateDir.string();
     paths["installRoot"] = "/";
+    paths["pluginDirectory"] = config_.registry.pluginDirectory;
     contextTable["paths"] = paths;
 
     sol::table host = lua.create_table();

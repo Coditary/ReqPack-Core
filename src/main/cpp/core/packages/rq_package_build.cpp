@@ -9,6 +9,10 @@ namespace rq_package_internal {
 
 RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, const ReqPackConfig& config) {
     const std::filesystem::path projectRoot = absolute_path(request.projectRoot);
+    if (is_plugin_bundle_pack_input(projectRoot)) {
+        return build_plugin_bundle_package_impl(request, config);
+    }
+
     if (!is_directory_no_error(projectRoot)) {
         throw std::runtime_error("pack project directory not found: " + projectRoot.string());
     }
@@ -23,6 +27,7 @@ RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, co
     }
 
     RqMetadata metadata = rq_parse_metadata_json(read_file(metadataPath));
+    rq_apply_pack_metadata_overrides(metadata, request.metadataOverrides);
     metadata.architecture = rq_normalize_architecture(metadata.architecture);
     metadata.systems = rq_normalize_systems(metadata.systems);
 

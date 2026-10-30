@@ -68,6 +68,9 @@ PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& paylo
 RqPackageLayout load_package_layout_impl(const std::filesystem::path& packagePath,
                                          const std::filesystem::path& workRoot, const std::filesystem::path& stateRoot,
                                          const ReqPackConfig& config, bool validateHostCompatibility);
+RqPackageBuildResult build_plugin_bundle_package_impl(const RqPackageBuildRequest& request, const ReqPackConfig& config);
+bool is_plugin_bundle_pack_input(const std::filesystem::path& projectRoot);
+
 RqPackageBuildResult build_package_impl(const RqPackageBuildRequest& request, const ReqPackConfig& config);
 
 } // namespace rq_package_internal
