@@ -113,6 +113,8 @@ struct PluginTestCase {
     std::optional<int> expectResultCount;
     std::optional<std::string> expectResultName;
     std::optional<std::string> expectResultVersion;
+    std::optional<int> expectMinItems;
+    std::optional<std::string> expectContainsName;
 };
 
 struct PluginTestRuntimeCaseResult {
@@ -368,9 +370,16 @@ class FakeExecHost : public LuaBridge {
         stdout_.clear();
         stderr_.clear();
         artifacts_.clear();
+        useFakeExec_ = true;
         setExecOverride([this](const std::string& sourceId, const std::string& command) {
             return handleExecute(sourceId, command);
         });
+    }
+
+    void enableRealExec() {
+        useFakeExec_ = false;
+        responses_.clear();
+        setExecOverride(LuaBridge::ExecOverride {});
     }
 
     const std::vector<std::string>& commands() const {
@@ -447,12 +456,13 @@ class FakeExecHost : public LuaBridge {
     std::vector<std::string> stderr_ {};
     std::vector<std::string> artifacts_ {};
     std::vector<PluginEventRecord> recentEvents_ {};
+    bool useFakeExec_ {true};
 };
 
 std::vector<std::filesystem::path> builtin_case_files_for_preset(const std::string& preset,
                                                                  const std::filesystem::path& pluginScript) {
     const std::string normalized = to_lower_copy(preset);
-    if (normalized != "core") {
+    if (normalized != "core" && normalized != "live") {
         throw PluginTestError("unknown plugin test preset: " + preset);
     }
 
@@ -672,6 +682,10 @@ PluginTestCase load_case_file(const std::filesystem::path& path) {
         }
         testCase.expectResultName = optional_string_field(expect, "resultName");
         testCase.expectResultVersion = optional_string_field(expect, "resultVersion");
+        if (const sol::optional<int> minItems = expect["minItems"]; minItems.has_value()) {
+            testCase.expectMinItems = minItems.value();
+        }
+        testCase.expectContainsName = optional_string_field(expect, "containsName");
         testCase.expectCommands = string_list_from_table(expect["commands"]);
         testCase.expectEvents = string_list_from_table(expect["events"]);
         const sol::object payloadsObject = expect["eventPayloads"];
@@ -711,9 +725,23 @@ std::string package_display_name(const PackageInfo& info) {
     return info.packageId;
 }
 
+bool list_contains_package_name(const std::vector<PackageInfo>& items, const std::string& expectedName) {
+    for (const PackageInfo& info : items) {
+        if (package_display_name(info) == expectedName || info.name == expectedName ||
+            info.packageId == expectedName) {
+            return true;
+        }
+    }
+    return false;
+}
+
 PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackConfig& config,
-                                            const PluginTestCase& testCase) {
-    plugin.setCaseResponses(testCase.fakeExec);
+                                            const PluginTestCase& testCase, const bool liveMode) {
+    if (liveMode) {
+        plugin.enableRealExec();
+    } else {
+        plugin.setCaseResponses(testCase.fakeExec);
+    }
     ScopedEnvironmentOverride environmentOverride(resolved_case_environment(testCase));
 
     PluginTestRuntimeCaseResult result;
@@ -781,19 +809,19 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
         failures.push_back("expected success=" + std::string(testCase.expectSuccess.value() ? "true" : "false"));
     }
 
-    if (!testCase.expectCommands.empty()) {
+    if (!testCase.expectCommands.empty() && !liveMode) {
         if (result.summary.commands != testCase.expectCommands) {
             failures.push_back("commands did not match expectation");
         }
     }
 
-    if (!testCase.expectStdout.empty()) {
+    if (!testCase.expectStdout.empty() && !liveMode) {
         if (result.summary.stdoutLines != testCase.expectStdout) {
             failures.push_back("stdout did not match expectation");
         }
     }
 
-    if (!testCase.expectStderr.empty()) {
+    if (!testCase.expectStderr.empty() && !liveMode) {
         if (result.summary.stderrLines != testCase.expectStderr) {
             failures.push_back("stderr did not match expectation");
         }
@@ -847,6 +875,28 @@ PluginTestRuntimeCaseResult run_single_case(FakeExecHost& plugin, const ReqPackC
         }
     }
 
+    if (testCase.expectMinItems.has_value()) {
+        const int actualCount =
+            action == ActionType::INFO ? (callSuccess ? 1 : 0) : static_cast<int>(listResult.size());
+        if (actualCount < testCase.expectMinItems.value()) {
+            failures.push_back("minItems not met");
+        }
+    }
+
+    if (testCase.expectContainsName.has_value()) {
+        bool contains = false;
+        if (action == ActionType::INFO) {
+            contains = package_display_name(infoResult) == testCase.expectContainsName.value() ||
+                       infoResult.name == testCase.expectContainsName.value() ||
+                       infoResult.packageId == testCase.expectContainsName.value();
+        } else {
+            contains = list_contains_package_name(listResult, testCase.expectContainsName.value());
+        }
+        if (!contains) {
+            failures.push_back("containsName not found in results");
+        }
+    }
+
     result.summary.success = failures.empty();
     if (!result.summary.success) {
         std::ostringstream message;
@@ -882,6 +932,7 @@ namespace plugin_test_runner_internal {
 
 PluginTestRunReport run_plugin_test_cases_impl(const ReqPackConfig& config, const PluginTestInvocation& invocation) {
     PluginTestRunReport report;
+    const bool liveMode = invocation.liveMode;
 
     const std::filesystem::path pluginScript = resolve_plugin_script(config, invocation.plugin);
     const std::vector<std::filesystem::path> caseFiles = collect_case_files(invocation, pluginScript);
@@ -894,14 +945,20 @@ PluginTestRunReport run_plugin_test_cases_impl(const ReqPackConfig& config, cons
     std::vector<FakeExecResponse> bootstrapResponses;
     for (const std::filesystem::path& caseFile : caseFiles) {
         PluginTestCase testCase = load_case_file(caseFile);
-        bootstrapResponses.insert(bootstrapResponses.end(), testCase.fakeExec.begin(), testCase.fakeExec.end());
+        if (!liveMode) {
+            bootstrapResponses.insert(bootstrapResponses.end(), testCase.fakeExec.begin(), testCase.fakeExec.end());
+        }
         loadedCases.push_back(std::move(testCase));
     }
 
     PreparedCaseFixtures preparedFixtures(loadedCases);
 
     FakeExecHost plugin(pluginScript.string(), config);
-    plugin.setCaseResponses(std::move(bootstrapResponses));
+    if (liveMode) {
+        plugin.enableRealExec();
+    } else {
+        plugin.setCaseResponses(std::move(bootstrapResponses));
+    }
     if (!plugin.init()) {
         throw PluginTestError("failed to initialize plugin: " + pluginScript.string());
     }
@@ -913,7 +970,7 @@ PluginTestRunReport run_plugin_test_cases_impl(const ReqPackConfig& config, cons
     for (const PluginTestCase& testCase : loadedCases) {
         PluginTestRuntimeCaseResult caseResult;
         try {
-            caseResult = run_single_case(plugin, config, testCase);
+            caseResult = run_single_case(plugin, config, testCase, liveMode);
         } catch (const std::exception& error) {
             caseResult.summary.name =
                 testCase.name.empty() ? std::filesystem::path(testCase.sourcePath).stem().string() : testCase.name;

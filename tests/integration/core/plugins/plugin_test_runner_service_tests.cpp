@@ -9,6 +9,7 @@
 #include <catch2/catch.hpp>
 
 #include "test_helpers.h"
+#include "core/plugins/plugin_test_runner.h"
 
 namespace {
 
@@ -1163,4 +1164,17 @@ TEST_CASE("plugin test command runs repo java preset case", "[integration][plugi
         run_reqpack(tempDir.path(), configPath, {"test-plugin", "--plugin", "java", "--preset", "core"});
 
     CHECK(output.find("Cases: 1, Passed: 1, Failed: 0") != std::string::npos);
+}
+
+TEST_CASE("parse test-plugin --live selects live preset", "[core][integration][plugin-test]") {
+    const PluginTestCliParseResult parsed =
+        parse_plugin_test_invocation({"test-plugin", "--plugin", "demo", "--live"});
+
+    REQUIRE(parsed.matched);
+    REQUIRE_FALSE(parsed.helpRequested);
+    REQUIRE(parsed.error.empty());
+    REQUIRE(parsed.invocation.liveMode);
+    REQUIRE(parsed.invocation.plugin == "demo");
+    REQUIRE(parsed.invocation.presets.size() == 1);
+    CHECK(parsed.invocation.presets.front() == "live");
 }

@@ -430,8 +430,9 @@ TEST_CASE("configuration consumes CLI flags with positional and inline values", 
             ReqPackConfigOverrides overrides;
 
             REQUIRE(consume_cli_config_flag(arguments, index, overrides));
-            REQUIRE(overrides.errorMessage.has_value());
-            CHECK(overrides.errorMessage.value() == "invalid value for --jobs: 0");
+            REQUIRE(overrides.jobsMode.has_value());
+            CHECK(overrides.jobsMode.value() == ExecutionJobsMode::MAX);
+            CHECK_FALSE(overrides.jobs.has_value());
         }
 
         {
@@ -859,20 +860,24 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         std::filesystem::remove_all(tempRoot, error);
     }
 
-    SECTION("update with explicit system remains normal orchestrator request") {
+    SECTION("update with explicit system expands to system-wide package update") {
         const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
         CHECK(requests.front().packages.empty());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
     }
 
-    SECTION("update alias with explicit system remains normal orchestrator request") {
+    SECTION("update alias with explicit system expands to system-wide package update") {
         const std::vector<Request> requests = cli.parse(std::vector<std::string> {"up", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().action == ActionType::UPDATE);
         CHECK(requests.front().system == "pip");
         CHECK(requests.front().packages.empty());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
     }
 
     SECTION("update system all keeps explicit system-wide package update request") {
@@ -893,6 +898,56 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
         CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "dry-run") ==
               requests.front().flags.end());
         CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
+    }
+
+    SECTION("update plugins flag keeps wrapper refresh semantics") {
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--plugins", "pip"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(requests.front().system == "pip");
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") ==
+              requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(),
+                        "__reqpack-internal-plugin-refresh-all") != requests.front().flags.end());
+    }
+
+    SECTION("plugin update command refreshes wrapper without package all flag") {
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"plugin", "update", "dnf"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(requests.front().system == "dnf");
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") ==
+              requests.front().flags.end());
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(),
+                        "__reqpack-internal-plugin-refresh-all") != requests.front().flags.end());
+    }
+
+    SECTION("list ls alias parses as list action") {
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"ls", "dnf"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(requests.front().action == ActionType::LIST);
+        CHECK(requests.front().system == "dnf");
+    }
+
+    SECTION("outdated out alias parses as outdated action") {
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"out", "dnf"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(requests.front().action == ActionType::OUTDATED);
+        CHECK(requests.front().system == "dnf");
+    }
+
+    SECTION("update -a expands to system-wide package update") {
+        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "pip", "-a"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") !=
+              requests.front().flags.end());
+    }
+
+    SECTION("audit -f -o map to request flags and output path") {
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string> {"audit", "dnf", "-f", "-o", "out.json"}, config);
+        REQUIRE(requests.size() == 1);
+        CHECK(requests.front().outputPath == "out.json");
+        CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "force") !=
               requests.front().flags.end());
     }
 
@@ -1119,10 +1174,9 @@ TEST_CASE("cli general help documents logging flags", "[unit][cli][help]") {
     std::cout.rdbuf(previous);
 
     REQUIRE(handled);
-    CHECK(capture.str().find("--structured-log-file <path>") != std::string::npos);
-    CHECK(capture.str().find("--log-capture-display") != std::string::npos);
-    CHECK(capture.str().find("--log-category <name>") != std::string::npos);
-    CHECK(capture.str().find("-v,--verbose") != std::string::npos);
+    CHECK(capture.str().find("Package Commands:") != std::string::npos);
+    CHECK(capture.str().find("--help-all") != std::string::npos);
+    CHECK(capture.str().find("search (s, find)") != std::string::npos);
     CHECK(capture.str().find("install (i)") != std::string::npos);
     CHECK(capture.str().find("remove (rm)") != std::string::npos);
     CHECK(capture.str().find("update (up)") != std::string::npos);

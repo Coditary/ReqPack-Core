@@ -40,7 +40,7 @@ ActionType parse_action_token(const std::string& command) {
     if (normalizedCommand == "search" || normalizedCommand == "s" || normalizedCommand == "find") {
         return ActionType::SEARCH;
     }
-    if (normalizedCommand == "list") {
+    if (normalizedCommand == "list" || normalizedCommand == "ls") {
         return ActionType::LIST;
     }
     if (normalizedCommand == "info") {
@@ -55,7 +55,7 @@ ActionType parse_action_token(const std::string& command) {
     if (normalizedCommand == "audit") {
         return ActionType::AUDIT;
     }
-    if (normalizedCommand == "outdated") {
+    if (normalizedCommand == "outdated" || normalizedCommand == "out") {
         return ActionType::OUTDATED;
     }
     if (normalizedCommand == "host") {

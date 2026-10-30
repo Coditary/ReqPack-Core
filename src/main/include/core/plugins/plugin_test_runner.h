@@ -13,6 +13,7 @@ struct PluginTestInvocation {
     std::vector<std::string> caseFiles {};
     std::vector<std::string> caseDirectories {};
     std::optional<std::string> reportPath;
+    bool liveMode {false};
 };
 
 struct PluginTestCliParseResult {

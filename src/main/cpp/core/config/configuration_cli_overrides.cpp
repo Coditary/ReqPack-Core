@@ -195,7 +195,11 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
         overrides.configPath = std::filesystem::path(customConfig.value());
         return true;
     }
-    if (argument == "--config") {
+    if (const std::optional<std::string> shortConfig = inline_value("-c=")) {
+        overrides.configPath = std::filesystem::path(shortConfig.value());
+        return true;
+    }
+    if (argument == "--config" || argument == "-c") {
         if (require_value(value))
             overrides.configPath = std::filesystem::path(value);
         return true;
@@ -256,7 +260,7 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
         overrides.enableBacktrace = true;
         return true;
     }
-    if (argument == "--dry-run") {
+    if (argument == "--dry-run" || argument == "-n") {
         overrides.dryRun = true;
         return true;
     }
@@ -264,13 +268,17 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
         overrides.jsonOutput = true;
         return true;
     }
-    if (argument == "--jobs") {
+    if (argument == "--jobs" || argument == "-j") {
         if (!require_value(value)) {
             set_error("missing value for --jobs");
             return true;
         }
         if (overrides.jobsMode == ExecutionJobsMode::MAX) {
             set_error("cannot combine --jobs with --jobs-max");
+            return true;
+        }
+        if (value == "max" || value == "0") {
+            overrides.jobsMode = ExecutionJobsMode::MAX;
             return true;
         }
         const std::optional<unsigned int> parsedJobs = configuration_internal::unsigned_int_from_string(value);
@@ -305,6 +313,19 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
     }
     if (argument == "--abort-on-unsafe") {
         overrides.onUnsafe = UnsafeAction::ABORT;
+        return true;
+    }
+    if (argument == "--on-unsafe") {
+        if (require_value(value)) {
+            if (value == "prompt") {
+                overrides.onUnsafe = UnsafeAction::PROMPT;
+                overrides.promptOnUnsafe = true;
+            } else if (value == "abort") {
+                overrides.onUnsafe = UnsafeAction::ABORT;
+            } else if (value == "ignore") {
+                overrides.onUnsafe = UnsafeAction::CONTINUE;
+            }
+        }
         return true;
     }
     if (argument == "--severity-threshold") {
@@ -366,6 +387,18 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
     }
     if (argument == "--prompt-on-unresolved-version") {
         overrides.onUnresolvedVersion = UnsafeAction::PROMPT;
+        return true;
+    }
+    if (argument == "--on-unresolved") {
+        if (require_value(value)) {
+            if (value == "prompt") {
+                overrides.onUnresolvedVersion = UnsafeAction::PROMPT;
+            } else if (value == "abort") {
+                overrides.onUnresolvedVersion = UnsafeAction::ABORT;
+            } else if (value == "ignore") {
+                overrides.onUnresolvedVersion = UnsafeAction::CONTINUE;
+            }
+        }
         return true;
     }
     if (argument == "--strict-ecosystem-mapping") {
@@ -437,7 +470,7 @@ bool consume_cli_config_flag(const std::vector<std::string>& arguments, std::siz
         overrides.useTransactionDb = false;
         return true;
     }
-    if (argument == "--non-interactive") {
+    if (argument == "--non-interactive" || argument == "-y" || argument == "--yes") {
         overrides.interactive = false;
         return true;
     }

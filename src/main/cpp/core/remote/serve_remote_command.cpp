@@ -1,8 +1,14 @@
 #include "serve_remote_internal.h"
+#include "core/remote/serve_remote_readonly_policy.h"
 
+#include "core/common/build_info.h"
 #include "core/execution/orchestrator.h"
+#include "core/registry/registry.h"
 #include "core/remote/remote_profiles.h"
+#include "core/security/security_bridge.h"
 #include "output/command_output.h"
+
+#include <rqp/security/security_status.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -11,6 +17,7 @@
 #include <fstream>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <unistd.h>
@@ -36,10 +43,50 @@ void configure_logger_from_config(Logger& logger, const ReqPackConfig& config) {
     }
 }
 
-bool is_readonly_safe_action(ActionType action) {
-    return action == ActionType::LIST || action == ActionType::SEARCH || action == ActionType::INFO ||
-           action == ActionType::OUTDATED || action == ActionType::SBOM || action == ActionType::AUDIT;
+std::optional<RemoteResponse> try_execute_query_fast_path_command(const std::vector<std::string>& tokens,
+                                                                  const ReqPackConfig& config, Logger& logger) {
+    if (serve_remote_readonly_policy::is_security_status_or_doctor_command(tokens)) {
+        Registry registry(config);
+        (void)registry.getDatabase()->ensureReady();
+        const SecuritySettings settings = security_settings_from(config);
+        const SecurityStatusReport report = build_security_status(settings, &registry);
+        std::ostringstream buffer;
+        print_security_status_report(report, buffer);
+        logger.logStdout(buffer.str());
+        logger.flushSync();
+        CommandOutput output;
+        output.mode = DisplayMode::REMOTE;
+        output.sessionItems = {"security status"};
+        output.blocks.push_back(make_command_raw_text_block(buffer.str()));
+        output.success = !report.hasBlockingIssues;
+        output.succeeded = report.hasBlockingIssues ? 0 : 1;
+        output.failed = report.hasBlockingIssues ? 1 : 0;
+        return RemoteResponse {.ok = !report.hasBlockingIssues, .output = std::move(output)};
+    }
+
+    if (serve_remote_readonly_policy::is_version_print_command(tokens)) {
+        const std::string line = config.applicationName + " " + reqpack_build_release_id();
+        logger.logStdout(line);
+        logger.flushSync();
+        CommandOutput output;
+        output.mode = DisplayMode::REMOTE;
+        output.sessionItems = {"version"};
+        output.blocks.push_back(make_command_raw_text_block(line + "\n"));
+        output.success = true;
+        output.succeeded = 1;
+        return RemoteResponse {.ok = true, .output = std::move(output)};
+    }
+
+    return std::nullopt;
 }
+
+} // namespace
+
+bool requests_allowed_in_readonly_mode(const std::vector<Request>& requests) {
+    return serve_remote_readonly_policy::requests_allowed_in_readonly_mode(requests);
+}
+
+namespace {
 
 class StdIoCapture {
   public:
@@ -167,21 +214,6 @@ bool reload_remote_state(RemoteServerState& state, Logger& logger, std::string& 
     }
 }
 
-bool requests_allowed_in_readonly_mode(const std::vector<Request>& requests) {
-    if (requests.empty()) {
-        return false;
-    }
-    for (const Request& request : requests) {
-        if (!is_readonly_safe_action(request.action)) {
-            return false;
-        }
-        if (!request.outputPath.empty()) {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool command_requires_close(const std::string& command) {
     const std::string trimmed = trim_copy(command);
     return trimmed == "quit" || trimmed == "exit";
@@ -251,11 +283,26 @@ RemoteResponse execute_command(Cli& cli, RemoteServerState& state, Logger& logge
             .ok = false, .output = command_output_message(DisplayMode::REMOTE, overrides.errorMessage.value(), false)};
     }
     const ReqPackConfig effectiveConfig = apply_config_overrides(snapshot.config, overrides);
+
+    if (snapshot.options.readonly &&
+        serve_remote_readonly_policy::command_line_blocked_in_readonly_mode(mergedTokens)) {
+        return RemoteResponse {
+            .ok = false, .output = command_output_message(DisplayMode::REMOTE, "remote server is readonly", false)};
+    }
+
     const std::vector<Request> requests = cli.parse(mergedTokens, effectiveConfig);
     if (requests.empty()) {
         if (!cli.lastParseError().empty()) {
             return RemoteResponse {.ok = false,
                                    .output = command_output_message(DisplayMode::REMOTE, cli.lastParseError(), false)};
+        }
+        if (std::optional<RemoteResponse> fastPath = try_execute_query_fast_path_command(mergedTokens, effectiveConfig, logger)) {
+            return fastPath.value();
+        }
+        if (snapshot.options.readonly &&
+            serve_remote_readonly_policy::command_line_blocked_in_readonly_mode(mergedTokens)) {
+            return RemoteResponse {
+                .ok = false, .output = command_output_message(DisplayMode::REMOTE, "remote server is readonly", false)};
         }
         return RemoteResponse {
             .ok = false,

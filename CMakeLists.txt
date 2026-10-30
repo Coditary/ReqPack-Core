@@ -328,6 +328,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         tests/unit/core/registry/registry_query_tests.cpp
         tests/unit/core/registry/registry_trust_tests.cpp
         tests/unit/core/remote/remote_profiles_tests.cpp
+        tests/unit/core/remote/serve_remote_readonly_policy_tests.cpp
         tests/unit/core/security/security_bridge_tests.cpp
         tests/unit/core/state/rqp_state_store_tests.cpp
         tests/unit/core/state/transaction_database_serialization_tests.cpp

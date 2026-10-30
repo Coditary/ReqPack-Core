@@ -1,10 +1,24 @@
 #include "core/plugins/plugin_test_runner.h"
 
+#include <cctype>
+
 namespace {
 
 bool starts_with(const std::string& value, const std::string& prefix) {
     return value.rfind(prefix, 0) == 0;
 }
+
+std::string to_lower_copy(const std::string& value) {
+    std::string normalized = value;
+    for (char& ch : normalized) {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    return normalized;
+}
+
+PluginTestCliParseResult parse_plugin_test_flags(const std::vector<std::string>& arguments,
+                                                   std::size_t startIndex,
+                                                   PluginTestCliParseResult result);
 
 } // namespace
 
@@ -14,6 +28,10 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
     std::size_t actionIndex = arguments.size();
     for (std::size_t i = 0; i < arguments.size(); ++i) {
         if (arguments[i] == "test-plugin") {
+            actionIndex = i;
+            break;
+        }
+        if (i + 1 < arguments.size() && arguments[i] == "plugin" && arguments[i + 1] == "test") {
             actionIndex = i;
             break;
         }
@@ -27,16 +45,37 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
         break;
     }
 
-    if (actionIndex >= arguments.size() || arguments[actionIndex] != "test-plugin") {
+    if (actionIndex >= arguments.size()) {
         return result;
     }
 
-    result.matched = true;
+    if (arguments[actionIndex] == "test-plugin") {
+        result.matched = true;
+        return parse_plugin_test_flags(arguments, actionIndex + 1, result);
+    }
 
-    for (std::size_t i = actionIndex + 1; i < arguments.size(); ++i) {
+    if (actionIndex + 1 < arguments.size() && arguments[actionIndex] == "plugin" &&
+        arguments[actionIndex + 1] == "test") {
+        result.matched = true;
+        return parse_plugin_test_flags(arguments, actionIndex + 2, result);
+    }
+
+    return result;
+}
+
+namespace {
+
+PluginTestCliParseResult parse_plugin_test_flags(const std::vector<std::string>& arguments,
+                                                   std::size_t startIndex,
+                                                   PluginTestCliParseResult result) {
+    for (std::size_t i = startIndex; i < arguments.size(); ++i) {
         const std::string& argument = arguments[i];
         if (argument == "-h" || argument == "--help") {
             result.helpRequested = true;
+            continue;
+        }
+        if (argument == "--live") {
+            result.invocation.liveMode = true;
             continue;
         }
         if (argument == "--plugin" || starts_with(argument, "--plugin=")) {
@@ -114,6 +153,18 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
     }
 
     if (!result.helpRequested) {
+        if (result.invocation.liveMode) {
+            bool hasLivePreset = false;
+            for (const std::string& preset : result.invocation.presets) {
+                if (to_lower_copy(preset) == "live") {
+                    hasLivePreset = true;
+                    break;
+                }
+            }
+            if (!hasLivePreset) {
+                result.invocation.presets.push_back("live");
+            }
+        }
         if (result.invocation.plugin.empty()) {
             result.error = "test-plugin requires --plugin";
             return result;
@@ -127,6 +178,8 @@ PluginTestCliParseResult parse_plugin_test_invocation(const std::vector<std::str
 
     return result;
 }
+
+} // namespace
 
 void print_plugin_test_help(std::ostream& output) {
     output << "rqp test-plugin - Run hermetic plugin conformance cases\n"
@@ -142,8 +195,10 @@ void print_plugin_test_help(std::ostream& output) {
            << "  --case <file.lua>       Adds one Lua test case file\n"
            << "  --cases <directory>     Adds all *.lua test case files from directory\n"
            << "  --report <file.json>    Writes JSON summary report\n"
+           << "  --live                  Runs .reqpack-test/live/ cases against real exec (no fakeExec)\n"
            << "  -h,--help               Shows this help\n"
            << "\n"
-           << "Known presets: core\n"
-           << "Case file must return Lua table with request, fakeExec, and expect sections.\n";
+           << "Known presets: core, live\n"
+           << "Hermetic case files use request, fakeExec, and expect sections.\n"
+           << "Live case files use request and expect (optional expect.minItems, expect.containsName).\n";
 }
