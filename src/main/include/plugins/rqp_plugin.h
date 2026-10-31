@@ -85,7 +85,6 @@ class RqpPlugin final : public IPlugin {
     static bool repositoryCandidateIsNewer(const RqpInstalledPackage& installed, const RqRepositoryPackage& candidate);
     std::vector<RqRepositoryIndex> loadRepositoryIndexes(const PluginCallContext& context) const;
     static std::string readTextFile(const std::filesystem::path& path);
-    static std::string sha256Hex(const std::string& bytes);
     static std::filesystem::path localPathForUrl(const std::string& url);
     static std::filesystem::path downloadPackageArtifact(const PluginCallContext& context, const std::string& url);
     bool initialized_ {false};

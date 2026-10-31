@@ -73,7 +73,7 @@ class RecordingDisplay final : public IDisplay {
     void onItemBegin(const std::string&, const std::string&) override {}
     void onItemProgress(const std::string&, const DisplayProgressMetrics&) override {}
     void onItemStep(const std::string&, const std::string&) override {}
-    void onItemSuccess(const std::string&) override {}
+    void onItemSuccess(const std::string&, const std::string& = {}) override {}
     void onItemSkipped(const std::string&, const std::string&) override {}
     void onItemFailure(const std::string&, const std::string&) override {}
     void onTableBegin(const std::vector<std::string>&) override {}
@@ -136,24 +136,26 @@ TEST_CASE("sbom exporter renders default table output", "[unit][sbom][export]") 
                       graph);
 
     const std::string rendered = exporter.renderGraph(graph, request);
-    CHECK(rendered.find('\t') == std::string::npos);
-    CHECK(rendered.find("SYSTEM NAME                         VERSION SOURCE") != std::string::npos);
-    CHECK(rendered.find("maven  org.apache.logging.log4j:... 2.13.1  /tmp/source/with many path") != std::string::npos);
-    CHECK(rendered.find(std::string {"\n"} + std::string(44, ' ') + "parts/example artifact.jar\n") !=
-          std::string::npos);
+    CHECK(rendered.find("System") != std::string::npos);
+    CHECK(rendered.find("Name") != std::string::npos);
+    CHECK(rendered.find("Version") != std::string::npos);
+    CHECK(rendered.find("Source") != std::string::npos);
+    CHECK(rendered.find("maven") != std::string::npos);
+    CHECK(rendered.find("log4j-core") != std::string::npos);
+    CHECK(rendered.find("2.13.1") != std::string::npos);
+    CHECK(rendered.find("/tmp/source/with many path parts/example artifact.jar") != std::string::npos);
 }
 
-TEST_CASE("sbom exporter colorizes terminal table output", "[unit][sbom][export]") {
+TEST_CASE("sbom exporter table uses shared command output layout", "[unit][sbom][export]") {
     ScopedEnvVar columns {"COLUMNS", "72"};
-    ScopedEnvVar noColor {"NO_COLOR", nullptr};
-    ScopedEnvVar forceColor {"FORCE_COLOR", "1"};
     SbomExporter exporter;
     Request request;
     request.action = ActionType::SBOM;
 
     const std::string rendered = exporter.renderGraph(make_graph(), request);
-    CHECK(rendered.find("\033[1;31mnpm") != std::string::npos);
-    CHECK(rendered.find("\033[90m-\033[0m") != std::string::npos);
+    CHECK(rendered.find("System") != std::string::npos);
+    CHECK(rendered.find("npm") != std::string::npos);
+    CHECK(rendered.find("react") != std::string::npos);
 }
 
 TEST_CASE("sbom exporter supports no-wrap and wide table flags", "[unit][sbom][export]") {
@@ -176,7 +178,6 @@ TEST_CASE("sbom exporter supports no-wrap and wide table flags", "[unit][sbom][e
     const std::string rendered = exporter.renderGraph(graph, request);
     CHECK(rendered.find("/tmp/source/with many path parts/example artifact.jar and more sections") !=
           std::string::npos);
-    CHECK(rendered.find(std::string {"\n"} + std::string(44, ' ') + "parts/example") == std::string::npos);
 }
 
 TEST_CASE("sbom exporter renders raw json output", "[unit][sbom][export]") {

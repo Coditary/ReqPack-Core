@@ -1,6 +1,7 @@
 #include "core/registry/registry_json_parser.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <algorithm>
@@ -25,12 +26,9 @@ std::string read_text_file(const std::filesystem::path& path) {
 }
 
 ptree parse_json_tree(const std::string& json, const std::filesystem::path& path) {
-    std::istringstream input(json);
     ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-    } catch (const std::exception& error) {
-        throw std::runtime_error("invalid registry json '" + path.string() + "': " + error.what());
+    if (!rqp_parse_json_tree(json, tree)) {
+        throw std::runtime_error("invalid registry json '" + path.string() + "'");
     }
     return tree;
 }

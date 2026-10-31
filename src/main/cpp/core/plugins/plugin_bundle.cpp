@@ -2,9 +2,10 @@
 
 #include "core/manifest/manifest_path_resolver.h"
 
+#include <rqp/security/json_util.h>
+
 #include <sol/sol.hpp>
 
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <algorithm>
@@ -31,21 +32,6 @@ std::string trim_copy(const std::string& value) {
     }
     const std::size_t last = value.find_last_not_of(" \t\r\n");
     return value.substr(first, last - first + 1);
-}
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
 }
 
 std::string read_text_file(const std::filesystem::path& path) {
@@ -88,7 +74,7 @@ std::vector<std::string> load_string_array(const boost::optional<const ptree&>& 
 }
 
 std::optional<PluginBundleMetadata> parse_metadata_json(const std::filesystem::path& path) {
-    const std::optional<ptree> parsed = parse_json_tree(read_text_file(path));
+    const std::optional<ptree> parsed = rqp_try_parse_json_tree(read_text_file(path));
     if (!parsed.has_value()) {
         return std::nullopt;
     }

@@ -1,5 +1,7 @@
 #include "rq_package_internal.h"
 
+#include "core/common/sha256_digest.h"
+
 #include "core/common/temp_directory.h"
 
 #include <cstdlib>
@@ -106,7 +108,7 @@ RqPackageLayout load_package_layout_impl(const std::filesystem::path& packagePat
         }
 
         const std::string expectedHash = load_payload_hash(payloadHashContent.value());
-        const std::string actualHash = sha256_hex(payloadArchiveBytes.value());
+        const std::string actualHash = reqpack_sha256_hex(payloadArchiveBytes.value());
         if (actualHash != expectedHash) {
             throw std::runtime_error("payload sha256 mismatch");
         }

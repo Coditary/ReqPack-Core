@@ -1,6 +1,6 @@
 #include "rq_package_internal.h"
 
-#include <openssl/sha.h>
+#include "core/common/sha256_digest.h"
 
 #include <zstd.h>
 
@@ -399,7 +399,7 @@ PayloadBuildArtifacts build_payload_from_prebuilt(const RqMetadata& metadata,
     artifacts.archiveBytes = read_file(payloadArchivePath);
     const std::string hashContent = read_file(payloadHashPath);
     const std::string expectedHash = load_payload_hash(hashContent);
-    const std::string actualHash = sha256_hex(artifacts.archiveBytes);
+    const std::string actualHash = reqpack_sha256_hex(artifacts.archiveBytes);
     if (actualHash != expectedHash) {
         throw std::runtime_error("payload sha256 mismatch");
     }
@@ -426,7 +426,7 @@ PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& paylo
     PayloadBuildArtifacts artifacts;
     artifacts.hasPayload = true;
     artifacts.archiveBytes = zstd_compress(payloadTar);
-    const std::string hash = sha256_hex(artifacts.archiveBytes);
+    const std::string hash = reqpack_sha256_hex(artifacts.archiveBytes);
     artifacts.hashContent = hash + "  payload/payload.tar.zst\n";
     artifacts.metadata = RqPayloadMetadata {
         .path = "payload/payload.tar.zst",
@@ -438,18 +438,6 @@ PayloadBuildArtifacts build_payload_from_tree(const std::filesystem::path& paylo
         .sizeInstalledExpected = installedSize,
     };
     return artifacts;
-}
-
-std::string sha256_hex(const std::string& bytes) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
-    SHA256(reinterpret_cast<const unsigned char*>(bytes.data()), bytes.size(), digest.data());
-
-    std::ostringstream stream;
-    stream << std::hex << std::setfill('0');
-    for (unsigned char value : digest) {
-        stream << std::setw(2) << static_cast<int>(value);
-    }
-    return stream.str();
 }
 
 std::string load_payload_hash(const std::string& hashFileContent) {

@@ -174,33 +174,63 @@ void rewrite_security_gateway_package_requests(std::vector<Request>& requests, R
     requests = {std::move(rewritten)};
 }
 
+void apply_registry_package_rewrite(Request& request, const RegistryDatabase* database,
+                                    const std::string& packageSpecifier) {
+    if (database == nullptr || request.system.empty() || request.usesLocalTarget || packageSpecifier.empty()) {
+        return;
+    }
+
+    const std::size_t versionSeparator = packageSpecifier.rfind('@');
+    const std::string lookupName = (versionSeparator == std::string::npos || versionSeparator == 0)
+                                       ? packageSpecifier
+                                       : packageSpecifier.substr(0, versionSeparator);
+    const std::optional<RegistryRecord> record = database->getRecord(lookupName);
+    if (!record.has_value() || !registry_record_is_package_entry(record.value())) {
+        return;
+    }
+
+    request.system = registry_record_target_system(record.value());
+    request.packages = {packageSpecifier};
+    if (!record->source.empty() && !request_has_internal_rqp_repository_flag(request, record->source)) {
+        request.flags.push_back(internal_rqp_repository_flag(record->source));
+    }
+}
+
 void rewrite_registry_package_requests(std::vector<Request>& requests, const RegistryDatabase* database) {
     if (database == nullptr) {
         return;
     }
 
-    for (Request& request : requests) {
+    std::vector<Request> expandedRequests;
+    expandedRequests.reserve(requests.size());
+
+    for (Request request : requests) {
         if (request.system.empty() || request.usesLocalTarget) {
+            expandedRequests.push_back(std::move(request));
             continue;
         }
 
-        const std::string lookupName = registry_lookup_name_from_request(request);
-        const std::optional<RegistryRecord> record = database->getRecord(lookupName);
-        if (!record.has_value() || !registry_record_is_package_entry(record.value())) {
+        if (request.packages.empty()) {
+            apply_registry_package_rewrite(request, database, package_specifier_from_request(request));
+            expandedRequests.push_back(std::move(request));
             continue;
         }
 
-        const std::string packageSpecifier = package_specifier_from_request(request);
-        if (packageSpecifier.empty()) {
+        if (request.packages.size() == 1) {
+            apply_registry_package_rewrite(request, database, request.packages.front());
+            expandedRequests.push_back(std::move(request));
             continue;
         }
 
-        request.system = registry_record_target_system(record.value());
-        request.packages = {packageSpecifier};
-        if (!record->source.empty() && !request_has_internal_rqp_repository_flag(request, record->source)) {
-            request.flags.push_back(internal_rqp_repository_flag(record->source));
+        for (const std::string& packageSpecifier : request.packages) {
+            Request slice = request;
+            slice.packages = {packageSpecifier};
+            apply_registry_package_rewrite(slice, database, packageSpecifier);
+            expandedRequests.push_back(std::move(slice));
         }
     }
+
+    requests = std::move(expandedRequests);
 }
 
 void cleanup_temp_files(const std::vector<std::filesystem::path>& tempFiles) {

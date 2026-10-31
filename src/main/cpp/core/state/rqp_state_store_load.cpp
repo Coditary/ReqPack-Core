@@ -1,6 +1,7 @@
 #include "core/state/rqp_state_store.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <fstream>
@@ -10,21 +11,6 @@
 namespace {
 
 using boost::property_tree::ptree;
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
 
 std::string required_string(const ptree& tree, const std::string& key) {
     const auto value = tree.get_optional<std::string>(key);
@@ -62,7 +48,7 @@ std::optional<RqpInstalledPackage> RqpStateStore::loadInstalled(const std::files
 }
 
 RqStateSource RqpStateStore::parseSourceJson(const std::string& content) {
-    const std::optional<ptree> parsed = parse_json_tree(content);
+    const std::optional<ptree> parsed = rqp_try_parse_json_tree(content);
     if (!parsed.has_value()) {
         throw std::runtime_error("invalid source.json");
     }

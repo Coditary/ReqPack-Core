@@ -10,8 +10,10 @@
 #include "output/logger.h"
 #include "output/package_info_format.h"
 #include "output/package_table_format.h"
+#include "output/query_result_json.h"
 
 #include <chrono>
+#include <iomanip>
 #include <sstream>
 #include <unistd.h>
 #include <utility>
@@ -147,13 +149,24 @@ CommandOutput package_table_output(ActionType action, const std::vector<Request>
     return output;
 }
 
-std::string format_search_result_footer(const std::vector<Request>& requests, const std::size_t itemCount,
-                                        const int searchElapsedMs, const int totalElapsedMs) {
+std::string format_search_result_footer(const std::vector<Request>& requests, const std::vector<PackageInfo>& items,
+                                        const int totalElapsedMs) {
     std::ostringstream footer;
-    footer << itemCount << (itemCount == 1 ? " package found" : " packages found") << " (search " << searchElapsedMs
-           << "ms, total " << totalElapsedMs << "ms)";
+    const std::size_t itemCount = items.size();
+    if (itemCount == 0) {
+        footer << "No packages found.";
+        return footer.str();
+    }
+    footer << itemCount << (itemCount == 1 ? " package found" : " packages found") << " in " << std::fixed
+           << std::setprecision(2) << (static_cast<double>(totalElapsedMs) / 1000.0) << 's';
     if (!requests.empty() && !requests.front().system.empty()) {
-        footer << " • Run 'rqp install " << requests.front().system << " <name>' to install";
+        std::string installTarget = requests.front().system + ":<name>";
+        if (itemCount == 1) {
+            installTarget = requests.front().system + ":" + package_table_display_name(items.front().name);
+        }
+        footer << ". Run 'rqp install " << installTarget << "' to install.";
+    } else {
+        footer << '.';
     }
     return footer.str();
 }
@@ -256,26 +269,33 @@ namespace orchestrator_internal {
 
 int run_query_action(ActionType action, const std::vector<Request>& requests, Executer* executor,
                      const ReqPackConfig& config) {
+    const bool jsonOutput = config.display.jsonOutput;
+
     if (action == ActionType::LIST) {
-        render_command_output(package_table_output(ActionType::LIST, requests, collect_list_items(requests, executor)));
+        const std::vector<PackageInfo> items = collect_list_items(requests, executor);
+        if (jsonOutput) {
+            emit_query_packages_json(ActionType::LIST, items);
+            return 0;
+        }
+        render_command_output(package_table_output(ActionType::LIST, requests, items));
         return 0;
     }
 
     if (action == ActionType::OUTDATED) {
-        render_command_output(
-            package_table_output(ActionType::OUTDATED, requests, collect_outdated_items(requests, executor)));
+        const std::vector<PackageInfo> items = collect_outdated_items(requests, executor);
+        if (jsonOutput) {
+            emit_query_packages_json(ActionType::OUTDATED, items);
+            return 0;
+        }
+        render_command_output(package_table_output(ActionType::OUTDATED, requests, items));
         return 0;
     }
 
     if (action == ActionType::SEARCH) {
         const auto wallStartedAt = std::chrono::steady_clock::now();
-        const auto searchStartedAt = wallStartedAt;
         const std::vector<PackageInfo> items = collect_search_items(requests, executor);
-        const int searchElapsedMs = static_cast<int>(
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - searchStartedAt)
-                .count());
 
-        if (search_requests_are_interactive(requests) && isatty(STDIN_FILENO) != 0) {
+        if (!jsonOutput && search_requests_are_interactive(requests) && isatty(STDIN_FILENO) != 0) {
             if (const std::optional<SearchInteractiveSelection> selection =
                     pick_search_result_interactive(items, requests.front().system, true);
                 selection.has_value()) {
@@ -289,17 +309,26 @@ int run_query_action(ActionType action, const std::vector<Request>& requests, Ex
             return 0;
         }
 
+        if (jsonOutput) {
+            emit_query_packages_json(ActionType::SEARCH, items);
+            return 0;
+        }
+
         render_command_output(package_search_output(requests, items, executor));
         const int totalElapsedMs = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
                                                         std::chrono::steady_clock::now() - wallStartedAt)
                                                         .count());
-        Logger::instance().logStdout(
-            format_search_result_footer(requests, items.size(), searchElapsedMs, totalElapsedMs));
+        Logger::instance().displayUnindentedText(format_search_result_footer(requests, items, totalElapsedMs));
         Logger::instance().flushSync();
         return 0;
     }
 
     const PackageInfo item = executor->info(requests.front());
+    if (jsonOutput) {
+        const CommandOutput output = package_info_output(requests.front(), item);
+        emit_query_info_json(requests.front(), item, output.success);
+        return output.success ? 0 : 1;
+    }
     const CommandOutput output = package_info_output(requests.front(), item);
     render_command_output(output);
     return output.success ? 0 : 1;

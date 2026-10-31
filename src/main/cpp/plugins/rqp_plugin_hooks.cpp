@@ -9,7 +9,8 @@
 #include "plugins/exec_rules.h"
 #include "plugins/lua_bridge_binding_helpers.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <curl/curl.h>
@@ -27,21 +28,6 @@
 namespace {
 
 using boost::property_tree::ptree;
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
 
 ArchiveExtractionOptions archive_options_from_config(const ReqPackConfig& config) {
     return ArchiveExtractionOptions {
@@ -411,7 +397,7 @@ bool RqpPlugin::runHook(const PluginCallContext& context, const RqPackageLayout&
 
     std::vector<ManifestEntry> manifest;
     for (const std::string& payload : rqp_plugin_take_runtime_host_artifacts()) {
-        const auto tree = parse_json_tree(payload);
+        const auto tree = rqp_try_parse_json_tree(payload);
         if (!tree.has_value()) {
             continue;
         }

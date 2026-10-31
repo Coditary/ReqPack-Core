@@ -1,6 +1,7 @@
 #include "rq_package_internal.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <sol/sol.hpp>
@@ -12,49 +13,6 @@
 namespace {
 
 using boost::property_tree::ptree;
-
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size());
-    for (char ch : value) {
-        switch (ch) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            escaped.push_back(ch);
-            break;
-        }
-    }
-    return escaped;
-}
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
 
 std::vector<std::string> parse_string_or_array_field(const ptree& tree, const std::string& key) {
     if (const auto node = tree.get_child_optional(key)) {
@@ -124,7 +82,7 @@ std::vector<RqBinaryEntry> load_binaries(const boost::optional<const ptree&>& va
 namespace rq_package_internal {
 
 RqMetadata parse_metadata_json_impl(const std::string& content) {
-    const std::optional<ptree> parsed = parse_json_tree(content);
+    const std::optional<ptree> parsed = rqp_try_parse_json_tree(content);
     if (!parsed.has_value()) {
         throw std::runtime_error("invalid metadata json");
     }
@@ -178,26 +136,26 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
     std::ostringstream stream;
     stream << "{\n";
     stream << "  \"formatVersion\": " << metadata.formatVersion << ",\n";
-    stream << "  \"name\": \"" << json_escape(metadata.name) << "\",\n";
-    stream << "  \"version\": \"" << json_escape(metadata.version) << "\",\n";
+    stream << "  \"name\": \"" << rqp_json_escape(metadata.name) << "\",\n";
+    stream << "  \"version\": \"" << rqp_json_escape(metadata.version) << "\",\n";
     stream << "  \"release\": " << metadata.release << ",\n";
     stream << "  \"revision\": " << metadata.revision << ",\n";
-    stream << "  \"summary\": \"" << json_escape(metadata.summary) << "\",\n";
-    stream << "  \"description\": \"" << json_escape(metadata.description) << "\",\n";
-    stream << "  \"license\": \"" << json_escape(metadata.license) << "\",\n";
-    stream << "  \"architecture\": \"" << json_escape(rq_normalize_architecture(metadata.architecture)) << "\",\n";
+    stream << "  \"summary\": \"" << rqp_json_escape(metadata.summary) << "\",\n";
+    stream << "  \"description\": \"" << rqp_json_escape(metadata.description) << "\",\n";
+    stream << "  \"license\": \"" << rqp_json_escape(metadata.license) << "\",\n";
+    stream << "  \"architecture\": \"" << rqp_json_escape(rq_normalize_architecture(metadata.architecture)) << "\",\n";
     stream << "  \"system\": [";
     const auto systems = rq_normalize_systems(metadata.systems);
     for (std::size_t index = 0; index < systems.size(); ++index) {
         if (index > 0) {
             stream << ", ";
         }
-        stream << "\"" << json_escape(systems[index]) << "\"";
+        stream << "\"" << rqp_json_escape(systems[index]) << "\"";
     }
     stream << "],\n";
-    stream << "  \"vendor\": \"" << json_escape(metadata.vendor) << "\",\n";
-    stream << "  \"maintainerEmail\": \"" << json_escape(metadata.maintainerEmail) << "\",\n";
-    stream << "  \"url\": \"" << json_escape(metadata.url) << "\"";
+    stream << "  \"vendor\": \"" << rqp_json_escape(metadata.vendor) << "\",\n";
+    stream << "  \"maintainerEmail\": \"" << rqp_json_escape(metadata.maintainerEmail) << "\",\n";
+    stream << "  \"url\": \"" << rqp_json_escape(metadata.url) << "\"";
 
     if (!metadata.tags.empty()) {
         stream << ",\n  \"tags\": [";
@@ -205,21 +163,21 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
             if (index > 0) {
                 stream << ", ";
             }
-            stream << "\"" << json_escape(metadata.tags[index]) << "\"";
+            stream << "\"" << rqp_json_escape(metadata.tags[index]) << "\"";
         }
         stream << ']';
     }
     if (!metadata.homepage.empty()) {
-        stream << ",\n  \"homepage\": \"" << json_escape(metadata.homepage) << "\"";
+        stream << ",\n  \"homepage\": \"" << rqp_json_escape(metadata.homepage) << "\"";
     }
     if (!metadata.sourceUrl.empty()) {
-        stream << ",\n  \"sourceUrl\": \"" << json_escape(metadata.sourceUrl) << "\"";
+        stream << ",\n  \"sourceUrl\": \"" << rqp_json_escape(metadata.sourceUrl) << "\"";
     }
     if (!metadata.packager.empty()) {
-        stream << ",\n  \"packager\": \"" << json_escape(metadata.packager) << "\"";
+        stream << ",\n  \"packager\": \"" << rqp_json_escape(metadata.packager) << "\"";
     }
     if (!metadata.buildDate.empty()) {
-        stream << ",\n  \"buildDate\": \"" << json_escape(metadata.buildDate) << "\"";
+        stream << ",\n  \"buildDate\": \"" << rqp_json_escape(metadata.buildDate) << "\"";
     }
     if (!metadata.depends.empty()) {
         stream << ",\n  \"depends\": [";
@@ -227,7 +185,7 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
             if (index > 0) {
                 stream << ", ";
             }
-            stream << "\"" << json_escape(metadata.depends[index]) << "\"";
+            stream << "\"" << rqp_json_escape(metadata.depends[index]) << "\"";
         }
         stream << ']';
     }
@@ -237,7 +195,7 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
             if (index > 0) {
                 stream << ", ";
             }
-            stream << "\"" << json_escape(metadata.provides[index]) << "\"";
+            stream << "\"" << rqp_json_escape(metadata.provides[index]) << "\"";
         }
         stream << ']';
     }
@@ -247,7 +205,7 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
             if (index > 0) {
                 stream << ", ";
             }
-            stream << "\"" << json_escape(metadata.conflicts[index]) << "\"";
+            stream << "\"" << rqp_json_escape(metadata.conflicts[index]) << "\"";
         }
         stream << ']';
     }
@@ -257,18 +215,18 @@ std::string metadata_json_impl(const RqMetadata& metadata) {
             if (index > 0) {
                 stream << ", ";
             }
-            stream << "\"" << json_escape(metadata.replaces[index]) << "\"";
+            stream << "\"" << rqp_json_escape(metadata.replaces[index]) << "\"";
         }
         stream << ']';
     }
     if (metadata.payload.has_value()) {
         const auto& payload = metadata.payload.value();
         stream << ",\n  \"payload\": {\n";
-        stream << "    \"path\": \"" << json_escape(payload.path) << "\",\n";
-        stream << "    \"archive\": \"" << json_escape(payload.archive) << "\",\n";
-        stream << "    \"compression\": \"" << json_escape(payload.compression) << "\",\n";
-        stream << "    \"hashAlgorithm\": \"" << json_escape(payload.hashAlgorithm) << "\",\n";
-        stream << "    \"hashFile\": \"" << json_escape(payload.hashFile) << "\",\n";
+        stream << "    \"path\": \"" << rqp_json_escape(payload.path) << "\",\n";
+        stream << "    \"archive\": \"" << rqp_json_escape(payload.archive) << "\",\n";
+        stream << "    \"compression\": \"" << rqp_json_escape(payload.compression) << "\",\n";
+        stream << "    \"hashAlgorithm\": \"" << rqp_json_escape(payload.hashAlgorithm) << "\",\n";
+        stream << "    \"hashFile\": \"" << rqp_json_escape(payload.hashFile) << "\",\n";
         stream << "    \"sizeCompressed\": " << payload.sizeCompressed << ",\n";
         stream << "    \"sizeInstalledExpected\": " << payload.sizeInstalledExpected << "\n";
         stream << "  }";

@@ -2,12 +2,8 @@
 
 #include "core/archive/archive_resolver.h"
 
-#include <openssl/sha.h>
-
-#include <array>
 #include <filesystem>
 #include <fstream>
-#include <iomanip>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -69,18 +65,6 @@ std::string RqpPlugin::readTextFile(const std::filesystem::path& path) {
     std::ostringstream buffer;
     buffer << input.rdbuf();
     return buffer.str();
-}
-
-std::string RqpPlugin::sha256Hex(const std::string& bytes) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
-    SHA256(reinterpret_cast<const unsigned char*>(bytes.data()), bytes.size(), digest.data());
-
-    std::ostringstream stream;
-    stream << std::hex << std::setfill('0');
-    for (unsigned char value : digest) {
-        stream << std::setw(2) << static_cast<int>(value);
-    }
-    return stream.str();
 }
 
 std::filesystem::path RqpPlugin::localPathForUrl(const std::string& url) {

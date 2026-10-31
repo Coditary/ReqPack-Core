@@ -320,6 +320,7 @@ if(REQPACK_CORE_BUILD_TESTS)
         tests/unit/core/planning/planner_core_tests.cpp
         tests/unit/core/planning/request_resolution_tests.cpp
         tests/unit/core/planning/planner_dependency_policy_tests.cpp
+        tests/unit/core/execution/orchestrator_request_prep_tests.cpp
         tests/unit/core/query/package_search_query_tests.cpp
         tests/unit/core/execution/executor_update_tests.cpp
         tests/unit/core/execution/executor_task_graph_tests.cpp
@@ -352,6 +353,7 @@ if(REQPACK_CORE_BUILD_TESTS)
     target_include_directories(reqpack_core_unit_tests PRIVATE
         BEFORE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp
         ${SOL2_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         tests/cpp

@@ -2,40 +2,14 @@
 
 #include "core/plugins/plugin_bundle.h"
 
+#include <rqp/security/json_util.h>
+
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 
 namespace {
-
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size());
-    for (const char ch : value) {
-        switch (ch) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            escaped.push_back(ch);
-            break;
-        }
-    }
-    return escaped;
-}
 
 bool write_file(const std::filesystem::path& path, const std::string& content) {
     std::filesystem::create_directories(path.parent_path());
@@ -136,14 +110,14 @@ bool write_script_bundle(const std::filesystem::path& targetDirectory, const std
     return write_file(targetDirectory / "metadata.json", "{\n"
                                                          "  \"formatVersion\": 1,\n"
                                                          "  \"name\": \"" +
-                                                             json_escape(pluginName) +
+                                                             rqp_json_escape(pluginName) +
                                                              "\",\n"
                                                              "  \"version\": \"0.0.0\",\n"
                                                              "  \"summary\": \"" +
-                                                             json_escape(summary) +
+                                                             rqp_json_escape(summary) +
                                                              "\",\n"
                                                              "  \"description\": \"" +
-                                                             json_escape(summary) +
+                                                             rqp_json_escape(summary) +
                                                              "\",\n"
                                                              "  \"license\": \"unknown\"\n"
                                                              "}\n") &&

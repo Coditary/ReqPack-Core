@@ -1,6 +1,7 @@
 #include "rqp_plugin_internal.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <algorithm>
@@ -14,49 +15,6 @@
 namespace {
 
 using boost::property_tree::ptree;
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
-
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size());
-    for (char ch : value) {
-        switch (ch) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            escaped.push_back(ch);
-            break;
-        }
-    }
-    return escaped;
-}
 
 std::string normalize_manifest_path_string(const std::string& path) {
     std::error_code error;
@@ -102,13 +60,13 @@ bool RqpPlugin::persistInstalledState(const RqPackageLayout& layout, const std::
         return false;
     }
     sourceFile << "{\n"
-               << "  \"source\": \"" << json_escape(sourceType) << "\",\n"
-               << "  \"path\": \"" << json_escape(sourceValue) << "\",\n"
-               << "  \"repository\": \"" << json_escape(repository) << "\",\n"
-               << "  \"identity\": \"" << json_escape(layout.identity) << "\"";
+               << "  \"source\": \"" << rqp_json_escape(sourceType) << "\",\n"
+               << "  \"path\": \"" << rqp_json_escape(sourceValue) << "\",\n"
+               << "  \"repository\": \"" << rqp_json_escape(repository) << "\",\n"
+               << "  \"identity\": \"" << rqp_json_escape(layout.identity) << "\"";
     if (!requestName.empty()) {
         sourceFile << ",\n"
-                   << "  \"requestName\": \"" << json_escape(requestName) << "\"";
+                   << "  \"requestName\": \"" << rqp_json_escape(requestName) << "\"";
     }
     sourceFile << "\n}\n";
     std::ofstream manifestFile(layout.stateDir / "manifest.json", std::ios::binary | std::ios::trunc);
@@ -161,7 +119,7 @@ bool RqpPlugin::removeManifestArtifacts(const RqpInstalledPackage& installed) co
 
 std::vector<RqpPlugin::ManifestEntry> RqpPlugin::parseManifestJson(const std::string& content) {
     std::vector<ManifestEntry> manifest;
-    const auto tree = parse_json_tree(content);
+    const auto tree = rqp_try_parse_json_tree(content);
     if (!tree.has_value()) {
         return manifest;
     }
@@ -179,7 +137,7 @@ std::string RqpPlugin::manifestJson(const std::vector<ManifestEntry>& manifest) 
     stream << "[\n";
     for (std::size_t index = 0; index < manifest.size(); ++index) {
         const ManifestEntry& entry = manifest[index];
-        stream << "  {\"type\": \"" << json_escape(entry.type) << "\", \"path\": \"" << json_escape(entry.path)
+        stream << "  {\"type\": \"" << rqp_json_escape(entry.type) << "\", \"path\": \"" << rqp_json_escape(entry.path)
                << "\"}";
         if (index + 1 < manifest.size()) {
             stream << ',';

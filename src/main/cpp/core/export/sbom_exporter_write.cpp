@@ -1,5 +1,8 @@
 #include "sbom_exporter_internal.h"
 
+#include "core/export/sbom_exporter.h"
+
+#include "output/command_output.h"
 #include "output/diagnostic.h"
 #include "output/logger.h"
 
@@ -88,8 +91,13 @@ bool write_output_file(const std::string& rendered, const Request& request, cons
 } // namespace
 
 bool SbomExporter::exportGraph(const Graph& graph, const Request& request) const {
-    const std::string rendered = renderGraph(graph, request);
     const std::string outputPath = resolveOutputPath(request);
+    if (outputPath.empty() && resolveFormat(request) == SbomOutputFormat::TABLE) {
+        render_command_output(buildTableCommandOutput(graph, request));
+        return true;
+    }
+
+    const std::string rendered = renderGraph(graph, request);
     if (outputPath.empty()) {
         std::cout << rendered;
         if (rendered.empty() || rendered.back() != '\n') {

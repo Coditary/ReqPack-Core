@@ -2,7 +2,8 @@
 
 #include "core/packages/rq_package.h"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <rqp/security/json_util.h>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include <algorithm>
@@ -14,21 +15,6 @@
 namespace {
 
 using boost::property_tree::ptree;
-
-std::optional<ptree> parse_json_tree(const std::string& json) {
-    if (json.empty()) {
-        return std::nullopt;
-    }
-
-    std::istringstream input(json);
-    ptree tree;
-    try {
-        boost::property_tree::read_json(input, tree);
-        return tree;
-    } catch (...) {
-        return std::nullopt;
-    }
-}
 
 std::string to_lower_copy(std::string value) {
     std::transform(value.begin(), value.end(), value.begin(),
@@ -95,7 +81,7 @@ bool is_valid_sha256(const std::string& value) {
 namespace rq_repository_internal {
 
 RqRepositoryIndex parse_index_impl(const std::string& content, const std::string& source) {
-    const std::optional<ptree> parsed = parse_json_tree(content);
+    const std::optional<ptree> parsed = rqp_try_parse_json_tree(content);
     if (!parsed.has_value()) {
         throw std::runtime_error("invalid rqp repository index json");
     }

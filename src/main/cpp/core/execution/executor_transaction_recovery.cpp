@@ -135,6 +135,8 @@ Executer::createTaskGroupsFromRecords(const std::vector<TransactionItemRecord>& 
             groups.back().system != record.package.system) {
             groups.push_back(TaskGroup {
                 .action = record.package.action, .system = record.package.system, .flags = record.package.flags});
+        } else {
+            merge_task_group_flags(groups.back().flags, record.package.flags);
         }
         groups.back().packages.push_back(record.package);
         if (record.package.localTarget) {

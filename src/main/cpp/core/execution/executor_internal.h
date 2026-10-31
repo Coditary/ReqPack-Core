@@ -102,6 +102,14 @@ inline std::string package_item_id(const std::string& system, const Package& pac
     return system + ":" + package.name + "@" + package.version;
 }
 
+inline void merge_task_group_flags(std::vector<std::string>& target, const std::vector<std::string>& packageFlags) {
+    for (const std::string& flag : packageFlags) {
+        if (std::find(target.begin(), target.end(), flag) == target.end()) {
+            target.push_back(flag);
+        }
+    }
+}
+
 inline bool actionUsesDesiredStateFilter(const ActionType action) {
     return action == ActionType::INSTALL || action == ActionType::ENSURE || action == ActionType::REMOVE ||
            action == ActionType::UPDATE;

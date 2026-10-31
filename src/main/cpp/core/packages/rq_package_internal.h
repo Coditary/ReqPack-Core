@@ -56,7 +56,6 @@ std::vector<TarEntry> parse_tar_entries(const std::string& content);
 void validate_payload_metadata_shape(const RqPayloadMetadata& payload);
 std::vector<TarEntry> validate_payload_archive_bytes(const std::string& compressedBytes);
 std::string tar_bytes_from_entries(std::vector<TarWriteEntry> entries);
-std::string sha256_hex(const std::string& bytes);
 std::string load_payload_hash(const std::string& hashFileContent);
 std::string zstd_decompress(const std::string& compressed);
 void append_control_tree_files(std::vector<TarWriteEntry>& entries, const std::filesystem::path& root,

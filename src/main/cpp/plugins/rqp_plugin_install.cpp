@@ -1,3 +1,5 @@
+#include "core/common/sha256_digest.h"
+
 #include "rqp_plugin_internal.h"
 
 #include <algorithm>
@@ -11,7 +13,14 @@ bool RqpPlugin::install(const PluginCallContext& context, const std::vector<Pack
     recentEvents_.clear();
     const std::vector<RqRepositoryIndex> indexes = loadRepositoryIndexes(context);
     if (indexes.empty()) {
-        context.emitFailure("rqp repositories not configured");
+        const std::string message = "rqp repositories not configured";
+        for (const Package& package : packages) {
+            const std::string itemId = getPluginId() + ':' + package.name;
+            if (context.host != nullptr) {
+                context.host->emitFailure(itemId, message);
+            }
+            recentEvents_.push_back(PluginEventRecord {.name = "failed", .payload = message});
+        }
         return false;
     }
 
@@ -174,7 +183,7 @@ bool RqpPlugin::installResolvedPackage(const PluginCallContext& context, const P
 
     if (!resolvedPackage.packageSha256.empty()) {
         context.emitBeginStep("verify repository artifact sha256");
-        const std::string actualSha256 = sha256Hex(readTextFile(localArtifactPath));
+        const std::string actualSha256 = reqpack_sha256_hex(readTextFile(localArtifactPath));
         if (actualSha256 != resolvedPackage.packageSha256) {
             context.emitFailure("repository package sha256 mismatch");
             return false;

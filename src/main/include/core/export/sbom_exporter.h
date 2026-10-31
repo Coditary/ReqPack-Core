@@ -4,6 +4,8 @@
 #include "core/config/configuration.h"
 #include "core/plugins/plugin_metadata_provider.h"
 
+#include "output/command_output.h"
+
 #include <string>
 
 class SbomExporter {
@@ -12,7 +14,7 @@ class SbomExporter {
 
     SbomOutputFormat resolveFormat(const Request& request) const;
     std::string resolveOutputPath(const Request& request) const;
-    std::string renderTable(const Graph& graph, bool colorizeTable, bool disableWrap, bool wideTable) const;
+    CommandOutput buildTableCommandOutput(const Graph& graph, const Request& request) const;
     std::string renderJson(const Graph& graph, bool cyclonedx) const;
 
   public:

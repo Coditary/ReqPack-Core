@@ -95,7 +95,7 @@ class RecordingDisplay final : public IDisplay {
     void onItemBegin(const std::string&, const std::string&) override {}
     void onItemProgress(const std::string&, const DisplayProgressMetrics&) override {}
     void onItemStep(const std::string&, const std::string&) override {}
-    void onItemSuccess(const std::string&) override {}
+    void onItemSuccess(const std::string&, const std::string& = {}) override {}
     void onItemSkipped(const std::string&, const std::string&) override {}
     void onItemFailure(const std::string&, const std::string&) override {}
     void onTableBegin(const std::vector<std::string>&) override {}

@@ -77,6 +77,12 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
                            [&](const Package& package) { return samePackage(package, candidate); });
     };
 
+    auto displaySuccessfulPackages = [&](const std::vector<Package>& packages) {
+        for (const Package& package : packages) {
+            Logger::instance().displayItemSuccess(package_item_id(taskGroup.system, package), package.version);
+        }
+    };
+
     for (const Package& package : taskGroup.packages) {
         Logger::instance().displayItemBegin(package_item_id(taskGroup.system, package), package.name);
     }
@@ -94,14 +100,22 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
 
     if (this->dispatchTaskGroupToPlugin(executableTaskGroup)) {
         appendSuccessRecords(executableTaskGroup.packages);
+        displaySuccessfulPackages(executableTaskGroup.packages);
         return records;
     }
 
+    Logger::instance().flushSync();
+
     std::set<std::string> unavailablePackages;
+    std::string pluginFailureMessage;
+    bool pluginReportedFailure = false;
     if (IPlugin* plugin = this->registry->getPlugin(taskGroup.system); plugin != nullptr) {
         for (const PluginEventRecord& event : plugin->takeRecentEvents()) {
             if (event.name == "unavailable" && !event.payload.empty()) {
                 unavailablePackages.insert(event.payload);
+            } else if (event.name == "failed" && !event.payload.empty()) {
+                pluginReportedFailure = true;
+                pluginFailureMessage = event.payload;
             }
         }
     }
@@ -128,11 +142,25 @@ std::vector<Executer::TransactionRecord> Executer::executeTransactionalTaskGroup
     }
 
     appendSuccessRecords(succeededPackages);
+    displaySuccessfulPackages(succeededPackages);
     for (const Package& package : failedPackages) {
         const bool unavailable = unavailablePackages.find(packageRequestSpec(package)) != unavailablePackages.end();
         const std::string errorMessage = unavailable ? "package unavailable" : "plugin action failed";
-        Logger::instance().displayItemFailure(package_item_id(taskGroup.system, package),
-                                              package_failure_diagnostic(taskGroup.system, package.name, unavailable));
+        if (!pluginReportedFailure) {
+            if (Logger::instance().quietTransactionTranscript()) {
+                std::string reason = pluginFailureMessage;
+                if (unavailable) {
+                    reason = "package unavailable";
+                } else if (reason.empty()) {
+                    reason = "plugin action failed";
+                }
+                Logger::instance().displayItemFailure(package_item_id(taskGroup.system, package), reason);
+            } else {
+                Logger::instance().displayItemFailure(package_item_id(taskGroup.system, package),
+                                                      package_failure_diagnostic(taskGroup.system, package.name,
+                                                                                 unavailable));
+            }
+        }
         appendFailureRecord(package, errorMessage);
     }
 

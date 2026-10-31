@@ -69,6 +69,8 @@ std::vector<Executer::TaskGroup> Executer::createTaskGroups(const Graph& graph) 
         const Package& package = graph[vertex];
         if (groups.empty() || groups.back().action != package.action || groups.back().system != package.system) {
             groups.push_back(TaskGroup {.action = package.action, .system = package.system, .flags = package.flags});
+        } else {
+            merge_task_group_flags(groups.back().flags, package.flags);
         }
 
         groups.back().packages.push_back(package);

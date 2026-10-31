@@ -1,46 +1,8 @@
 #include "core/plugins/plugin_test_runner.h"
 
+#include <rqp/security/json_util.h>
+
 #include <sstream>
-
-namespace {
-
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size() + 8);
-    for (unsigned char c : value) {
-        switch (c) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            if (c < 0x20) {
-                std::ostringstream code;
-                code << "\\u" << std::hex << std::uppercase << static_cast<int>((c >> 12) & 0xF)
-                     << static_cast<int>((c >> 8) & 0xF) << static_cast<int>((c >> 4) & 0xF)
-                     << static_cast<int>(c & 0xF);
-                escaped += code.str();
-            } else {
-                escaped.push_back(static_cast<char>(c));
-            }
-            break;
-        }
-    }
-    return escaped;
-}
-
-} // namespace
 
 void print_plugin_test_report(const PluginTestRunReport& report, std::ostream& output) {
     for (const PluginTestCaseSummary& entry : report.cases) {
@@ -60,23 +22,23 @@ void print_plugin_test_report(const PluginTestRunReport& report, std::ostream& o
 std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
     std::ostringstream stream;
     stream << "{\n";
-    stream << "  \"plugin\": \"" << json_escape(report.pluginId) << "\",\n";
-    stream << "  \"pluginPath\": \"" << json_escape(report.pluginPath) << "\",\n";
+    stream << "  \"plugin\": \"" << rqp_json_escape(report.pluginId) << "\",\n";
+    stream << "  \"pluginPath\": \"" << rqp_json_escape(report.pluginPath) << "\",\n";
     stream << "  \"passed\": " << report.passed << ",\n";
     stream << "  \"failed\": " << report.failed << ",\n";
     stream << "  \"cases\": [\n";
     for (std::size_t index = 0; index < report.cases.size(); ++index) {
         const PluginTestCaseSummary& entry = report.cases[index];
         stream << "    {\n";
-        stream << "      \"name\": \"" << json_escape(entry.name) << "\",\n";
+        stream << "      \"name\": \"" << rqp_json_escape(entry.name) << "\",\n";
         stream << "      \"success\": " << (entry.success ? "true" : "false") << ",\n";
-        stream << "      \"message\": \"" << json_escape(entry.message) << "\",\n";
+        stream << "      \"message\": \"" << rqp_json_escape(entry.message) << "\",\n";
         stream << "      \"commands\": [";
         for (std::size_t commandIndex = 0; commandIndex < entry.commands.size(); ++commandIndex) {
             if (commandIndex != 0) {
                 stream << ", ";
             }
-            stream << '"' << json_escape(entry.commands[commandIndex]) << '"';
+            stream << '"' << rqp_json_escape(entry.commands[commandIndex]) << '"';
         }
         stream << "],\n";
         stream << "      \"stdout\": [";
@@ -84,7 +46,7 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (stdoutIndex != 0) {
                 stream << ", ";
             }
-            stream << '"' << json_escape(entry.stdoutLines[stdoutIndex]) << '"';
+            stream << '"' << rqp_json_escape(entry.stdoutLines[stdoutIndex]) << '"';
         }
         stream << "],\n";
         stream << "      \"stderr\": [";
@@ -92,7 +54,7 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (stderrIndex != 0) {
                 stream << ", ";
             }
-            stream << '"' << json_escape(entry.stderrLines[stderrIndex]) << '"';
+            stream << '"' << rqp_json_escape(entry.stderrLines[stderrIndex]) << '"';
         }
         stream << "],\n";
         stream << "      \"events\": [";
@@ -100,7 +62,7 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (eventIndex != 0) {
                 stream << ", ";
             }
-            stream << '"' << json_escape(entry.events[eventIndex]) << '"';
+            stream << '"' << rqp_json_escape(entry.events[eventIndex]) << '"';
         }
         stream << "],\n";
         stream << "      \"artifacts\": [";
@@ -108,7 +70,7 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (artifactIndex != 0) {
                 stream << ", ";
             }
-            stream << '"' << json_escape(entry.artifacts[artifactIndex]) << '"';
+            stream << '"' << rqp_json_escape(entry.artifacts[artifactIndex]) << '"';
         }
         stream << "],\n";
         stream << "      \"eventRecords\": [";
@@ -116,8 +78,8 @@ std::string plugin_test_report_to_json(const PluginTestRunReport& report) {
             if (eventRecordIndex != 0) {
                 stream << ", ";
             }
-            stream << "{\"name\":\"" << json_escape(entry.eventRecords[eventRecordIndex].name) << "\",\"payload\":\""
-                   << json_escape(entry.eventRecords[eventRecordIndex].payload) << "\"}";
+            stream << "{\"name\":\"" << rqp_json_escape(entry.eventRecords[eventRecordIndex].name) << "\",\"payload\":\""
+                   << rqp_json_escape(entry.eventRecords[eventRecordIndex].payload) << "\"}";
         }
         stream << "]\n";
         stream << "    }";

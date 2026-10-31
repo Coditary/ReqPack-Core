@@ -48,35 +48,9 @@ std::string package_display_name(const Package& package) {
 
 } // namespace sbom_exporter_internal
 
-namespace {
+#include <rqp/security/json_util.h>
 
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size() + 8);
-    for (unsigned char c : value) {
-        switch (c) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            escaped.push_back(static_cast<char>(c));
-            break;
-        }
-    }
-    return escaped;
-}
+namespace {
 
 std::string purl_name_for(const Package& package, const PluginSecurityMetadata& metadata) {
     if (package.name.empty()) {
@@ -131,24 +105,24 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
             const Package& package = graph[vertices[index]];
             stream << "    {\n";
             stream << "      \"type\": \"library\",\n";
-            stream << "      \"bom-ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package))
+            stream << "      \"bom-ref\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(package))
                    << "\",\n";
-            stream << "      \"name\": \"" << json_escape(sbom_exporter_internal::package_display_name(package))
+            stream << "      \"name\": \"" << rqp_json_escape(sbom_exporter_internal::package_display_name(package))
                    << "\"";
             if (!package.version.empty()) {
-                stream << ",\n      \"version\": \"" << json_escape(package.version) << "\"";
+                stream << ",\n      \"version\": \"" << rqp_json_escape(package.version) << "\"";
             }
 
             const std::string purl = purl_for(package, this->metadataProvider);
             if (!purl.empty()) {
-                stream << ",\n      \"purl\": \"" << json_escape(purl) << "\"";
+                stream << ",\n      \"purl\": \"" << rqp_json_escape(purl) << "\"";
             }
 
             stream << ",\n      \"properties\": [\n";
-            stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << json_escape(package.system) << "\"}";
+            stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << rqp_json_escape(package.system) << "\"}";
             if (!package.sourcePath.empty()) {
                 stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \""
-                       << json_escape(package.sourcePath) << "\"}";
+                       << rqp_json_escape(package.sourcePath) << "\"}";
             }
             if (package.localTarget) {
                 stream << ",\n        {\"name\": \"reqpack:localTarget\", \"value\": \"true\"}";
@@ -172,7 +146,7 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
                 }
                 firstDependency = false;
                 stream << "    {\n";
-                stream << "      \"ref\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(package))
+                stream << "      \"ref\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(package))
                        << "\",\n";
                 stream << "      \"dependsOn\": [";
                 auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
@@ -182,7 +156,7 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
                         stream << ", ";
                     }
                     firstEdge = false;
-                    stream << '"' << json_escape(sbom_exporter_internal::sbom_component_ref(graph[*adjacentIt])) << '"';
+                    stream << '"' << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(graph[*adjacentIt])) << '"';
                 }
                 stream << "]\n";
                 stream << "    }";
@@ -199,12 +173,12 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
     for (std::size_t index = 0; index < vertices.size(); ++index) {
         const Package& package = graph[vertices[index]];
         stream << "    {\n";
-        stream << "      \"system\": \"" << json_escape(package.system) << "\",\n";
-        stream << "      \"name\": \"" << json_escape(package.name) << "\",\n";
-        stream << "      \"displayName\": \"" << json_escape(sbom_exporter_internal::package_display_name(package))
+        stream << "      \"system\": \"" << rqp_json_escape(package.system) << "\",\n";
+        stream << "      \"name\": \"" << rqp_json_escape(package.name) << "\",\n";
+        stream << "      \"displayName\": \"" << rqp_json_escape(sbom_exporter_internal::package_display_name(package))
                << "\",\n";
-        stream << "      \"version\": \"" << json_escape(package.version) << "\",\n";
-        stream << "      \"sourcePath\": \"" << json_escape(package.sourcePath) << "\",\n";
+        stream << "      \"version\": \"" << rqp_json_escape(package.version) << "\",\n";
+        stream << "      \"sourcePath\": \"" << rqp_json_escape(package.sourcePath) << "\",\n";
         stream << "      \"localTarget\": " << (package.localTarget ? "true" : "false") << "\n";
         stream << "    }";
         if (index + 1 < vertices.size()) {
@@ -224,8 +198,8 @@ std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) c
             firstEdge = false;
             const Package& from = graph[boost::source(*edgeIt, graph)];
             const Package& to = graph[boost::target(*edgeIt, graph)];
-            stream << "    {\"from\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(from))
-                   << "\", \"to\": \"" << json_escape(sbom_exporter_internal::sbom_component_ref(to)) << "\"}";
+            stream << "    {\"from\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(from))
+                   << "\", \"to\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(to)) << "\"}";
         }
         stream << "\n  ]";
     }

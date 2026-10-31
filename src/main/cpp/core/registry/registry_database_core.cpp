@@ -1,4 +1,6 @@
 #include "core/registry/registry_database_core.h"
+
+#include "core/common/sha256_digest.h"
 #include "core/plugins/plugin_bundle.h"
 
 #include <algorithm>
@@ -7,8 +9,6 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <iomanip>
-#include <openssl/sha.h>
 #include <sstream>
 #include <string_view>
 
@@ -196,15 +196,7 @@ bool registry_database_is_valid_sha256(const std::string& value) {
 }
 
 std::string registry_database_sha256_hex(const std::string& value) {
-    std::array<unsigned char, SHA256_DIGEST_LENGTH> digest {};
-    SHA256(reinterpret_cast<const unsigned char*>(value.data()), value.size(), digest.data());
-
-    std::ostringstream stream;
-    stream << std::hex << std::setfill('0');
-    for (unsigned char byte : digest) {
-        stream << std::setw(2) << static_cast<int>(byte);
-    }
-    return stream.str();
+    return reqpack_sha256_hex(value);
 }
 
 std::string registry_database_serialize_write_scopes(const std::vector<RegistryWriteScope>& values) {

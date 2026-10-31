@@ -1,5 +1,7 @@
 #include "audit_exporter_internal.h"
 
+#include <rqp/security/json_util.h>
+
 #include <boost/graph/graph_traits.hpp>
 
 #include <algorithm>
@@ -40,34 +42,6 @@ std::string package_display_name(const Package& package) {
 } // namespace audit_exporter_internal
 
 namespace {
-
-std::string json_escape(const std::string& value) {
-    std::string escaped;
-    escaped.reserve(value.size() + 8);
-    for (unsigned char c : value) {
-        switch (c) {
-        case '\\':
-            escaped += "\\\\";
-            break;
-        case '"':
-            escaped += "\\\"";
-            break;
-        case '\n':
-            escaped += "\\n";
-            break;
-        case '\r':
-            escaped += "\\r";
-            break;
-        case '\t':
-            escaped += "\\t";
-            break;
-        default:
-            escaped.push_back(static_cast<char>(c));
-            break;
-        }
-    }
-    return escaped;
-}
 
 std::vector<Graph::vertex_descriptor> ordered_vertices(const Graph& graph) {
     std::vector<Graph::vertex_descriptor> vertices;
@@ -190,14 +164,14 @@ std::string AuditExporter::renderJson(const Graph& graph, const std::vector<Vali
     for (std::size_t index = 0; index < vertices.size(); ++index) {
         const Package& package = graph[vertices[index]];
         stream << "    {\n";
-        stream << "      \"system\": \"" << json_escape(package.system) << "\",\n";
-        stream << "      \"name\": \"" << json_escape(package.name) << "\",\n";
-        stream << "      \"displayName\": \"" << json_escape(audit_exporter_internal::package_display_name(package))
+        stream << "      \"system\": \"" << rqp_json_escape(package.system) << "\",\n";
+        stream << "      \"name\": \"" << rqp_json_escape(package.name) << "\",\n";
+        stream << "      \"displayName\": \"" << rqp_json_escape(audit_exporter_internal::package_display_name(package))
                << "\",\n";
-        stream << "      \"version\": \"" << json_escape(package.version) << "\",\n";
-        stream << "      \"sourcePath\": \"" << json_escape(package.sourcePath) << "\",\n";
+        stream << "      \"version\": \"" << rqp_json_escape(package.version) << "\",\n";
+        stream << "      \"sourcePath\": \"" << rqp_json_escape(package.sourcePath) << "\",\n";
         stream << "      \"localTarget\": " << (package.localTarget ? "true" : "false") << ",\n";
-        stream << "      \"ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package)) << "\"\n";
+        stream << "      \"ref\": \"" << rqp_json_escape(audit_exporter_internal::package_component_ref(package)) << "\"\n";
         stream << "    }";
         if (index + 1 < vertices.size()) {
             stream << ',';
@@ -209,16 +183,16 @@ std::string AuditExporter::renderJson(const Graph& graph, const std::vector<Vali
     for (std::size_t index = 0; index < findings.size(); ++index) {
         const ValidationFinding& finding = findings[index];
         stream << "    {\n";
-        stream << "      \"id\": \"" << json_escape(finding.id) << "\",\n";
-        stream << "      \"kind\": \"" << json_escape(finding.kind) << "\",\n";
-        stream << "      \"source\": \"" << json_escape(finding.source) << "\",\n";
-        stream << "      \"severity\": \"" << json_escape(finding.severity) << "\",\n";
+        stream << "      \"id\": \"" << rqp_json_escape(finding.id) << "\",\n";
+        stream << "      \"kind\": \"" << rqp_json_escape(finding.kind) << "\",\n";
+        stream << "      \"source\": \"" << rqp_json_escape(finding.source) << "\",\n";
+        stream << "      \"severity\": \"" << rqp_json_escape(finding.severity) << "\",\n";
         stream << "      \"score\": " << finding.score << ",\n";
-        stream << "      \"message\": \"" << json_escape(message_for(finding)) << "\",\n";
+        stream << "      \"message\": \"" << rqp_json_escape(message_for(finding)) << "\",\n";
         stream << "      \"package\": {\n";
-        stream << "        \"system\": \"" << json_escape(finding.package.system) << "\",\n";
-        stream << "        \"name\": \"" << json_escape(finding.package.name) << "\",\n";
-        stream << "        \"version\": \"" << json_escape(finding.package.version) << "\"\n";
+        stream << "        \"system\": \"" << rqp_json_escape(finding.package.system) << "\",\n";
+        stream << "        \"name\": \"" << rqp_json_escape(finding.package.name) << "\",\n";
+        stream << "        \"version\": \"" << rqp_json_escape(finding.package.version) << "\"\n";
         stream << "      }\n";
         stream << "    }";
         if (index + 1 < findings.size()) {
@@ -245,20 +219,20 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
         const Package& package = graph[vertices[index]];
         stream << "    {\n";
         stream << "      \"type\": \"library\",\n";
-        stream << "      \"bom-ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package))
+        stream << "      \"bom-ref\": \"" << rqp_json_escape(audit_exporter_internal::package_component_ref(package))
                << "\",\n";
-        stream << "      \"name\": \"" << json_escape(audit_exporter_internal::package_display_name(package)) << "\"";
+        stream << "      \"name\": \"" << rqp_json_escape(audit_exporter_internal::package_display_name(package)) << "\"";
         if (!package.version.empty()) {
-            stream << ",\n      \"version\": \"" << json_escape(package.version) << "\"";
+            stream << ",\n      \"version\": \"" << rqp_json_escape(package.version) << "\"";
         }
         const std::string purl = purl_for(package, this->metadataProvider);
         if (!purl.empty()) {
-            stream << ",\n      \"purl\": \"" << json_escape(purl) << "\"";
+            stream << ",\n      \"purl\": \"" << rqp_json_escape(purl) << "\"";
         }
         stream << ",\n      \"properties\": [\n";
-        stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << json_escape(package.system) << "\"}";
+        stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << rqp_json_escape(package.system) << "\"}";
         if (!package.sourcePath.empty()) {
-            stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << json_escape(package.sourcePath)
+            stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << rqp_json_escape(package.sourcePath)
                    << "\"}";
         }
         stream << "\n      ]\n";
@@ -281,7 +255,7 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
             }
             firstDependency = false;
             stream << "    {\n";
-            stream << "      \"ref\": \"" << json_escape(audit_exporter_internal::package_component_ref(package))
+            stream << "      \"ref\": \"" << rqp_json_escape(audit_exporter_internal::package_component_ref(package))
                    << "\",\n";
             stream << "      \"dependsOn\": [";
             auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
@@ -291,7 +265,7 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
                     stream << ", ";
                 }
                 firstEdge = false;
-                stream << '"' << json_escape(audit_exporter_internal::package_component_ref(graph[*adjacentIt])) << '"';
+                stream << '"' << rqp_json_escape(audit_exporter_internal::package_component_ref(graph[*adjacentIt])) << '"';
             }
             stream << "]\n";
             stream << "    }";
@@ -305,18 +279,18 @@ std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
         const std::string findingId =
             finding.id.empty() ? ("reqpack-" + finding.kind + "-" + std::to_string(index + 1)) : finding.id;
         stream << "    {\n";
-        stream << "      \"id\": \"" << json_escape(findingId) << "\",\n";
-        stream << "      \"source\": {\"name\": \"" << json_escape(finding.source.empty() ? "reqpack" : finding.source)
+        stream << "      \"id\": \"" << rqp_json_escape(findingId) << "\",\n";
+        stream << "      \"source\": {\"name\": \"" << rqp_json_escape(finding.source.empty() ? "reqpack" : finding.source)
                << "\"},\n";
         stream << "      \"ratings\": [{\"source\": {\"name\": \""
-               << json_escape(finding.source.empty() ? "reqpack" : finding.source) << "\"}, \"severity\": \""
-               << json_escape(finding.severity.empty() ? "unassigned" : finding.severity)
+               << rqp_json_escape(finding.source.empty() ? "reqpack" : finding.source) << "\"}, \"severity\": \""
+               << rqp_json_escape(finding.severity.empty() ? "unassigned" : finding.severity)
                << "\", \"score\": " << finding.score << "}],\n";
         stream << "      \"analysis\": {\"state\": \"in_triage\", \"detail\": \""
-               << json_escape(vex_analysis_detail_for(finding)) << "\"},\n";
-        stream << "      \"description\": \"" << json_escape(message_for(finding)) << "\",\n";
+               << rqp_json_escape(vex_analysis_detail_for(finding)) << "\"},\n";
+        stream << "      \"description\": \"" << rqp_json_escape(message_for(finding)) << "\",\n";
         stream << "      \"affects\": [{\"ref\": \""
-               << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}]\n";
+               << rqp_json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}]\n";
         stream << "    }";
         if (index + 1 < findings.size()) {
             stream << ',';
@@ -354,9 +328,9 @@ std::string AuditExporter::renderSarif(const Graph& graph, const std::vector<Val
     for (std::size_t index = 0; index < orderedRuleIds.size(); ++index) {
         const ValidationFinding& finding = representativeFindings.at(orderedRuleIds[index]);
         stream << "            {\n";
-        stream << "              \"id\": \"" << json_escape(orderedRuleIds[index]) << "\",\n";
-        stream << "              \"shortDescription\": {\"text\": \"" << json_escape(message_for(finding)) << "\"},\n";
-        stream << "              \"properties\": {\"kind\": \"" << json_escape(finding.kind) << "\"}\n";
+        stream << "              \"id\": \"" << rqp_json_escape(orderedRuleIds[index]) << "\",\n";
+        stream << "              \"shortDescription\": {\"text\": \"" << rqp_json_escape(message_for(finding)) << "\"},\n";
+        stream << "              \"properties\": {\"kind\": \"" << rqp_json_escape(finding.kind) << "\"}\n";
         stream << "            }";
         if (index + 1 < orderedRuleIds.size()) {
             stream << ',';
@@ -370,20 +344,20 @@ std::string AuditExporter::renderSarif(const Graph& graph, const std::vector<Val
     for (std::size_t index = 0; index < findings.size(); ++index) {
         const ValidationFinding& finding = findings[index];
         stream << "        {\n";
-        stream << "          \"ruleId\": \"" << json_escape(rule_id_for(finding)) << "\",\n";
-        stream << "          \"level\": \"" << json_escape(sarif_level_for(finding)) << "\",\n";
-        stream << "          \"message\": {\"text\": \"" << json_escape(message_for(finding)) << "\"},\n";
+        stream << "          \"ruleId\": \"" << rqp_json_escape(rule_id_for(finding)) << "\",\n";
+        stream << "          \"level\": \"" << rqp_json_escape(sarif_level_for(finding)) << "\",\n";
+        stream << "          \"message\": {\"text\": \"" << rqp_json_escape(message_for(finding)) << "\"},\n";
         stream << "          \"locations\": [{\n";
         stream << "            \"physicalLocation\": {\n";
         stream << "              \"artifactLocation\": {\"uri\": \"pkg:"
-               << json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}\n";
+               << rqp_json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}\n";
         stream << "            }\n";
         stream << "          }],\n";
         stream << "          \"properties\": {\n";
-        stream << "            \"system\": \"" << json_escape(finding.package.system) << "\",\n";
-        stream << "            \"package\": \"" << json_escape(finding.package.name) << "\",\n";
-        stream << "            \"version\": \"" << json_escape(finding.package.version) << "\",\n";
-        stream << "            \"kind\": \"" << json_escape(finding.kind) << "\",\n";
+        stream << "            \"system\": \"" << rqp_json_escape(finding.package.system) << "\",\n";
+        stream << "            \"package\": \"" << rqp_json_escape(finding.package.name) << "\",\n";
+        stream << "            \"version\": \"" << rqp_json_escape(finding.package.version) << "\",\n";
+        stream << "            \"kind\": \"" << rqp_json_escape(finding.kind) << "\",\n";
         stream << "            \"score\": " << finding.score << "\n";
         stream << "          }\n";
         stream << "        }";
