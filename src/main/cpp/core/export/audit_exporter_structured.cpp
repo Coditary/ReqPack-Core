@@ -1,5 +1,7 @@
 #include "audit_exporter_internal.h"
 
+#include "rqp/security/cyclonedx.h"
+
 #include <rqp/security/json_util.h>
 
 #include <boost/graph/graph_traits.hpp>
@@ -207,99 +209,8 @@ std::string AuditExporter::renderJson(const Graph& graph, const std::vector<Vali
 
 std::string AuditExporter::renderCycloneDxVex(const Graph& graph,
                                               const std::vector<ValidationFinding>& findings) const {
-    std::ostringstream stream;
-    stream << "{\n";
-    stream << "  \"bomFormat\": \"CycloneDX\",\n";
-    stream << "  \"specVersion\": \"1.5\",\n";
-    stream << "  \"version\": 1,\n";
-    stream << "  \"components\": [\n";
-
-    const std::vector<Graph::vertex_descriptor> vertices = ordered_vertices(graph);
-    for (std::size_t index = 0; index < vertices.size(); ++index) {
-        const Package& package = graph[vertices[index]];
-        stream << "    {\n";
-        stream << "      \"type\": \"library\",\n";
-        stream << "      \"bom-ref\": \"" << rqp_json_escape(audit_exporter_internal::package_component_ref(package))
-               << "\",\n";
-        stream << "      \"name\": \"" << rqp_json_escape(audit_exporter_internal::package_display_name(package)) << "\"";
-        if (!package.version.empty()) {
-            stream << ",\n      \"version\": \"" << rqp_json_escape(package.version) << "\"";
-        }
-        const std::string purl = purl_for(package, this->metadataProvider);
-        if (!purl.empty()) {
-            stream << ",\n      \"purl\": \"" << rqp_json_escape(purl) << "\"";
-        }
-        stream << ",\n      \"properties\": [\n";
-        stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << rqp_json_escape(package.system) << "\"}";
-        if (!package.sourcePath.empty()) {
-            stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \"" << rqp_json_escape(package.sourcePath)
-                   << "\"}";
-        }
-        stream << "\n      ]\n";
-        stream << "    }";
-        if (index + 1 < vertices.size()) {
-            stream << ',';
-        }
-        stream << '\n';
-    }
-
-    stream << "  ]";
-    if (this->config.sbom.includeDependencyEdges) {
-        stream << ",\n  \"dependencies\": [\n";
-        bool firstDependency = true;
-        auto [it, end] = boost::vertices(graph);
-        for (; it != end; ++it) {
-            const Package& package = graph[*it];
-            if (!firstDependency) {
-                stream << ",\n";
-            }
-            firstDependency = false;
-            stream << "    {\n";
-            stream << "      \"ref\": \"" << rqp_json_escape(audit_exporter_internal::package_component_ref(package))
-                   << "\",\n";
-            stream << "      \"dependsOn\": [";
-            auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
-            bool firstEdge = true;
-            for (; adjacentIt != adjacentEnd; ++adjacentIt) {
-                if (!firstEdge) {
-                    stream << ", ";
-                }
-                firstEdge = false;
-                stream << '"' << rqp_json_escape(audit_exporter_internal::package_component_ref(graph[*adjacentIt])) << '"';
-            }
-            stream << "]\n";
-            stream << "    }";
-        }
-        stream << "\n  ]";
-    }
-
-    stream << ",\n  \"vulnerabilities\": [\n";
-    for (std::size_t index = 0; index < findings.size(); ++index) {
-        const ValidationFinding& finding = findings[index];
-        const std::string findingId =
-            finding.id.empty() ? ("reqpack-" + finding.kind + "-" + std::to_string(index + 1)) : finding.id;
-        stream << "    {\n";
-        stream << "      \"id\": \"" << rqp_json_escape(findingId) << "\",\n";
-        stream << "      \"source\": {\"name\": \"" << rqp_json_escape(finding.source.empty() ? "reqpack" : finding.source)
-               << "\"},\n";
-        stream << "      \"ratings\": [{\"source\": {\"name\": \""
-               << rqp_json_escape(finding.source.empty() ? "reqpack" : finding.source) << "\"}, \"severity\": \""
-               << rqp_json_escape(finding.severity.empty() ? "unassigned" : finding.severity)
-               << "\", \"score\": " << finding.score << "}],\n";
-        stream << "      \"analysis\": {\"state\": \"in_triage\", \"detail\": \""
-               << rqp_json_escape(vex_analysis_detail_for(finding)) << "\"},\n";
-        stream << "      \"description\": \"" << rqp_json_escape(message_for(finding)) << "\",\n";
-        stream << "      \"affects\": [{\"ref\": \""
-               << rqp_json_escape(audit_exporter_internal::package_component_ref(finding.package)) << "\"}]\n";
-        stream << "    }";
-        if (index + 1 < findings.size()) {
-            stream << ',';
-        }
-        stream << '\n';
-    }
-    stream << "  ]\n";
-    stream << "}";
-    return stream.str();
+    return rqp_emit_cyclonedx_audit_vex_json(graph, findings, this->metadataProvider,
+                                             this->config.sbom.includeDependencyEdges);
 }
 
 std::string AuditExporter::renderSarif(const Graph& graph, const std::vector<ValidationFinding>& findings) const {

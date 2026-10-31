@@ -1,5 +1,7 @@
 #include "sbom_exporter_internal.h"
 
+#include "rqp/security/cyclonedx.h"
+
 #include <boost/graph/graph_traits.hpp>
 
 #include <algorithm>
@@ -50,123 +52,12 @@ std::string package_display_name(const Package& package) {
 
 #include <rqp/security/json_util.h>
 
-namespace {
-
-std::string purl_name_for(const Package& package, const PluginSecurityMetadata& metadata) {
-    if (package.name.empty()) {
-        return {};
-    }
-
-    if (metadata.purlType == "maven") {
-        const std::size_t separator = package.name.find(':');
-        if (separator == std::string::npos || separator == 0 || separator == package.name.size() - 1) {
-            return {};
-        }
-        return package.name.substr(0, separator) + "/" + package.name.substr(separator + 1);
-    }
-
-    return package.name;
-}
-
-std::string purl_for(const Package& package, PluginMetadataProvider* metadataProvider) {
-    if (package.name.empty() || metadataProvider == nullptr) {
-        return {};
-    }
-
-    const auto metadata = metadataProvider->getPluginSecurityMetadata(package.system);
-    if (!metadata.has_value() || metadata->purlType.empty()) {
-        return {};
-    }
-
-    const std::string purlName = purl_name_for(package, metadata.value());
-    if (purlName.empty()) {
-        return {};
-    }
-
-    std::string purl = "pkg:" + metadata->purlType + "/" + purlName;
-    if (!package.version.empty()) {
-        purl += '@' + package.version;
-    }
-    return purl;
-}
-
-} // namespace
-
 std::string SbomExporter::renderJson(const Graph& graph, const bool cyclonedx) const {
-    std::ostringstream stream;
     if (cyclonedx) {
-        stream << "{\n";
-        stream << "  \"bomFormat\": \"CycloneDX\",\n";
-        stream << "  \"specVersion\": \"1.5\",\n";
-        stream << "  \"version\": 1,\n";
-        stream << "  \"components\": [\n";
-        const std::vector<Graph::vertex_descriptor> vertices = sbom_exporter_internal::ordered_vertices(graph);
-        for (std::size_t index = 0; index < vertices.size(); ++index) {
-            const Package& package = graph[vertices[index]];
-            stream << "    {\n";
-            stream << "      \"type\": \"library\",\n";
-            stream << "      \"bom-ref\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(package))
-                   << "\",\n";
-            stream << "      \"name\": \"" << rqp_json_escape(sbom_exporter_internal::package_display_name(package))
-                   << "\"";
-            if (!package.version.empty()) {
-                stream << ",\n      \"version\": \"" << rqp_json_escape(package.version) << "\"";
-            }
-
-            const std::string purl = purl_for(package, this->metadataProvider);
-            if (!purl.empty()) {
-                stream << ",\n      \"purl\": \"" << rqp_json_escape(purl) << "\"";
-            }
-
-            stream << ",\n      \"properties\": [\n";
-            stream << "        {\"name\": \"reqpack:system\", \"value\": \"" << rqp_json_escape(package.system) << "\"}";
-            if (!package.sourcePath.empty()) {
-                stream << ",\n        {\"name\": \"reqpack:sourcePath\", \"value\": \""
-                       << rqp_json_escape(package.sourcePath) << "\"}";
-            }
-            if (package.localTarget) {
-                stream << ",\n        {\"name\": \"reqpack:localTarget\", \"value\": \"true\"}";
-            }
-            stream << "\n      ]\n";
-            stream << "    }";
-            if (index + 1 < vertices.size()) {
-                stream << ',';
-            }
-            stream << '\n';
-        }
-        stream << "  ]";
-        if (this->config.sbom.includeDependencyEdges) {
-            stream << ",\n  \"dependencies\": [\n";
-            bool firstDependency = true;
-            auto [it, end] = boost::vertices(graph);
-            for (; it != end; ++it) {
-                const Package& package = graph[*it];
-                if (!firstDependency) {
-                    stream << ",\n";
-                }
-                firstDependency = false;
-                stream << "    {\n";
-                stream << "      \"ref\": \"" << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(package))
-                       << "\",\n";
-                stream << "      \"dependsOn\": [";
-                auto [adjacentIt, adjacentEnd] = boost::adjacent_vertices(*it, graph);
-                bool firstEdge = true;
-                for (; adjacentIt != adjacentEnd; ++adjacentIt) {
-                    if (!firstEdge) {
-                        stream << ", ";
-                    }
-                    firstEdge = false;
-                    stream << '"' << rqp_json_escape(sbom_exporter_internal::sbom_component_ref(graph[*adjacentIt])) << '"';
-                }
-                stream << "]\n";
-                stream << "    }";
-            }
-            stream << "\n  ]";
-        }
-        stream << "\n}";
-        return stream.str();
+        return rqp_emit_cyclonedx_inventory_json(graph, this->metadataProvider, this->config.sbom.includeDependencyEdges);
     }
 
+    std::ostringstream stream;
     stream << "{\n";
     stream << "  \"packages\": [\n";
     const std::vector<Graph::vertex_descriptor> vertices = sbom_exporter_internal::ordered_vertices(graph);
