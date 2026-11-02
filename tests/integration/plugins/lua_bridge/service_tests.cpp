@@ -12,8 +12,8 @@
 
 #include <catch2/catch.hpp>
 
-#include "core/host/host_info.h"
-#include "plugins/lua_bridge.h"
+#include "platform/host/host_info.h"
+#include "ecosystem/plugin_host/lua/lua_bridge.h"
 #include "test_helpers.h"
 
 namespace {

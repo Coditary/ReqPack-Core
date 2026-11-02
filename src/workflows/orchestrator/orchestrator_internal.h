@@ -1,0 +1,26 @@
+#pragma once
+
+#include "orchestrator_compliance_prep.hpp"
+#include "orchestrator_request_prep.hpp"
+
+namespace orchestrator_internal {
+using orchestrator_compliance_prep::SbomResolutionResult;
+using orchestrator_compliance_prep::expand_system_only_audit_requests;
+using orchestrator_compliance_prep::log_missing_sbom_packages;
+using orchestrator_compliance_prep::log_validation_blocked;
+using orchestrator_compliance_prep::package_specifier_from_info;
+using orchestrator_compliance_prep::request_has_flag;
+using orchestrator_compliance_prep::resolve_audit_requests;
+using orchestrator_compliance_prep::resolve_sbom_requests;
+using orchestrator_request_prep::build_already_satisfied_json;
+using orchestrator_request_prep::cleanup_temp_files;
+using orchestrator_request_prep::collect_request_item_ids;
+using orchestrator_request_prep::display_already_satisfied_session;
+using orchestrator_request_prep::ensure_request_plugins_discovered;
+using orchestrator_request_prep::expand_update_all_requests;
+using orchestrator_request_prep::prepare_requests_for_run;
+using orchestrator_request_prep::requests_target_plugin_install;
+using orchestrator_request_prep::requests_target_plugin_remove;
+using orchestrator_request_prep::rewrite_registry_package_requests;
+using orchestrator_request_prep::rewrite_security_gateway_package_requests;
+} // namespace orchestrator_internal

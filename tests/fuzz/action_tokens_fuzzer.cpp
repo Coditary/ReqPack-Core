@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string>
 
-#include "core/common/action_tokens.h"
+#include "platform/common/action_tokens.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (data == nullptr || size == 0 || size > 4096) {

@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "core/config/configuration.h"
-#include "core/host/host_info.h"
-#include "plugins/lua_bridge.h"
+#include "platform/config/configuration.h"
+#include "platform/host/host_info.h"
+#include "ecosystem/plugin_host/lua/lua_bridge.h"
 
 namespace {
 

@@ -1,0 +1,16 @@
+#pragma once
+
+#include <sol/sol.hpp>
+
+#include <string>
+
+#include "output/logger.h"
+#include "ecosystem/plugin_host/api/iplugin.h"
+
+ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                              const std::string& command, bool silent = false);
+ExecResult run_plugin_command(Logger& logger, const std::string& sourceId, const std::string& pluginScope,
+                              const std::string& command, const sol::object& rules, bool silent = false);
+
+/// Refresh sudo credentials on the controlling TTY before live progress starts (no-op when cached).
+void warm_privilege_ticket_if_needed();

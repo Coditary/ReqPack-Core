@@ -8,7 +8,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "plugins/iplugin.h"
+#include "ecosystem/plugin_host/api/iplugin.h"
 #include "rqp_plugin_internal.h"
 
 namespace {

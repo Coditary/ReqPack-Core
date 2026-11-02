@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "plugins/exec_rules_core.h"
+#include "ecosystem/plugin_host/lua/exec_rules_engine.h"
 
 namespace {
 

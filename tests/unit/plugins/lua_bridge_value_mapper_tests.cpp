@@ -2,8 +2,8 @@
 
 #include <sol/sol.hpp>
 
-#include "core/common/types.h"
-#include "plugins/lua_bridge_value_mapper.h"
+#include "platform/common/types.h"
+#include "ecosystem/plugin_host/lua/lua_bridge_value_mapper.h"
 
 namespace {
 

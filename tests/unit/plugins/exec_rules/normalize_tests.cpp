@@ -2,7 +2,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "plugins/exec_rules_core.h"
+#include "ecosystem/plugin_host/lua/exec_rules_engine.h"
 
 TEST_CASE("PTY normalization removes ANSI sequences", "[unit][exec_rules][normalize]") {
     const std::string input = "\x1b[31mHello\x1b[0m";

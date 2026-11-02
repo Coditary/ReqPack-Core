@@ -8,7 +8,7 @@
 #include <system_error>
 
 #include "output/logger.h"
-#include "plugins/lua_bridge_host_runtime.h"
+#include "ecosystem/plugin_host/lua/lua_bridge_host_runtime.h"
 
 #include <sol/sol.hpp>
 

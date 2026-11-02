@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-#include "core/registry/registry_json_parser.h"
+#include "ecosystem/registry/registry_json_parser.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (data == nullptr || size == 0 || size > (1U << 18)) {

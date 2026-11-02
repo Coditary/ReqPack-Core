@@ -10,11 +10,11 @@
 #include <tuple>
 #include <vector>
 
-#include "core/common/types.h"
-#include "core/host/host_info.h"
-#include "core/registry/registry.h"
-#include "core/state/rqp_state_store.h"
-#include "plugins/rqp_plugin.h"
+#include "platform/common/types.h"
+#include "platform/host/host_info.h"
+#include "ecosystem/registry/registry.h"
+#include "ecosystem/state/rqp_state_store.h"
+#include "ecosystem/plugin_host/native_rqp/rqp_plugin.h"
 #include "test_helpers.h"
 
 namespace {

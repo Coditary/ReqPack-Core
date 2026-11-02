@@ -184,17 +184,27 @@ if(NOT SOL2_INCLUDE_DIR)
     endif()
 endif()
 
-file(GLOB_RECURSE REQPACK_CORE_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/core/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/plugins/*.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/reqpack_layers.cmake)
+reqpack_add_layer_targets(${CMAKE_CURRENT_SOURCE_DIR})
+if(EXISTS "${REQPACK_CLI_DIR}/src/main/include")
+    foreach(_layer_obj IN ITEMS reqpack_ecosystem_obj reqpack_engine_obj reqpack_workflows_obj)
+        target_include_directories(${_layer_obj} PRIVATE "${REQPACK_CLI_DIR}/src/main/include")
+    endforeach()
+endif()
+reqpack_layer_object_libs()
 
-add_library(reqpack_core STATIC ${REQPACK_CORE_SOURCES})
+add_library(reqpack_core STATIC
+    $<TARGET_OBJECTS:reqpack_platform_obj>
+    $<TARGET_OBJECTS:reqpack_ecosystem_obj>
+    $<TARGET_OBJECTS:reqpack_engine_obj>
+    $<TARGET_OBJECTS:reqpack_workflows_obj>
+)
 add_library(ReqPack::Core ALIAS reqpack_core)
 
 target_include_directories(reqpack_core
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/main/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${SOL2_INCLUDE_DIR}
@@ -206,6 +216,7 @@ target_compile_definitions(reqpack_core PUBLIC SOL_ALL_SAFETIES_ON=1)
 
 target_link_libraries(reqpack_core
     PUBLIC
+        reqpack_workflows
         reqpack_security_core
         CURL::libcurl
         Boost::boost
@@ -218,6 +229,27 @@ target_link_libraries(reqpack_core
         ${REQPACK_FMT_TARGET}
         ${REQPACK_PLATFORM_LIBS}
 )
+
+foreach(_reqpack_layer_obj IN ITEMS reqpack_platform_obj reqpack_ecosystem_obj reqpack_engine_obj reqpack_workflows_obj)
+    target_compile_definitions(${_reqpack_layer_obj} PUBLIC SOL_ALL_SAFETIES_ON=1)
+    target_include_directories(${_reqpack_layer_obj} PRIVATE
+        ${SOL2_INCLUDE_DIR}
+        ${SOL2_INCLUDE_DIR_OVERRIDE}
+        ${LUA_INCLUDE_DIR}
+    )
+endforeach()
+
+target_link_libraries(reqpack_platform_obj PUBLIC
+    reqpack_security_core
+    CURL::libcurl
+    Boost::boost
+    OpenSSL::Crypto
+    ${REQPACK_ZSTD_LIBRARY}
+    ${REQPACK_SPDLOG_TARGET}
+    ${REQPACK_FMT_TARGET}
+    ${REQPACK_PLATFORM_LIBS}
+)
+target_link_libraries(reqpack_ecosystem_obj PUBLIC lmdb reqpack_security_core lua_cffi ${LUA_LIBRARIES})
 
 function(reqpack_core_ensure_output_target)
     if(TARGET reqpack_output)
@@ -235,15 +267,25 @@ function(reqpack_core_ensure_output_target)
     file(GLOB REQPACK_OUTPUT_SOURCES CONFIGURE_DEPENDS
         "${_cli_dir}/src/main/cpp/output/*.cpp"
     )
+    if(NOT TARGET indicators::indicators)
+        FetchContent_Declare(
+            indicators
+            GIT_REPOSITORY https://github.com/p-ranav/indicators.git
+            GIT_TAG v2.3
+        )
+        FetchContent_MakeAvailable(indicators)
+    endif()
     add_library(reqpack_output STATIC ${REQPACK_OUTPUT_SOURCES})
     target_include_directories(reqpack_output
         PUBLIC
-            "${CMAKE_CURRENT_SOURCE_DIR}/src/main/include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src"
             "${_cli_dir}/src/main/include"
     )
     target_link_libraries(reqpack_output
         PUBLIC
             reqpack_security_core
+            indicators::indicators
             ${REQPACK_SPDLOG_TARGET}
             ${REQPACK_FMT_TARGET}
     )
@@ -302,38 +344,39 @@ if(REQPACK_CORE_BUILD_TESTS)
     FetchContent_MakeAvailable(Catch2)
 
     set(REQPACK_CORE_UNIT_TEST_SOURCES
-        tests/unit/core/common/action_tokens_tests.cpp
-        tests/unit/core/common/version_compare_tests.cpp
-        tests/unit/core/common/network_environment_tests.cpp
-        tests/unit/core/config/configuration_cli_tests.cpp
-        tests/unit/core/config/configuration_parse_tests.cpp
-        tests/unit/core/download/downloader_tests.cpp
-        tests/unit/core/export/audit_exporter_tests.cpp
-        tests/unit/core/export/sbom_exporter_tests.cpp
-        tests/unit/core/history/history_manager_tests.cpp
-        tests/unit/core/luaenv/lua_env_ffi_tests.cpp
-        tests/unit/core/host/host_info_tests.cpp
-        tests/unit/core/manifest/manifest_loader_tests.cpp
-        tests/unit/core/manifest/manifest_path_resolver_tests.cpp
-        tests/unit/core/packages/rq_package_tests.cpp
-        tests/unit/core/packages/rq_repository_tests.cpp
-        tests/unit/core/planning/planner_core_tests.cpp
-        tests/unit/core/planning/request_resolution_tests.cpp
-        tests/unit/core/planning/planner_dependency_policy_tests.cpp
-        tests/unit/core/execution/orchestrator_request_prep_tests.cpp
-        tests/unit/core/query/package_search_query_tests.cpp
-        tests/unit/core/execution/executor_update_tests.cpp
-        tests/unit/core/execution/executor_task_graph_tests.cpp
-        tests/unit/core/registry/registry_database_tests.cpp
-        tests/unit/core/registry/registry_json_parser_tests.cpp
-        tests/unit/core/registry/registry_query_tests.cpp
-        tests/unit/core/registry/registry_trust_tests.cpp
-        tests/unit/core/remote/remote_profiles_tests.cpp
-        tests/unit/core/remote/serve_remote_readonly_policy_tests.cpp
-        tests/unit/core/security/security_bridge_tests.cpp
-        tests/unit/core/state/rqp_state_store_tests.cpp
-        tests/unit/core/state/transaction_database_serialization_tests.cpp
-        tests/unit/core/state/transaction_database_storage_tests.cpp
+        tests/unit/platform/common/action_tokens_tests.cpp
+        tests/unit/platform/common/version_compare_tests.cpp
+        tests/unit/platform/common/network_environment_tests.cpp
+        tests/unit/platform/config/configuration_cli_tests.cpp
+        tests/unit/platform/config/configuration_parse_tests.cpp
+        tests/unit/platform/download/downloader_tests.cpp
+        tests/unit/workflows/reporting/audit_exporter_tests.cpp
+        tests/unit/workflows/reporting/sbom_exporter_tests.cpp
+        tests/unit/ecosystem/history/history_manager_tests.cpp
+        tests/unit/ecosystem/plugin_host_lua/lua_env_ffi_tests.cpp
+        tests/unit/platform/host/host_info_tests.cpp
+        tests/unit/ecosystem/manifest/manifest_loader_tests.cpp
+        tests/unit/ecosystem/manifest/manifest_path_resolver_tests.cpp
+        tests/unit/ecosystem/rqp_format/rq_package_tests.cpp
+        tests/unit/ecosystem/rqp_format/rq_repository_tests.cpp
+        tests/unit/engine/planning/planner_core_tests.cpp
+        tests/unit/engine/planning/request_resolution_tests.cpp
+        tests/unit/engine/planning/planner_dependency_policy_tests.cpp
+        tests/unit/workflows/orchestrator/orchestrator_request_prep_tests.cpp
+        tests/unit/workflows/query/package_search_query_tests.cpp
+        tests/unit/workflows/orchestrator/executor_update_tests.cpp
+        tests/unit/workflows/orchestrator/executor_task_graph_tests.cpp
+        tests/unit/ecosystem/registry/registry_database_tests.cpp
+        tests/unit/ecosystem/registry/registry_json_parser_tests.cpp
+        tests/unit/ecosystem/registry/registry_query_tests.cpp
+        tests/unit/ecosystem/registry/registry_trust_tests.cpp
+        tests/unit/workflows/remote/remote_profiles_tests.cpp
+        tests/unit/workflows/remote/serve_remote_readonly_policy_tests.cpp
+        tests/unit/engine/security/security_bridge_tests.cpp
+        tests/unit/ecosystem/state/rqp_state_store_tests.cpp
+        tests/unit/ecosystem/state/transaction_database_serialization_tests.cpp
+        tests/unit/ecosystem/state/transaction_database_storage_tests.cpp
+        tests/unit/ecosystem/storage/lmdb_store_tests.cpp
         tests/unit/plugins/exec_rules/parse_tests.cpp
         tests/unit/plugins/exec_rules/normalize_tests.cpp
         tests/unit/plugins/exec_rules/evaluation_tests.cpp
@@ -352,12 +395,14 @@ if(REQPACK_CORE_BUILD_TESTS)
 
     target_include_directories(reqpack_core_unit_tests PRIVATE
         BEFORE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ecosystem/plugin_host/native_rqp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/ecosystem/plugin_host/testing
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/workflows/orchestrator
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/engine/scheduler
         ${SOL2_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         tests/cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/cpp/plugins
     )
 
     target_link_libraries(reqpack_core_unit_tests PRIVATE
@@ -371,25 +416,25 @@ if(REQPACK_CORE_BUILD_TESTS)
     set(REQPACK_ORCHESTRATOR_INTEGRATION_TEST_SOURCES)
     if(NOT WIN32)
         list(APPEND REQPACK_ORCHESTRATOR_INTEGRATION_TEST_SOURCES
-            tests/integration/core/execution/orchestrator_service_tests.cpp
-            tests/integration/core/execution/orchestrator_plugin_flow_tests.cpp
+            tests/integration/workflows/orchestrator/orchestrator_service_tests.cpp
+            tests/integration/workflows/orchestrator/orchestrator_plugin_flow_tests.cpp
         )
     endif()
 
     add_executable(reqpack_core_integration_tests
         tests/cpp/test_main.cpp
-        tests/integration/core/execution/executor_service_tests.cpp
+        tests/integration/engine/scheduler/executor_service_tests.cpp
         ${REQPACK_ORCHESTRATOR_INTEGRATION_TEST_SOURCES}
-        tests/integration/core/plugins/plugin_test_runner_service_tests.cpp
-        tests/integration/core/planning/planner_service_tests.cpp
-        tests/integration/core/registry/registry_service_tests.cpp
+        tests/integration/ecosystem/plugins/plugin_test_runner_service_tests.cpp
+        tests/integration/engine/planning/planner_service_tests.cpp
+        tests/integration/ecosystem/registry/registry_service_tests.cpp
         tests/integration/plugins/lua_bridge/service_tests.cpp
         tests/integration/plugins/exec_rules/smoke_tests.cpp
     )
 
     target_include_directories(reqpack_core_integration_tests PRIVATE
         BEFORE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${SOL2_INCLUDE_DIR}
         ${LUA_INCLUDE_DIR}
         tests/cpp
@@ -463,11 +508,11 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         if(fuzzer STREQUAL "manifest_loader_fuzzer")
             add_executable(${fuzzer}
                 tests/fuzz/${fuzzer}.cpp
-                src/main/cpp/core/manifest/manifest_loader.cpp
-                src/main/cpp/core/luaenv/lua_env_ffi.cpp
+                src/ecosystem/manifest/manifest_loader.cpp
+                src/ecosystem/plugin_host/lua/lua_env_ffi.cpp
             )
             target_include_directories(${fuzzer} PRIVATE
-                ${CMAKE_CURRENT_SOURCE_DIR}/src/main/include
+                ${CMAKE_CURRENT_SOURCE_DIR}/src
                 ${SOL2_INCLUDE_DIR}
                 ${LUA_INCLUDE_DIR}
             )
