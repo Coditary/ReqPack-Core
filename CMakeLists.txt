@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Ubuntu CI ships a recent {fmt} where FMT_STRING consteval checks fail with Clang + libstdc++ spdlog.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_definitions(FMT_USE_CONSTEVAL=0)
+endif()
+
 include(FetchContent)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
