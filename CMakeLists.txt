@@ -475,8 +475,8 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         plugin_bundle_metadata_fuzzer
         cli_argv_fuzzer
     )
-    set(REQPACK_CORE_FUZZ_EXE_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g -O1)
-    set(REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS -fsanitize=fuzzer,undefined -fno-omit-frame-pointer -g -O1)
+    set(REQPACK_CORE_FUZZ_EXE_FLAGS -fsanitize=fuzzer,undefined -fno-omit-frame-pointer -g -O1)
+    set(REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS ${REQPACK_CORE_FUZZ_EXE_FLAGS})
 
     foreach(fuzzer IN LISTS REQPACK_CORE_FUZZ_TARGETS)
         if(fuzzer STREQUAL "manifest_loader_fuzzer")
