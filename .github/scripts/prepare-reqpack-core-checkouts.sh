@@ -15,6 +15,25 @@ prepare_shared_completion() {
         return 0
     fi
 
+    shared_completion_cmake() {
+        local root="$1"
+        [ -f "${root}/Shared-Cpp/completion/CMakeLists.txt" ] \
+            || [ -f "${root}/completion/CMakeLists.txt" ]
+    }
+
+    link_shared_completion() {
+        local path="$1"
+        mkdir -p "${coditary_root}/shared"
+        if [ -f "${path}/Shared-Cpp/completion/CMakeLists.txt" ]; then
+            ln -snf "${path}" "${coditary_root}/shared"
+        elif [ -f "${path}/completion/CMakeLists.txt" ]; then
+            # GitHub: Coditary/Shared-Cpp (completion/ at repo root)
+            ln -snf "${path}" "${coditary_root}/shared/Shared-Cpp"
+        else
+            return 1
+        fi
+    }
+
     local candidate=""
     for path in \
         "${REQPACK_SHARED_CPP_DIR:-}" \
@@ -23,14 +42,14 @@ prepare_shared_completion() {
         "${REQPACK_MONOREPO_ROOT:-}/../Coditary/shared" \
         "${REQPACK_MONOREPO_ROOT:-}/../../Coditary/shared" \
         "${HOME}/Dev/Coditary/shared"; do
-        if [ -n "${path}" ] && [ -f "${path}/Shared-Cpp/completion/CMakeLists.txt" ]; then
+        if [ -n "${path}" ] && shared_completion_cmake "${path}"; then
             candidate="${path}"
             break
         fi
     done
 
     if [ -n "${candidate}" ]; then
-        ln -snf "${candidate}" "${coditary_root}/shared"
+        link_shared_completion "${candidate}"
         return 0
     fi
 
@@ -45,11 +64,8 @@ prepare_shared_completion() {
     cat >&2 <<EOF
 Shared-Cpp completion not found.
 
-GitHub Actions must check out Coditary/shared before this script (see quality.yml):
-  actions/checkout@v4 with repository: Coditary/shared, path: coditary-shared
-
-For a private shared repo, configure repository secret REQPACK_SHARED_REPO_TOKEN
-(classic PAT or fine-grained token with read access to Coditary/shared).
+GitHub Actions must check out Coditary/Shared-Cpp before this script (see quality.yml):
+  actions/checkout@v4 with repository: Coditary/Shared-Cpp, path: coditary-shared
 EOF
     exit 1
 }

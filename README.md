@@ -21,24 +21,19 @@ tests/fixtures/          Shared plugin/config fixtures
 ## Build (standalone)
 
 Requires the ReqPack CLI checkout for output sources (`REQPACK_CLI_DIR`), **Rust (`rustc`)** for the linked
-**reqpack-security-core** CycloneDX FFI, and (for tests) Coditary **Shared-Cpp completion** (clone
-[Coditary/shared](https://github.com/Coditary/shared) to `~/Dev/Coditary/shared` or pass `-DCOMPLETION_DIR=…` via the
-CLI’s `ResolveCompletion.cmake`).
+**reqpack-security-core** CycloneDX FFI, and (for tests) Coditary **Shared-Cpp completion** (local monorepo layout
+`~/Dev/Coditary/shared/Shared-Cpp/completion`, or clone [Coditary/Shared-Cpp](https://github.com/Coditary/Shared-Cpp)
+and pass `-DCOMPLETION_DIR=…/completion` via the CLI’s `ResolveCompletion.cmake`).
 
 In the ReqPack monorepo, CMake can also use the sibling `../reqpack-security-core` when present.
 
 **CI and standalone clones** do not rely on that layout: workflows run
 `.github/scripts/prepare-reqpack-core-checkouts.sh`, which clones **ReqPack CLI**, **reqpack-security-core** (Git ref from
-`.github/reqpack-security-core.ref`), and **Coditary/shared** (completion). Without those checkouts, CMake falls back to
+`.github/reqpack-security-core.ref`), and checks out **Coditary/Shared-Cpp** for completion. Without those checkouts, CMake falls back to
 **FetchContent** using the same ref file.
 
 Pin or bump the security-core revision by editing `.github/reqpack-security-core.ref` (full commit SHA on
 `Coditary/reqpack-security-core`).
-
-For CI builds that link `reqpack_cli` (tests), GitHub Actions checks out **`Coditary/shared`** into
-`coditary-shared/` (Shared-Cpp completion). If that repository is private, add a repository secret
-**`REQPACK_SHARED_REPO_TOKEN`** (PAT with `repo` read access to `Coditary/shared`). Without it, the
-workflow falls back to `GITHUB_TOKEN`, which only works when org settings allow cross-repo access.
 
 ```bash
 cmake -S . -B build \
