@@ -1,0 +1,6 @@
+remote
+dev
+install
+--yes
+npm
+leftpad

@@ -18,6 +18,7 @@ declare -a fuzzers=(
     rq_metadata_json_fuzzer
     reqpack_hooks_fuzzer
     plugin_bundle_metadata_fuzzer
+    cli_argv_fuzzer
 )
 
 for fuzzer in "${fuzzers[@]}"; do

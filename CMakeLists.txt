@@ -503,6 +503,7 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         rq_metadata_json_fuzzer
         reqpack_hooks_fuzzer
         plugin_bundle_metadata_fuzzer
+        cli_argv_fuzzer
     )
     set(REQPACK_CORE_FUZZ_EXE_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g -O1)
     set(REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS -fsanitize=fuzzer,undefined -fno-omit-frame-pointer -g -O1)
@@ -523,6 +524,20 @@ if(REQPACK_CORE_BUILD_FUZZERS)
             target_link_libraries(${fuzzer} PRIVATE lua_cffi ${LUA_LIBRARIES} ${CMAKE_DL_LIBS})
             target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS})
             target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS})
+        elseif(fuzzer STREQUAL "cli_argv_fuzzer")
+            add_executable(${fuzzer}
+                tests/fuzz/${fuzzer}.cpp
+                ${REQPACK_CLI_DIR}/src/main/cpp/main_arg_parsing.cpp
+            )
+            target_include_directories(${fuzzer} PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/src
+                ${CMAKE_CURRENT_SOURCE_DIR}/src/ecosystem/plugin_host/testing
+                ${REQPACK_CLI_DIR}/src/main/include
+                ${REQPACK_CLI_DIR}/src/main/cpp
+            )
+            target_link_libraries(${fuzzer} PRIVATE reqpack_cli reqpack_core reqpack_output CLI11::CLI11)
+            target_compile_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_EXE_FLAGS})
+            target_link_options(${fuzzer} PRIVATE ${REQPACK_CORE_FUZZ_EXE_FLAGS})
         else()
             add_executable(${fuzzer} tests/fuzz/${fuzzer}.cpp)
             target_link_libraries(${fuzzer} PRIVATE reqpack_core reqpack_output)
