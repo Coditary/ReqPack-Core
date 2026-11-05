@@ -18,6 +18,8 @@ prepare_shared_completion() {
     local candidate=""
     for path in \
         "${REQPACK_SHARED_CPP_DIR:-}" \
+        "${workspace}/coditary-shared" \
+        "${workspace}/shared" \
         "${REQPACK_MONOREPO_ROOT:-}/../Coditary/shared" \
         "${REQPACK_MONOREPO_ROOT:-}/../../Coditary/shared" \
         "${HOME}/Dev/Coditary/shared"; do
@@ -40,7 +42,16 @@ prepare_shared_completion() {
         exit 1
     fi
 
-    git clone --depth 1 https://github.com/Coditary/shared.git "${coditary_root}/shared"
+    cat >&2 <<EOF
+Shared-Cpp completion not found.
+
+GitHub Actions must check out Coditary/shared before this script (see quality.yml):
+  actions/checkout@v4 with repository: Coditary/shared, path: coditary-shared
+
+For a private shared repo, configure repository secret REQPACK_SHARED_REPO_TOKEN
+(classic PAT or fine-grained token with read access to Coditary/shared).
+EOF
+    exit 1
 }
 
 if [ "${ACT:-}" = "true" ]; then

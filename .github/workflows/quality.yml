@@ -29,6 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout Coditary/shared (Shared-Cpp completion)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/shared
+          path: coditary-shared
+          token: ${{ secrets.REQPACK_SHARED_REPO_TOKEN || github.token }}
       - name: Prepare dependency checkouts (CLI, security-core, completion)
         run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies
@@ -56,6 +62,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout Coditary/shared (Shared-Cpp completion)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/shared
+          path: coditary-shared
+          token: ${{ secrets.REQPACK_SHARED_REPO_TOKEN || github.token }}
       - name: Prepare dependency checkouts (CLI, security-core, completion)
         run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies
@@ -84,6 +96,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout Coditary/shared (Shared-Cpp completion)
+        uses: actions/checkout@v4
+        with:
+          repository: Coditary/shared
+          path: coditary-shared
+          token: ${{ secrets.REQPACK_SHARED_REPO_TOKEN || github.token }}
       - name: Prepare dependency checkouts (CLI, security-core, completion)
         run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies

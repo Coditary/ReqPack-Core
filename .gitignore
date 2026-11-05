@@ -3,6 +3,7 @@ build-clang/
 third_party/
 reqpack-cli/
 reqpack-security-core/
+coditary-shared/
 coverage-summary.txt
 *.profraw
 *.profdata

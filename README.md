@@ -35,6 +35,11 @@ In the ReqPack monorepo, CMake can also use the sibling `../reqpack-security-cor
 Pin or bump the security-core revision by editing `.github/reqpack-security-core.ref` (full commit SHA on
 `Coditary/reqpack-security-core`).
 
+For CI builds that link `reqpack_cli` (tests), GitHub Actions checks out **`Coditary/shared`** into
+`coditary-shared/` (Shared-Cpp completion). If that repository is private, add a repository secret
+**`REQPACK_SHARED_REPO_TOKEN`** (PAT with `repo` read access to `Coditary/shared`). Without it, the
+workflow falls back to `GITHUB_TOKEN`, which only works when org settings allow cross-repo access.
+
 ```bash
 cmake -S . -B build \
   -DREQPACK_CORE_BUILD_TESTS=ON \
