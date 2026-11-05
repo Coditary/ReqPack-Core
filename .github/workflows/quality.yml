@@ -44,10 +44,9 @@ jobs:
             libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
             liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
       - name: Install sol2 headers
-        run: |
-          mkdir -p third_party/include
-          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
-          cp -r /tmp/sol2/include/sol third_party/include/
+        env:
+          SOL2_VERSION: v3.3.0
+        run: bash .github/scripts/setup-sol2.sh "${{ github.workspace }}/third_party/include"
       - name: Install Rust toolchain
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
@@ -77,10 +76,9 @@ jobs:
             libclang-18-dev libclang-rt-18-dev \
             liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
       - name: Install sol2 headers
-        run: |
-          mkdir -p third_party/include
-          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
-          cp -r /tmp/sol2/include/sol third_party/include/
+        env:
+          SOL2_VERSION: v3.3.0
+        run: bash .github/scripts/setup-sol2.sh "${{ github.workspace }}/third_party/include"
       - name: Install Rust toolchain
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
@@ -109,10 +107,9 @@ jobs:
             libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
             liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
       - name: Install sol2 headers
-        run: |
-          mkdir -p third_party/include
-          git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
-          cp -r /tmp/sol2/include/sol third_party/include/
+        env:
+          SOL2_VERSION: v3.3.0
+        run: bash .github/scripts/setup-sol2.sh "${{ github.workspace }}/third_party/include"
       - name: Install Rust toolchain
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
