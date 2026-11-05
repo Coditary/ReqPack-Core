@@ -15,6 +15,9 @@ declare -a fuzzers=(
     action_tokens_fuzzer
     registry_json_fuzzer
     manifest_loader_fuzzer
+    rq_metadata_json_fuzzer
+    reqpack_hooks_fuzzer
+    plugin_bundle_metadata_fuzzer
 )
 
 for fuzzer in "${fuzzers[@]}"; do

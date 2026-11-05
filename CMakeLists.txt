@@ -500,6 +500,9 @@ if(REQPACK_CORE_BUILD_FUZZERS)
         action_tokens_fuzzer
         registry_json_fuzzer
         manifest_loader_fuzzer
+        rq_metadata_json_fuzzer
+        reqpack_hooks_fuzzer
+        plugin_bundle_metadata_fuzzer
     )
     set(REQPACK_CORE_FUZZ_EXE_FLAGS -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer -g -O1)
     set(REQPACK_CORE_FUZZ_MANIFEST_EXE_FLAGS -fsanitize=fuzzer,undefined -fno-omit-frame-pointer -g -O1)

@@ -49,6 +49,7 @@ make qa              # format-check + lint + unit tests + fuzz
 | `make format` | Apply `clang-format` in place |
 | `make lint` | Run `clang-tidy` via `build/lint/compile_commands.json` |
 | `make fuzz` | libFuzzer smoke run (Clang required) |
+| Fuzz targets | `action_tokens`, `registry_json`, `manifest_loader`, `rq_metadata_json`, `reqpack_hooks`, `plugin_bundle_metadata` |
 | `make test-coverage` | Debug build with gcovr summary + badge update |
 | `make qa` | `format-check` + `lint` + `test-unit` + `fuzz` |
 

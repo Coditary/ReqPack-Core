@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "name": "demo",
+  "version": "1.0.0",
+  "summary": "plugin bundle seed",
+  "description": "seed",
+  "license": "MIT"
+}

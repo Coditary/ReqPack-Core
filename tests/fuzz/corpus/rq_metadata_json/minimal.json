@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "name": "demo",
+  "version": "1.0.0",
+  "release": 1,
+  "revision": 0,
+  "summary": "fuzz seed",
+  "description": "seed package metadata",
+  "license": "MIT",
+  "vendor": "ReqPack Tests",
+  "maintainerEmail": "tests@example.org",
+  "url": "https://example.test/demo.rqp"
+}
