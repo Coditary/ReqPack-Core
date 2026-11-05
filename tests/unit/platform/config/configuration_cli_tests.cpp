@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "cli/cli.h"
-#include "platform/config/configuration.h"
 #include "ecosystem/registry/registry_database.h"
+#include "platform/config/configuration.h"
 namespace {
 
 class TempDir {
@@ -917,7 +917,8 @@ TEST_CASE("cli parses token vectors and defaults list and outdated to all system
     }
 
     SECTION("update plugins flag keeps wrapper refresh semantics") {
-        const std::vector<Request> requests = cli.parse(std::vector<std::string> {"update", "--plugins", "pip"}, config);
+        const std::vector<Request> requests =
+            cli.parse(std::vector<std::string> {"update", "--plugins", "pip"}, config);
         REQUIRE(requests.size() == 1);
         CHECK(requests.front().system == "pip");
         CHECK(std::find(requests.front().flags.begin(), requests.front().flags.end(), "all") ==

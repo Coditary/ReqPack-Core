@@ -6,8 +6,8 @@
 #include <string>
 #include <system_error>
 
-#include "platform/config/configuration.h"
 #include "engine/security/security_bridge.h"
+#include "platform/config/configuration.h"
 #include "test_helpers.h"
 
 #include <rqp/security/security_log.h>

@@ -37,7 +37,8 @@ TEST_CASE("readonly policy allows parsed read-only orchestrator actions", "[unit
     CHECK_FALSE(serve_remote_readonly_policy::requests_allowed_in_readonly_mode(requests));
 }
 
-TEST_CASE("legacy bare update without args is treated as self-update for readonly blocking", "[unit][remote][readonly]") {
+TEST_CASE("legacy bare update without args is treated as self-update for readonly blocking",
+          "[unit][remote][readonly]") {
     CHECK(serve_remote_readonly_policy::is_self_update_command_line({"update"}));
     CHECK(serve_remote_readonly_policy::command_line_blocked_in_readonly_mode({"update"}));
     CHECK_FALSE(serve_remote_readonly_policy::is_self_update_command_line({"update", "apt"}));

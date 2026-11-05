@@ -10,10 +10,10 @@
 
 #include <catch2/catch.hpp>
 
-#include "platform/config/configuration.h"
-#include "workflows/orchestrator/orchestrator.h"
 #include "ecosystem/registry/registry.h"
+#include "platform/config/configuration.h"
 #include "test_helpers.h"
+#include "workflows/orchestrator/orchestrator.h"
 
 namespace {
 

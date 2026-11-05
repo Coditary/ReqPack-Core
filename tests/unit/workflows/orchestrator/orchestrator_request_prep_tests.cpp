@@ -3,8 +3,8 @@
 #include <chrono>
 #include <filesystem>
 
-#include "orchestrator_request_prep.hpp"
 #include "ecosystem/registry/registry_database.h"
+#include "orchestrator_request_prep.hpp"
 
 namespace {
 
@@ -70,12 +70,10 @@ TEST_CASE("rewrite_registry_package_requests expands multi-package install reque
     CHECK(requests[1].packages == std::vector<std::string> {"tempify"});
 
     const std::string repoFlagPrefix = "__reqpack-internal-rqp-repository=";
-    REQUIRE(std::any_of(requests[0].flags.begin(), requests[0].flags.end(), [&](const std::string& flag) {
-        return flag.rfind(repoFlagPrefix, 0) == 0;
-    }));
-    REQUIRE(std::any_of(requests[1].flags.begin(), requests[1].flags.end(), [&](const std::string& flag) {
-        return flag.rfind(repoFlagPrefix, 0) == 0;
-    }));
+    REQUIRE(std::any_of(requests[0].flags.begin(), requests[0].flags.end(),
+                        [&](const std::string& flag) { return flag.rfind(repoFlagPrefix, 0) == 0; }));
+    REQUIRE(std::any_of(requests[1].flags.begin(), requests[1].flags.end(),
+                        [&](const std::string& flag) { return flag.rfind(repoFlagPrefix, 0) == 0; }));
 }
 
 TEST_CASE("rewrite_registry_package_requests keeps non-registry package names in one request slice",

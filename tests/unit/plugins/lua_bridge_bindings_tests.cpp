@@ -8,13 +8,13 @@
 
 #include <sol/sol.hpp>
 
-#include "platform/config/configuration.h"
-#include "platform/host/host_info.h"
-#include "output/logger.h"
 #include "ecosystem/plugin_host/lua/lua_bridge.h"
 #include "ecosystem/plugin_host/lua/lua_bridge_bindings.h"
 #include "ecosystem/plugin_host/lua/lua_bridge_host_runtime.h"
 #include "ecosystem/plugin_host/lua/lua_bridge_runtime.h"
+#include "output/logger.h"
+#include "platform/config/configuration.h"
+#include "platform/host/host_info.h"
 
 namespace {
 

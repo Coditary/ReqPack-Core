@@ -528,8 +528,7 @@ TEST_CASE("executor executes remove actions without missing-package filtering", 
     CHECK(executer.execute(&graph));
 }
 
-TEST_CASE("executor info returns registry metadata for plugin wrapper without package name",
-          "[unit][executor][info]") {
+TEST_CASE("executor info returns registry metadata for plugin wrapper without package name", "[unit][executor][info]") {
     TempDir tempDir {"reqpack-executor-info-plugin-wrapper"};
     ReqPackConfig config = make_executor_graph_config(tempDir.path());
     add_plugin_script(tempDir.path() / "plugins", "alpha", GROUP_PLUGIN);

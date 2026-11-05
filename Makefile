@@ -1,5 +1,5 @@
 .PHONY: all build test test-unit test-integration clean coverage-build test-coverage \
-	format format-check lint lint-build fuzz fuzz-build qa
+	format format-check lint lint-build fuzz fuzz-build qa test-ci
 
 NPROC := $(shell command -v nproc >/dev/null 2>&1 && nproc || sysctl -n hw.ncpu 2>/dev/null || echo 2)
 JOBS := $(shell expr $(NPROC) / 4)
@@ -13,6 +13,7 @@ FUZZ_RUNS ?= 4096
 FUZZ_MAX_TIME ?= 20
 REQPACK_CLI_DIR ?= ../reqpack
 SOL2_INCLUDE_DIR_OVERRIDE ?=
+REQPACK_MONOREPO_ROOT ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 
 CMAKE_TEST_FLAGS := -DREQPACK_CORE_BUILD_TESTS=ON -DREQPACK_CLI_DIR=$(REQPACK_CLI_DIR)
 ifneq ($(SOL2_INCLUDE_DIR_OVERRIDE),)
@@ -79,6 +80,9 @@ fuzz: fuzz-build
 	@FUZZ_RUNS=$(FUZZ_RUNS) FUZZ_MAX_TIME=$(FUZZ_MAX_TIME) ./scripts/run_fuzzers.sh $(FUZZ_BUILD_DIR)
 
 qa: format-check lint test-unit fuzz
+
+test-ci:
+	@bash "$(REQPACK_MONOREPO_ROOT)/scripts/ci-local/run-act.sh" reqpack-core "$(REQPACK_MONOREPO_ROOT)"
 
 clean:
 	@rm -rf build $(COVERAGE_BUILD_DIR) $(LINT_BUILD_DIR) $(FUZZ_BUILD_DIR) coverage-summary.txt

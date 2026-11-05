@@ -6,8 +6,8 @@
 
 #include <catch2/catch.hpp>
 
-#include "engine/resolution/request_resolution.h"
 #include "ecosystem/registry/registry.h"
+#include "engine/resolution/request_resolution.h"
 
 namespace {
 

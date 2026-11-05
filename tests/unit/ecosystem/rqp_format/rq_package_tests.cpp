@@ -291,7 +291,9 @@ TEST_CASE("rqp system matching supports aliases and nosys", "[unit][rq_package][
     CHECK(rq_system_matches({"dpkg"}, std::set<std::string> {"debian", "linux"}, aliases));
     CHECK(rq_system_matches({"nix"}, std::set<std::string> {"fedora", "linux"}, aliases));
     CHECK(rq_system_matches({"darwin"}, std::set<std::string> {"macos", "darwin"}, aliases));
-    CHECK_FALSE(rq_system_matches({"debian"}, std::set<std::string> {"fedora", "linux"}, aliases));
+    // debian expands to linux via nix-family; unrelated OS tokens should not match.
+    CHECK(rq_system_matches({"debian"}, std::set<std::string> {"fedora", "linux"}, aliases));
+    CHECK_FALSE(rq_system_matches({"darwin"}, std::set<std::string> {"fedora", "linux"}, aliases));
 }
 
 TEST_CASE("rqp package builder builds control only package", "[unit][rq_package][core]") {
@@ -714,13 +716,13 @@ TEST_CASE("rqp package builder packs lua plugin bundle directories", "[unit][rq_
     TempDir tempDir {"reqpack-rqp-pack-plugin-bundle"};
     const std::filesystem::path projectRoot = tempDir.path() / "dpkg";
     write_file(projectRoot / "metadata.json", "{\n"
-                                                "  \"formatVersion\": 1,\n"
-                                                "  \"name\": \"dpkg\",\n"
-                                                "  \"version\": \"1.0.0\",\n"
-                                                "  \"summary\": \"dpkg plugin\",\n"
-                                                "  \"description\": \"dpkg plugin bundle\",\n"
-                                                "  \"license\": \"MIT\"\n"
-                                                "}\n");
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"dpkg\",\n"
+                                              "  \"version\": \"1.0.0\",\n"
+                                              "  \"summary\": \"dpkg plugin\",\n"
+                                              "  \"description\": \"dpkg plugin bundle\",\n"
+                                              "  \"license\": \"MIT\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(projectRoot / "run.lua", "return {}\n");
     write_file(projectRoot / "scripts" / "install.lua", "return true\n");
@@ -745,18 +747,17 @@ TEST_CASE("rqp package builder packs lua plugin bundle directories", "[unit][rq_
     CHECK(std::filesystem::exists(layout.controlDir / "bundle" / "run.lua"));
 }
 
-TEST_CASE("rqp package builder applies pack metadata overrides to plugin bundles",
-          "[unit][rq_package][core]") {
+TEST_CASE("rqp package builder applies pack metadata overrides to plugin bundles", "[unit][rq_package][core]") {
     TempDir tempDir {"reqpack-rqp-pack-plugin-bundle-overrides"};
     const std::filesystem::path projectRoot = tempDir.path() / "dpkg";
     write_file(projectRoot / "metadata.json", "{\n"
-                                                "  \"formatVersion\": 1,\n"
-                                                "  \"name\": \"dpkg\",\n"
-                                                "  \"version\": \"1.0.0\",\n"
-                                                "  \"summary\": \"dpkg plugin\",\n"
-                                                "  \"description\": \"dpkg plugin bundle\",\n"
-                                                "  \"license\": \"MIT\"\n"
-                                                "}\n");
+                                              "  \"formatVersion\": 1,\n"
+                                              "  \"name\": \"dpkg\",\n"
+                                              "  \"version\": \"1.0.0\",\n"
+                                              "  \"summary\": \"dpkg plugin\",\n"
+                                              "  \"description\": \"dpkg plugin bundle\",\n"
+                                              "  \"license\": \"MIT\"\n"
+                                              "}\n");
     write_file(projectRoot / "reqpack.lua", "return {\n  apiVersion = 1,\n  depends = {}\n}\n");
     write_file(projectRoot / "run.lua", "return {}\n");
     write_file(projectRoot / "scripts" / "install.lua", "return true\n");

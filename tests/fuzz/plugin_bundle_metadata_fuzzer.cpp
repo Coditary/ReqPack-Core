@@ -25,8 +25,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         return 0;
     }
 
-    const std::filesystem::path root =
-        std::filesystem::temp_directory_path() / "reqpack-core-fuzz-plugin-bundle";
+    const std::filesystem::path root = std::filesystem::temp_directory_path() / "reqpack-core-fuzz-plugin-bundle";
     const std::filesystem::path scriptsDir = root / "scripts";
     std::error_code error;
     std::filesystem::create_directories(scriptsDir, error);

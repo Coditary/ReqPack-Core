@@ -29,11 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout ReqPack CLI (output sources)
-        uses: actions/checkout@v4
-        with:
-          repository: Coditary/ReqPack
-          path: reqpack-cli
+      - name: Prepare dependency checkouts (CLI, security-core, completion)
+        run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -46,40 +43,49 @@ jobs:
           mkdir -p third_party/include
           git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
           cp -r /tmp/sol2/include/sol third_party/include/
-      - run: make lint CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - run: |
+          # shellcheck disable=SC1091
+          source "${HOME}/.cargo/env" 2>/dev/null || export PATH="${HOME}/.cargo/bin:${PATH}"
+          make lint CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include
 
   fuzz:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout ReqPack CLI (output sources)
-        uses: actions/checkout@v4
-        with:
-          repository: Coditary/ReqPack
-          path: reqpack-cli
+      - name: Prepare dependency checkouts (CLI, security-core, completion)
+        run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential ca-certificates clang cmake curl git pkg-config \
             libboost-dev libcli11-dev libcurl4-openssl-dev libffi-dev libfmt-dev \
+            libclang-18-dev libclang-rt-18-dev \
             liblua5.4-dev libspdlog-dev libssl-dev libzstd-dev
       - name: Install sol2 headers
         run: |
           mkdir -p third_party/include
           git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
           cp -r /tmp/sol2/include/sol third_party/include/
-      - run: make fuzz CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include FUZZ_RUNS=8192 FUZZ_MAX_TIME=30
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - run: |
+          # shellcheck disable=SC1091
+          source "${HOME}/.cargo/env" 2>/dev/null || export PATH="${HOME}/.cargo/bin:${PATH}"
+          make fuzz CLANGXX=clang++ REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include FUZZ_RUNS=8192 FUZZ_MAX_TIME=30 FUZZ_RSS_LIMIT_MB=2048
 
   unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout ReqPack CLI (output sources)
-        uses: actions/checkout@v4
-        with:
-          repository: Coditary/ReqPack
-          path: reqpack-cli
+      - name: Prepare dependency checkouts (CLI, security-core, completion)
+        run: bash .github/scripts/prepare-reqpack-core-checkouts.sh "${{ github.workspace }}"
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -92,4 +98,11 @@ jobs:
           mkdir -p third_party/include
           git clone --depth 1 --branch v3.3.0 https://github.com/ThePhD/sol2.git /tmp/sol2
           cp -r /tmp/sol2/include/sol third_party/include/
-      - run: make test-unit REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include
+      - name: Install Rust toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - run: |
+          # shellcheck disable=SC1091
+          source "${HOME}/.cargo/env" 2>/dev/null || export PATH="${HOME}/.cargo/bin:${PATH}"
+          make test-unit REQPACK_CLI_DIR=${{ github.workspace }}/reqpack-cli SOL2_INCLUDE_DIR_OVERRIDE=${{ github.workspace }}/third_party/include

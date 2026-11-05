@@ -9,9 +9,9 @@
 #include <system_error>
 #include <vector>
 
-#include "workflows/reporting/snapshot_exporter.h"
 #include "ecosystem/history/history_manager.h"
 #include "output/logger.h"
+#include "workflows/reporting/snapshot_exporter.h"
 
 namespace {
 
@@ -89,7 +89,9 @@ class RecordingDisplay final : public IDisplay {
     void onTableEnd() override {}
     void flush() override {}
 
-    void onUnindentedText(const std::string& text) override { onMessage(text); }
+    void onUnindentedText(const std::string& text) override {
+        onMessage(text);
+    }
 
     void onMessage(const std::string& text, const std::string& source = {}) override {
         messages.push_back(source.empty() ? text : ("[" + source + "] " + text));

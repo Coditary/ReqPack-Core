@@ -8,8 +8,8 @@
 #include <system_error>
 
 #include "platform/config/configuration.h"
-#include "workflows/remote/remote_profiles.h"
 #include "test_helpers.h"
+#include "workflows/remote/remote_profiles.h"
 
 namespace {
 

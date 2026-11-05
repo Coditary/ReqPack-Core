@@ -20,9 +20,9 @@
 
 #include <catch2/catch.hpp>
 
+#include "ecosystem/registry/registry.h"
 #include "platform/common/build_info.h"
 #include "platform/host/host_info.h"
-#include "ecosystem/registry/registry.h"
 #include "test_helpers.h"
 
 extern char** environ;

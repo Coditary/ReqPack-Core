@@ -5,10 +5,10 @@
 #include <fstream>
 #include <system_error>
 
-#include "platform/download/downloader.h"
-#include "platform/download/downloader_engine.h"
 #include "ecosystem/registry/registry_database.h"
 #include "ecosystem/registry/registry_database_store.h"
+#include "platform/download/downloader.h"
+#include "platform/download/downloader_engine.h"
 
 namespace {
 

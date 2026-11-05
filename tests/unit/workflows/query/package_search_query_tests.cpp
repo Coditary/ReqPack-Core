@@ -29,8 +29,7 @@ TEST_CASE("package search suggests close typo matches", "[unit][query][search]")
     PackageInfo candidate;
     candidate.name = "wuji";
 
-    const std::optional<std::string> suggestion =
-        package_search_did_you_mean_suggestion({candidate}, "wuii");
+    const std::optional<std::string> suggestion = package_search_did_you_mean_suggestion({candidate}, "wuii");
     REQUIRE(suggestion.has_value());
     CHECK(*suggestion == "wuji");
 }

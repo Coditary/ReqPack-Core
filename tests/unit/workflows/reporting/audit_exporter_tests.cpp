@@ -10,9 +10,9 @@
 #include <sstream>
 #include <system_error>
 
-#include "workflows/reporting/audit_exporter.h"
 #include "output/logger.h"
 #include "test_helpers.h"
+#include "workflows/reporting/audit_exporter.h"
 
 namespace {
 
@@ -103,7 +103,9 @@ class RecordingDisplay final : public IDisplay {
     void onTableEnd() override {}
     void flush() override {}
 
-    void onUnindentedText(const std::string& text) override { onMessage(text); }
+    void onUnindentedText(const std::string& text) override {
+        onMessage(text);
+    }
 
     void onMessage(const std::string& text, const std::string& source = {}) override {
         messages.push_back(source.empty() ? text : ("[" + source + "] " + text));
@@ -257,11 +259,12 @@ TEST_CASE("audit exporter defaults json file output to cyclonedx vex json", "[un
     const std::string rendered = read_file(request.outputPath);
     CHECK(rendered.find("\"bomFormat\": \"CycloneDX\"") != std::string::npos);
     CHECK(rendered.find("\"vulnerabilities\"") != std::string::npos);
-    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"Matched by ReqPack audit from local "
-                        "vulnerability data. Reachability and exploitability were not analyzed.\"}") !=
-          std::string::npos);
-    CHECK(rendered.find("\"ratings\": [{\"source\": {\"name\": \"osv\"}, \"severity\": \"high\", \"score\": 8.8}]") !=
-          std::string::npos);
+    CHECK(rendered.find("\"state\": \"in_triage\"") != std::string::npos);
+    CHECK(rendered.find("Matched by ReqPack audit from local vulnerability data. Reachability and exploitability "
+                        "were not analyzed.") != std::string::npos);
+    CHECK(rendered.find("\"name\": \"osv\"") != std::string::npos);
+    CHECK(rendered.find("\"severity\": \"high\"") != std::string::npos);
+    CHECK(rendered.find("\"score\": 8.8") != std::string::npos);
 }
 
 TEST_CASE("audit exporter keeps unresolved findings in triage state", "[unit][audit][export]") {
@@ -281,8 +284,9 @@ TEST_CASE("audit exporter keeps unresolved findings in triage state", "[unit][au
     }};
 
     const std::string rendered = exporter.renderGraph(graph, findings, request);
-    CHECK(rendered.find("\"analysis\": {\"state\": \"in_triage\", \"detail\": \"ReqPack could not resolve package "
-                        "version. Vulnerability matching may be incomplete.\"}") != std::string::npos);
+    CHECK(rendered.find("\"state\": \"in_triage\"") != std::string::npos);
+    CHECK(rendered.find("ReqPack could not resolve package version. Vulnerability matching may be incomplete.") !=
+          std::string::npos);
 }
 
 TEST_CASE("audit exporter infers sarif from file extension", "[unit][audit][export]") {

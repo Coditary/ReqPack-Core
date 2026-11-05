@@ -20,7 +20,20 @@ tests/fixtures/          Shared plugin/config fixtures
 
 ## Build (standalone)
 
-Requires the ReqPack CLI checkout for output sources (`REQPACK_CLI_DIR`):
+Requires the ReqPack CLI checkout for output sources (`REQPACK_CLI_DIR`), **Rust (`rustc`)** for the linked
+**reqpack-security-core** CycloneDX FFI, and (for tests) Coditary **Shared-Cpp completion** (clone
+[Coditary/shared](https://github.com/Coditary/shared) to `~/Dev/Coditary/shared` or pass `-DCOMPLETION_DIR=…` via the
+CLI’s `ResolveCompletion.cmake`).
+
+In the ReqPack monorepo, CMake can also use the sibling `../reqpack-security-core` when present.
+
+**CI and standalone clones** do not rely on that layout: workflows run
+`.github/scripts/prepare-reqpack-core-checkouts.sh`, which clones **ReqPack CLI**, **reqpack-security-core** (Git ref from
+`.github/reqpack-security-core.ref`), and **Coditary/shared** (completion). Without those checkouts, CMake falls back to
+**FetchContent** using the same ref file.
+
+Pin or bump the security-core revision by editing `.github/reqpack-security-core.ref` (full commit SHA on
+`Coditary/reqpack-security-core`).
 
 ```bash
 cmake -S . -B build \

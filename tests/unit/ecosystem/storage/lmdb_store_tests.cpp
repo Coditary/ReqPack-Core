@@ -37,9 +37,9 @@ TEST_CASE("lmdb store opens environment and reads written values", "[unit][stora
     MDB_dbi dbi = 0;
     std::vector<MDB_dbi> namedDbis;
 
-    REQUIRE(storage::open_lmdb_environment(tempDir.path(), storage::LmdbOpenOptions {.mapSize = 1024 * 1024,
-                                                                                     .maxDatabases = 2},
-                                           &env, &dbi, {"meta"}, &namedDbis));
+    REQUIRE(storage::open_lmdb_environment(tempDir.path(),
+                                           storage::LmdbOpenOptions {.mapSize = 1024 * 1024, .maxDatabases = 2}, &env,
+                                           &dbi, {"meta"}, &namedDbis));
     REQUIRE(env != nullptr);
     REQUIRE(namedDbis.size() == 1);
 
@@ -73,9 +73,8 @@ TEST_CASE("lmdb store prefix scan stops at first non matching key", "[unit][stor
     MDB_env* env = nullptr;
     MDB_dbi dbi = 0;
 
-    REQUIRE(storage::open_lmdb_environment(tempDir.path(), storage::LmdbOpenOptions {.mapSize = 1024 * 1024,
-                                                                                     .maxDatabases = 1},
-                                           &env, &dbi, {}, nullptr));
+    REQUIRE(storage::open_lmdb_environment(
+        tempDir.path(), storage::LmdbOpenOptions {.mapSize = 1024 * 1024, .maxDatabases = 1}, &env, &dbi, {}, nullptr));
 
     MDB_txn* transaction = nullptr;
     REQUIRE(mdb_txn_begin(env, nullptr, 0, &transaction) == MDB_SUCCESS);

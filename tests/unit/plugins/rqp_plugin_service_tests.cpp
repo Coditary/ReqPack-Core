@@ -10,11 +10,11 @@
 #include <tuple>
 #include <vector>
 
-#include "platform/common/types.h"
-#include "platform/host/host_info.h"
+#include "ecosystem/plugin_host/native_rqp/rqp_plugin.h"
 #include "ecosystem/registry/registry.h"
 #include "ecosystem/state/rqp_state_store.h"
-#include "ecosystem/plugin_host/native_rqp/rqp_plugin.h"
+#include "platform/common/types.h"
+#include "platform/host/host_info.h"
 #include "test_helpers.h"
 
 namespace {
@@ -824,10 +824,8 @@ TEST_CASE("rqp plugin getMissingPackages matches remove requests by full install
     const PluginCallContext context = make_plugin_context(plugin);
     REQUIRE(plugin.installLocal(context, packagePath.string()));
 
-    const std::vector<Package> removeRequest {Package {.action = ActionType::REMOVE,
-                                                      .system = "rqp",
-                                                      .name = "evr-remove",
-                                                      .version = "1.2.3-1+r0"}};
+    const std::vector<Package> removeRequest {
+        Package {.action = ActionType::REMOVE, .system = "rqp", .name = "evr-remove", .version = "1.2.3-1+r0"}};
     const std::vector<Package> missing = plugin.getMissingPackages(removeRequest);
     REQUIRE(missing.size() == 1);
     CHECK(missing.front().version == "1.2.3-1+r0");
@@ -1007,8 +1005,8 @@ return true
     return packagePath;
 }
 
-std::filesystem::path build_rqp_package_with_shared_manifest(const std::filesystem::path& root,
-                                                             const std::string& name, const std::string& version,
+std::filesystem::path build_rqp_package_with_shared_manifest(const std::filesystem::path& root, const std::string& name,
+                                                             const std::string& version,
                                                              const std::filesystem::path& sharedFile) {
     const std::filesystem::path packageRoot = root / (name + "-pkg");
     const std::filesystem::path controlRoot = packageRoot / "control";
@@ -1192,8 +1190,7 @@ TEST_CASE("rqp plugin remove succeeds when manifest artifact is already missing"
     const PluginCallContext context = make_plugin_context(plugin);
     REQUIRE(plugin.installLocal(context, packagePath.string()));
 
-    const std::vector<RqpInstalledPackage> installed =
-        RqpStateStore(config).findInstalled("manifest-missing", "1.0.0");
+    const std::vector<RqpInstalledPackage> installed = RqpStateStore(config).findInstalled("manifest-missing", "1.0.0");
     REQUIRE(installed.size() == 1);
     std::filesystem::remove(installed.front().stateDir / "installed.txt");
 
@@ -1204,15 +1201,14 @@ TEST_CASE("rqp plugin remove succeeds when manifest artifact is already missing"
     CHECK(RqpStateStore(config).findInstalled("manifest-missing", "1.0.0").empty());
 }
 
-TEST_CASE("rqp plugin remove keeps shared manifest artifact while another version remains",
-          "[unit][rqp_plugin]") {
+TEST_CASE("rqp plugin remove keeps shared manifest artifact while another version remains", "[unit][rqp_plugin]") {
     TempDir tempDir {"reqpack-rqp-plugin-manifest-shared"};
     ReqPackConfig config = make_plugin_config(tempDir);
     const std::filesystem::path sharedRoot = tempDir.path() / "shared";
-    const std::filesystem::path packageV1 = build_rqp_package_with_shared_manifest(
-        tempDir.path() / "v1", "shared-demo", "1.0.0", sharedRoot / "binary.txt");
-    const std::filesystem::path packageV2 = build_rqp_package_with_shared_manifest(
-        tempDir.path() / "v2", "shared-demo", "2.0.0", sharedRoot / "binary.txt");
+    const std::filesystem::path packageV1 = build_rqp_package_with_shared_manifest(tempDir.path() / "v1", "shared-demo",
+                                                                                   "1.0.0", sharedRoot / "binary.txt");
+    const std::filesystem::path packageV2 = build_rqp_package_with_shared_manifest(tempDir.path() / "v2", "shared-demo",
+                                                                                   "2.0.0", sharedRoot / "binary.txt");
 
     RqpPlugin plugin(config);
     REQUIRE(plugin.init());

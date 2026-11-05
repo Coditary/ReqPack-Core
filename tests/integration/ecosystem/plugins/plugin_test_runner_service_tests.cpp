@@ -8,8 +8,8 @@
 
 #include <catch2/catch.hpp>
 
-#include "test_helpers.h"
 #include "ecosystem/plugin_host/testing/plugin_test_runner.h"
+#include "test_helpers.h"
 
 namespace {
 
@@ -1167,8 +1167,7 @@ TEST_CASE("plugin test command runs repo java preset case", "[integration][plugi
 }
 
 TEST_CASE("parse test-plugin --live selects live preset", "[core][integration][plugin-test]") {
-    const PluginTestCliParseResult parsed =
-        parse_plugin_test_invocation({"test-plugin", "--plugin", "demo", "--live"});
+    const PluginTestCliParseResult parsed = parse_plugin_test_invocation({"test-plugin", "--plugin", "demo", "--live"});
 
     REQUIRE(parsed.matched);
     REQUIRE_FALSE(parsed.helpRequested);

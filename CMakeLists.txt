@@ -67,41 +67,7 @@ if(UNIX AND NOT APPLE)
     list(APPEND REQPACK_PLATFORM_LIBS util)
 endif()
 
-set(REQPACK_SECURITY_CORE_REPO
-    "https://github.com/Coditary/reqpack-security-core.git"
-    CACHE STRING "Git repository for reqpack-security-core"
-)
-set(REQPACK_SECURITY_CORE_TAG
-    "main"
-    CACHE STRING "Git tag, branch, or commit for reqpack-security-core"
-)
-set(REQPACK_SECURITY_CORE_DIR
-    ""
-    CACHE PATH "Optional local checkout of reqpack-security-core"
-)
-
-set(_reqpack_security_core_local "${CMAKE_CURRENT_SOURCE_DIR}/../reqpack-security-core")
-if(REQPACK_SECURITY_CORE_DIR AND EXISTS "${REQPACK_SECURITY_CORE_DIR}/CMakeLists.txt")
-    set(REQPACK_SECURITY_CORE_SOURCE_DIR "${REQPACK_SECURITY_CORE_DIR}")
-elseif(EXISTS "${_reqpack_security_core_local}/CMakeLists.txt")
-    set(REQPACK_SECURITY_CORE_SOURCE_DIR "${_reqpack_security_core_local}")
-else()
-    FetchContent_Declare(
-        reqpack_security_core
-        GIT_REPOSITORY ${REQPACK_SECURITY_CORE_REPO}
-        GIT_TAG ${REQPACK_SECURITY_CORE_TAG}
-        GIT_SHALLOW TRUE
-    )
-    FetchContent_MakeAvailable(reqpack_security_core)
-    set(REQPACK_SECURITY_CORE_SOURCE_DIR "${reqpack_security_core_SOURCE_DIR}")
-endif()
-
-if(NOT TARGET reqpack_security_core)
-    add_subdirectory(
-        ${REQPACK_SECURITY_CORE_SOURCE_DIR}
-        ${CMAKE_BINARY_DIR}/reqpack-security-core-build
-    )
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/FetchSecurityCore.cmake)
 
 if(NOT TARGET lmdb)
     FetchContent_Declare(
@@ -266,6 +232,7 @@ function(reqpack_core_ensure_output_target)
 
     file(GLOB REQPACK_OUTPUT_SOURCES CONFIGURE_DEPENDS
         "${_cli_dir}/src/main/cpp/output/*.cpp"
+        "${_cli_dir}/src/main/cpp/output/terminal/*.cpp"
     )
     if(NOT TARGET indicators::indicators)
         FetchContent_Declare(
@@ -306,11 +273,14 @@ function(reqpack_core_ensure_cli_target)
         PUBLIC "${_cli_dir}/src/main/include"
         PRIVATE "${_cli_dir}/src/main/cpp/cli"
     )
+    include("${_cli_dir}/cmake/ResolveCompletion.cmake")
+    resolve_completion()
     target_link_libraries(reqpack_cli
         PUBLIC
             reqpack_core
             reqpack_output
             CLI11::CLI11
+            coditary::completion
     )
 endfunction()
 

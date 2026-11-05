@@ -10,9 +10,9 @@
 #include <sstream>
 #include <system_error>
 
-#include "workflows/reporting/sbom_exporter.h"
 #include "output/logger.h"
 #include "test_helpers.h"
+#include "workflows/reporting/sbom_exporter.h"
 
 namespace {
 
@@ -81,7 +81,9 @@ class RecordingDisplay final : public IDisplay {
     void onTableEnd() override {}
     void flush() override {}
 
-    void onUnindentedText(const std::string& text) override { onMessage(text); }
+    void onUnindentedText(const std::string& text) override {
+        onMessage(text);
+    }
 
     void onMessage(const std::string& text, const std::string& source = {}) override {
         messages.push_back(source.empty() ? text : ("[" + source + "] " + text));
